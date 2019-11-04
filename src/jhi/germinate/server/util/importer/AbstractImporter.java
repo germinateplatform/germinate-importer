@@ -5,6 +5,7 @@ import org.restlet.data.Status;
 import org.restlet.resource.ResourceException;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -55,17 +56,17 @@ public abstract class AbstractImporter
 
 				checkFile(wb);
 
-				if (errorMap.size() < 1)
+//				if (errorMap.size() < 1)
 				{
-					if(isUpdate)
+					if (isUpdate)
 						updateFile(wb);
 					else
 						importFile(wb);
 				}
-				else
-				{
-					input.delete();
-				}
+//				else
+//				{
+//					input.delete();
+//				}
 
 				// Put the result
 				CONCURRENT_STATUS.put(uuid, getImportResult());
@@ -80,11 +81,52 @@ public abstract class AbstractImporter
 		return uuid;
 	}
 
+	protected BigDecimal getCellValueBigDecimal(Row r, Map<String, Integer> columnNameToIndex, String column)
+	{
+		try
+		{
+			return new BigDecimal(Double.parseDouble(getCellValue(r, columnNameToIndex, column)));
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
+	}
+
+	protected Double getCellValueDouble(Row r, Map<String, Integer> columnNameToIndex, String column)
+	{
+		try
+		{
+			return Double.parseDouble(getCellValue(r, columnNameToIndex, column));
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
+	}
+
+	protected Integer getCellValueInteger(Row r, Map<String, Integer> columnNameToIndex, String column)
+	{
+		try
+		{
+			return Integer.parseInt(getCellValue(r, columnNameToIndex, column));
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
+	}
+
 	protected String getCellValue(Row r, Map<String, Integer> columnNameToIndex, String column)
 	{
 		try
 		{
-			return r.getCellText(columnNameToIndex.get(column));
+			String value = r.getCellText(columnNameToIndex.get(column));
+
+			if (Objects.equals(value, ""))
+				value = null;
+
+			return value;
 		}
 		catch (Exception e)
 		{
