@@ -1,0 +1,9 @@
+/.idea/
+/out/
+
+# Package Files #
+/*.jar
+/*.war
+!germinate-importer.jar
+
+/*.iml
