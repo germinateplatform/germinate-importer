@@ -171,13 +171,18 @@ public class McpdImporter extends AbstractImporter
 	private void check(Row r)
 	{
 		// Check the accenumb isn't a duplicate
+		boolean alreadyFoundInFile = false;
 		String accenumb = getCellValue(r, columnNameToIndex, "ACCENUMB");
 		if (StringUtils.isEmpty(accenumb))
+		{
 			addImportResult(ImportStatus.MCPD_MISSING_FIELD, r.getRowNum(), "ACCENUMB");
+		}
 		else
+		{
+			alreadyFoundInFile = foundAccenumb.contains(accenumb);
 			foundAccenumb.add(accenumb);
+		}
 
-		boolean alreadyFoundInFile = foundAccenumb.contains(accenumb);
 		// If it's not an update, but ACCENUMB found in the database OR it's a duplicate in the file, add error
 		if ((gidToId.containsKey(accenumb) && !isUpdate) || alreadyFoundInFile)
 			addImportResult(ImportStatus.MCPD_DUPLICATE_ACCENUMB, r.getRowNum(), accenumb);
