@@ -6,11 +6,15 @@ import org.restlet.resource.ResourceException;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.*;
 
 import jhi.germinate.resource.ImportResult;
 import jhi.germinate.resource.enums.ImportStatus;
+import jhi.germinate.server.util.StringUtils;
 
 /**
  * @author Sebastian Raubach
@@ -18,16 +22,23 @@ import jhi.germinate.resource.enums.ImportStatus;
 public abstract class AbstractImporter
 {
 	private static Map<String, List<ImportResult>> CONCURRENT_STATUS = new ConcurrentHashMap<>();
+	private        SimpleDateFormat                SDF_FULL_DASH     = new SimpleDateFormat("yyyy-MM-dd");
+	private        SimpleDateFormat                SDF_FULL          = new SimpleDateFormat("yyyyMMdd");
+	private        SimpleDateFormat                SDF_YEAR_MONTH    = new SimpleDateFormat("yyyyMM");
+	private        SimpleDateFormat                SDF_YEAR_DAY      = new SimpleDateFormat("yyyydd");
+	private        SimpleDateFormat                SDF_YEAR          = new SimpleDateFormat("yyyy");
 
 	protected boolean                         isUpdate;
+	private   boolean                         deleteOnFail;
 	private   File                            input;
 	private   String                          uuid     = UUID.randomUUID().toString();
 	private   Map<ImportStatus, ImportResult> errorMap = new HashMap<>();
 
-	public AbstractImporter(File input, boolean isUpdate)
+	public AbstractImporter(File input, boolean isUpdate, boolean deleteOnFail)
 	{
 		this.input = input;
 		this.isUpdate = isUpdate;
+		this.deleteOnFail = deleteOnFail;
 	}
 
 	public static synchronized List<ImportResult> getStatus(String uuid)
@@ -56,17 +67,18 @@ public abstract class AbstractImporter
 
 				checkFile(wb);
 
-//				if (errorMap.size() < 1)
+				Logger.getLogger("").log(Level.INFO, getImportResult().toString());
+				if (errorMap.size() < 1)
 				{
 					if (isUpdate)
 						updateFile(wb);
 					else
 						importFile(wb);
 				}
-//				else
-//				{
-//					input.delete();
-//				}
+				else if (deleteOnFail)
+				{
+					input.delete();
+				}
 
 				// Put the result
 				CONCURRENT_STATUS.put(uuid, getImportResult());
@@ -115,6 +127,57 @@ public abstract class AbstractImporter
 		{
 			return null;
 		}
+	}
+
+	protected Date getCellValueDate(Row r, Map<String, Integer> columnNameToIndex, String column)
+	{
+		String value = getCellValue(r, columnNameToIndex, column);
+
+		java.util.Date date = null;
+		if (!StringUtils.isEmpty(value))
+		{
+			if (!StringUtils.isEmpty(value))
+			{
+				if (value.length() == 10)
+				{
+					try
+					{
+						date = SDF_FULL_DASH.parse(value);
+					}
+					catch (Exception e)
+					{
+					}
+				}
+				else
+				{
+					// Replace all hyphens with zeros so that we only have one case to handle.
+					value = value.replace("-", "0");
+
+					try
+					{
+						boolean noMonth = value.substring(4, 6).equals("00");
+						boolean noDay = value.substring(6, 8).equals("00");
+
+						if (noDay && noMonth)
+							date = SDF_YEAR.parse(value.substring(0, 4));
+						else if (noDay)
+							date = SDF_YEAR_MONTH.parse(value.substring(0, 6));
+						else if (noMonth)
+							date = SDF_YEAR_DAY.parse(value.substring(0, 4) + value.substring(6, 8));
+						else
+							date = SDF_FULL.parse(value);
+					}
+					catch (Exception e)
+					{
+					}
+				}
+			}
+		}
+
+		if (date != null)
+			return new Date(date.getTime());
+		else
+			return null;
 	}
 
 	protected String getCellValue(Row r, Map<String, Integer> columnNameToIndex, String column)
