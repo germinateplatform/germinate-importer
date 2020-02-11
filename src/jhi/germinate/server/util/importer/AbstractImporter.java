@@ -5,7 +5,7 @@ import org.restlet.data.Status;
 import org.restlet.resource.ResourceException;
 
 import java.io.File;
-import java.math.BigDecimal;
+import java.math.*;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -97,7 +97,9 @@ public abstract class AbstractImporter
 	{
 		try
 		{
-			return new BigDecimal(Double.parseDouble(getCellValue(r, columnNameToIndex, column)));
+			BigDecimal result = new BigDecimal(Double.parseDouble(getCellValue(r, columnNameToIndex, column)), MathContext.DECIMAL64);
+			result = result.setScale(10, RoundingMode.HALF_UP);
+			return result;
 		}
 		catch (Exception e)
 		{
@@ -184,18 +186,30 @@ public abstract class AbstractImporter
 	{
 		try
 		{
-			String value = r.getCellText(columnNameToIndex.get(column));
+			String value = r.getCellText(columnNameToIndex.get(column)).replaceAll("\u00A0", "");
 
 			if (Objects.equals(value, ""))
-				value = null;
-
-			return value;
+				return null;
+			else
+				return value.trim();
 		}
 		catch (Exception e)
 		{
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, r.getRowNum(), "Column missing: '" + column + "'");
 			return null;
 		}
+	}
+
+	protected boolean allCellsEmpty(Row r)
+	{
+		for (int i = 0; i < r.getPhysicalCellCount(); i++)
+		{
+			if (r.getCell(i) != null && r.getCell(i).getType() != CellType.EMPTY && !StringUtils.isEmpty(r.getCellText(i).replaceAll("\u00A0", "")))
+				return false;
+
+		}
+
+		return true;
 	}
 
 	protected void addImportResult(ImportStatus status, int rowIndex, String message)

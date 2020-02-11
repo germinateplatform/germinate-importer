@@ -201,6 +201,9 @@ public class McpdImporter extends AbstractImporter
 
 	private void check(Row r)
 	{
+		if (allCellsEmpty(r))
+			return;
+
 		// Check the accenumb isn't a duplicate
 		boolean alreadyFoundInFile = false;
 		String accenumb = getCellValue(r, columnNameToIndex, McpdField.ACCENUMB.name());
@@ -249,6 +252,7 @@ public class McpdImporter extends AbstractImporter
 		String countryCode = getCellValue(r, columnNameToIndex, McpdField.ORIGCTY.name());
 		if (!StringUtils.isEmpty(countryCode) && !countryCodeToId.containsKey(countryCode))
 			addImportResult(ImportStatus.MCPD_INVALID_COUNTRY_CODE, r.getRowNum(), countryCode);
+
 
 		// Check if declatitute is a number
 		String declatitude = getCellValue(r, columnNameToIndex, McpdField.DECLATITUDE.name());
@@ -477,6 +481,9 @@ public class McpdImporter extends AbstractImporter
 
 	private void insert(DSLContext context, Row r, boolean isUpdate)
 	{
+		if (allCellsEmpty(r))
+			return;
+
 		Germplasm insert = parseMcpd(r);
 
 		if (!StringUtils.isEmpty(insert.taxonomy.getGenus()))
