@@ -56,11 +56,11 @@ public abstract class AbstractImporter
 		}
 	}
 
-	public String run()
+	public ImportConfig run()
 	{
 		// Put an empty list to indicate that the UUID is valid, but not finished
 		CONCURRENT_STATUS.put(uuid, new ArrayList<>());
-		new Thread(() -> {
+		Thread thread = new Thread(() -> {
 			try (ReadableWorkbook wb = new ReadableWorkbook(input))
 			{
 				prepare();
@@ -88,16 +88,22 @@ public abstract class AbstractImporter
 				e.printStackTrace();
 				CONCURRENT_STATUS.put(uuid, Collections.singletonList(new ImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage())));
 			}
-		}).start();
+		});
+		thread.start();
 
-		return uuid;
+		return new ImportConfig(uuid, thread);
 	}
 
 	protected BigDecimal getCellValueBigDecimal(Row r, Map<String, Integer> columnNameToIndex, String column)
 	{
+		return getCellValueBigDecimal(r, columnNameToIndex.get(column));
+	}
+
+	protected BigDecimal getCellValueBigDecimal(Row r, int index)
+	{
 		try
 		{
-			BigDecimal result = new BigDecimal(Double.parseDouble(getCellValue(r, columnNameToIndex, column)), MathContext.DECIMAL64);
+			BigDecimal result = new BigDecimal(Double.parseDouble(getCellValue(r, index)), MathContext.DECIMAL64);
 			result = result.setScale(10, RoundingMode.HALF_UP);
 			return result;
 		}
@@ -133,7 +139,11 @@ public abstract class AbstractImporter
 
 	protected Date getCellValueDate(Row r, Map<String, Integer> columnNameToIndex, String column)
 	{
-		String value = getCellValue(r, columnNameToIndex, column);
+		return getCellValueDate(r, columnNameToIndex.get(column));
+	}
+
+	protected Date getCellValueDate(Row r, int index) {
+		String value = getCellValue(r, index);
 
 		java.util.Date date = null;
 		if (!StringUtils.isEmpty(value))
@@ -182,6 +192,21 @@ public abstract class AbstractImporter
 			return null;
 	}
 
+	protected String getCellValue(Cell c)
+	{
+		String result = c.getText();
+
+		if (result != null)
+		{
+			result = result.replaceAll("\u00A0", "");
+		}
+
+		if (Objects.equals(result, ""))
+			return null;
+		else
+			return result.trim();
+	}
+
 	protected String getCellValue(Row r, Map<String, Integer> columnNameToIndex, String column)
 	{
 		try
@@ -196,6 +221,23 @@ public abstract class AbstractImporter
 		catch (Exception e)
 		{
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, r.getRowNum(), "Column missing: '" + column + "'");
+			return null;
+		}
+	}
+
+	protected String getCellValue(Row r, int index)
+	{
+		try
+		{
+			String value = r.getCellText(index).replaceAll("\u00A0", "");
+
+			if (Objects.equals(value, ""))
+				return null;
+			else
+				return value.trim();
+		}
+		catch (Exception e)
+		{
 			return null;
 		}
 	}
@@ -230,4 +272,37 @@ public abstract class AbstractImporter
 	protected abstract void importFile(ReadableWorkbook wb);
 
 	protected abstract void updateFile(ReadableWorkbook wb);
+
+	public static class ImportConfig {
+		private String uuid;
+		private Thread thread;
+
+		public ImportConfig(String uuid, Thread thread)
+		{
+			this.uuid = uuid;
+			this.thread = thread;
+		}
+
+		public String getUuid()
+		{
+			return uuid;
+		}
+
+		public ImportConfig setUuid(String uuid)
+		{
+			this.uuid = uuid;
+			return this;
+		}
+
+		public Thread getThread()
+		{
+			return thread;
+		}
+
+		public ImportConfig setThread(Thread thread)
+		{
+			this.thread = thread;
+			return this;
+		}
+	}
 }

@@ -5,17 +5,19 @@ import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
 
 import java.io.*;
+import java.sql.Date;
 import java.sql.*;
-import java.text.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
 
 import jhi.germinate.resource.enums.ImportStatus;
 import jhi.germinate.server.Database;
+import jhi.germinate.server.database.enums.AttributesDatatype;
 import jhi.germinate.server.database.tables.records.*;
 import jhi.germinate.server.util.StringUtils;
 
+import static jhi.germinate.server.database.tables.Attributedata.*;
 import static jhi.germinate.server.database.tables.Attributes.*;
 import static jhi.germinate.server.database.tables.Biologicalstatus.*;
 import static jhi.germinate.server.database.tables.Collectingsources.*;
@@ -27,6 +29,7 @@ import static jhi.germinate.server.database.tables.Locations.*;
 import static jhi.germinate.server.database.tables.Pedigreedefinitions.*;
 import static jhi.germinate.server.database.tables.Pedigreenotations.*;
 import static jhi.germinate.server.database.tables.Storage.*;
+import static jhi.germinate.server.database.tables.Storagedata.*;
 import static jhi.germinate.server.database.tables.Taxonomies.*;
 
 /**
@@ -37,10 +40,9 @@ public class McpdImporter extends AbstractImporter
 	/** Required column headers */
 	private static final String[] COLUMN_HEADERS = {"PUID", "INSTCODE", "ACCENUMB", "COLLNUMB", "COLLCODE", "COLLNAME", "COLLINSTADDRESS", "COLLMISSID", "GENUS", "SPECIES", "SPAUTHOR", "SUBTAXA", "SUBTAUTHOR", "CROPNAME", "ACCENAME", "ACQDATE", "ORIGCTY", "COLLSITE", "DECLATITUDE", "LATITUDE", "DECLONGITUDE", "LONGITUDE", "COORDUNCERT", "COORDDATUM", "GEOREFMETH", "ELEVATION", "COLLDATE", "BREDCODE", "BREDNAME", "SAMPSTAT", "ANCEST", "COLLSRC", "DONORCODE", "DONORNAME", "DONORNUMB", "OTHERNUMB", "DUPLSITE", "DUPLINSTNAME", "STORAGE", "MLSSTAT", "REMARKS"};
 
-	private SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-
 	private Map<String, Integer>              columnNameToIndex;
 	private Set<String>                       foundAccenumb = new HashSet<>();
+	private List<Integer>                     attributeIds  = new ArrayList<>();
 	private Map<String, Integer>              gidToId;
 	private Map<String, Integer>              countryCodeToId;
 	private Map<String, Integer>              attributeToId;
@@ -236,16 +238,13 @@ public class McpdImporter extends AbstractImporter
 				addImportResult(ImportStatus.MCPD_MISSING_FIELD, r.getRowNum(), McpdField.SPECIES.name());
 		}
 
-		// Check the date is in the correct format
-		String acqdate = getCellValue(r, columnNameToIndex, McpdField.ACQDATE.name());
-		try
+		// Check the date is int he correct format
+		String acqdateString = getCellValue(r, columnNameToIndex, McpdField.ACQDATE.name());
+		Date acqdate = getCellValueDate(r, columnNameToIndex, McpdField.ACQDATE.name());
+		// There is a date, but it couldn't be parsed
+		if (!StringUtils.isEmpty(acqdateString) && acqdate == null)
 		{
-			if (!StringUtils.isEmpty(acqdate))
-				sdf.parse(acqdate);
-		}
-		catch (ParseException e)
-		{
-			addImportResult(ImportStatus.MCPD_INVALID_DATE, r.getRowNum(), McpdField.ACQDATE.name() + ": " + acqdate);
+			addImportResult(ImportStatus.GENERIC_INVALID_DATE, r.getRowNum(), McpdField.ACQDATE.name() + ": " + acqdate);
 		}
 
 		// Check if country is a valid 3-letter code
@@ -264,7 +263,7 @@ public class McpdImporter extends AbstractImporter
 			}
 			catch (NumberFormatException e)
 			{
-				addImportResult(ImportStatus.MCPD_INVALID_NUMBER, r.getRowNum(), McpdField.DECLATITUDE.name() + ": " + declatitude);
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), McpdField.DECLATITUDE.name() + ": " + declatitude);
 			}
 		}
 
@@ -278,7 +277,7 @@ public class McpdImporter extends AbstractImporter
 			}
 			catch (NumberFormatException e)
 			{
-				addImportResult(ImportStatus.MCPD_INVALID_NUMBER, r.getRowNum(), McpdField.DECLONGITUDE.name() + ": " + declongitude);
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), McpdField.DECLONGITUDE.name() + ": " + declongitude);
 			}
 		}
 
@@ -292,21 +291,17 @@ public class McpdImporter extends AbstractImporter
 			}
 			catch (NumberFormatException e)
 			{
-				addImportResult(ImportStatus.MCPD_INVALID_NUMBER, r.getRowNum(), McpdField.ELEVATION.name() + ": " + elevation);
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), McpdField.ELEVATION.name() + ": " + elevation);
 			}
 		}
 
 		// Check the date is int he correct format
-		String colldate = getCellValue(r, columnNameToIndex, McpdField.COLLDATE.name());
-		try
+		String colldateString = getCellValue(r, columnNameToIndex, McpdField.COLLDATE.name());
+		Date colldate = getCellValueDate(r, columnNameToIndex, McpdField.COLLDATE.name());
+		// There is a date, but it couldn't be parsed
+		if (!StringUtils.isEmpty(colldateString) && colldate == null)
 		{
-			// TODO: Make sure to check "-" values
-			if (!StringUtils.isEmpty(colldate))
-				sdf.parse(colldate);
-		}
-		catch (ParseException e)
-		{
-			addImportResult(ImportStatus.MCPD_INVALID_DATE, r.getRowNum(), McpdField.COLLDATE.name() + ": " + colldate);
+			addImportResult(ImportStatus.GENERIC_INVALID_DATE, r.getRowNum(), McpdField.COLLDATE.name() + ": " + colldate);
 		}
 
 		// Check SAMPSTAT
@@ -320,7 +315,7 @@ public class McpdImporter extends AbstractImporter
 			}
 			catch (NumberFormatException e)
 			{
-				addImportResult(ImportStatus.MCPD_INVALID_NUMBER, r.getRowNum(), McpdField.SAMPSTAT.name()+ ": " + sampstat);
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), McpdField.SAMPSTAT.name() + ": " + sampstat);
 			}
 		}
 
@@ -335,7 +330,7 @@ public class McpdImporter extends AbstractImporter
 			}
 			catch (NumberFormatException e)
 			{
-				addImportResult(ImportStatus.MCPD_INVALID_NUMBER, r.getRowNum(), McpdField.COLLSRC.name() + ": " + collsrc);
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), McpdField.COLLSRC.name() + ": " + collsrc);
 			}
 		}
 
@@ -345,12 +340,17 @@ public class McpdImporter extends AbstractImporter
 		{
 			try
 			{
-				if (!validStorage.contains(Integer.parseInt(storage)))
-					addImportResult(ImportStatus.MCPD_INVALID_STORAGE, r.getRowNum(), storage);
+				String[] parts = storage.split(";");
+
+				for (int i = 0; i < parts.length; i++)
+				{
+					if (!validStorage.contains(Integer.parseInt(parts[i].trim())))
+						addImportResult(ImportStatus.MCPD_INVALID_STORAGE, r.getRowNum(), parts[i]);
+				}
 			}
-			catch (NumberFormatException e)
+			catch (NumberFormatException | NullPointerException e)
 			{
-				addImportResult(ImportStatus.MCPD_INVALID_NUMBER, r.getRowNum(), McpdField.STORAGE.name() + ": " + storage);
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), McpdField.STORAGE.name() + ": " + storage);
 			}
 		}
 
@@ -376,6 +376,7 @@ public class McpdImporter extends AbstractImporter
 		try (Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
+			// Import the data
 			wb.getSheets()
 			  .filter(s -> Objects.equals(s.getName(), "DATA"))
 			  .findFirst()
@@ -407,22 +408,25 @@ public class McpdImporter extends AbstractImporter
 				  }
 			  });
 
-			// TODO: Attributes
-//			wb.getSheets()
-//			  .filter(s -> Objects.equals(s.getName(), "ADDITIONAL_ATTRIBUTES"))
-//			  .findFirst()
-//			  .ifPresent(s -> {
-//				  try
-//				  {
-//					  s.openStream()
-//					   .skip(1)
-//					   .forEachOrdered(r -> insertAttribute(context, r));
-//				  }
-//				  catch (IOException e)
-//				  {
-//					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-//				  }
-//			  });
+			// Import the attributes
+			wb.getSheets()
+			  .filter(s -> Objects.equals(s.getName(), "ADDITIONAL_ATTRIBUTES"))
+			  .findFirst()
+			  .ifPresent(s -> {
+				  try
+				  {
+					  s.openStream()
+					   .findFirst()
+					   .ifPresent(r -> getOrCreateAttributes(context, r));
+					  s.openStream()
+					   .skip(1)
+					   .forEachOrdered(r -> insertAttributeData(context, r));
+				  }
+				  catch (IOException e)
+				  {
+					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				  }
+			  });
 		}
 		catch (SQLException e)
 		{
@@ -457,6 +461,69 @@ public class McpdImporter extends AbstractImporter
 		{
 			e.printStackTrace();
 		}
+	}
+
+	private void insertAttributeData(DSLContext context, Row r)
+	{
+		if (allCellsEmpty(r))
+			return;
+
+		String accenumb = getCellValue(r.getCell(0));
+		Integer germplasmId = accenumbToId.get(accenumb);
+
+		r.stream()
+		 .skip(1)
+		 .forEachOrdered(c -> {
+			 Integer attributeId = attributeIds.get(c.getColumnIndex() - 1);
+			 String value = getCellValue(c);
+
+			 if (!StringUtils.isEmpty(value))
+			 {
+				 AttributedataRecord data = context.selectFrom(ATTRIBUTEDATA)
+												   .where(ATTRIBUTEDATA.ATTRIBUTE_ID.eq(attributeId))
+												   .and(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasmId))
+												   .and(ATTRIBUTEDATA.VALUE.eq(value))
+												   .fetchAny();
+
+				 if (data == null)
+				 {
+					 data = context.newRecord(ATTRIBUTEDATA);
+					 data.setAttributeId(attributeId);
+					 data.setForeignId(germplasmId);
+					 data.setValue(value);
+					 data.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+					 data.store();
+				 }
+			 }
+		 });
+
+	}
+
+	private void getOrCreateAttributes(DSLContext context, Row r)
+	{
+		if (allCellsEmpty(r))
+			return;
+
+		r.stream()
+		 .skip(1)
+		 .forEachOrdered(c -> {
+			 String name = getCellValue(c);
+			 Integer id = attributeToId.get(name);
+
+			 if (id == null)
+			 {
+				 AttributesRecord attribute = context.newRecord(ATTRIBUTES);
+				 attribute.setName(name);
+				 attribute.setDatatype(AttributesDatatype.char_);
+				 attribute.setTargetTable("germinatebase");
+				 attribute.store();
+
+				 attributeToId.put(name, attribute.getId());
+				 id = attribute.getId();
+			 }
+
+			 attributeIds.add(id);
+		 });
 	}
 
 	private void setEntityParent(Row r)
@@ -545,6 +612,16 @@ public class McpdImporter extends AbstractImporter
 			insert.pedigree.setGerminatebaseId(insert.germinatebase.getId());
 			insert.pedigree = getOrCreatePedigree(context, insert.pedigree);
 		}
+
+		if (insert.storage.size() > 0)
+		{
+			getOrCreateStorage(context, insert);
+		}
+
+		if (!StringUtils.isEmpty(insert.remarks))
+		{
+			getOrCreateRemarks(context, insert);
+		}
 	}
 
 	private void writeUpdate(UpdatableRecord existing, UpdatableRecord newStuff, Field<?> idColumn)
@@ -580,6 +657,62 @@ public class McpdImporter extends AbstractImporter
 
 		// Update the changed fields
 		existing.update(toUpdate);
+	}
+
+	private void getOrCreateRemarks(DSLContext context, Germplasm germplasm)
+	{
+		Integer attributeId = attributeToId.get("Remarks");
+
+		if (attributeId == null)
+		{
+			AttributesRecord attribute = context.newRecord(ATTRIBUTES);
+			attribute.setName("Remarks");
+			attribute.setDescription("Remarks");
+			attribute.setDatatype(AttributesDatatype.char_);
+			attribute.setTargetTable("germinatebase");
+			attribute.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			attribute.store();
+			attributeToId.put("Remarks", attribute.getId());
+			attributeId = attribute.getId();
+		}
+
+		String value = germplasm.remarks;
+
+		if (!StringUtils.isEmpty(value))
+		{
+			AttributedataRecord data = context.selectFrom(ATTRIBUTEDATA)
+											  .where(ATTRIBUTEDATA.ATTRIBUTE_ID.eq(attributeId))
+											  .and(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasm.germinatebase.getId()))
+											  .and(ATTRIBUTEDATA.VALUE.eq(value))
+											  .fetchAny();
+
+			if (data == null)
+			{
+				data = context.newRecord(ATTRIBUTEDATA);
+				data.setAttributeId(attributeId);
+				data.setForeignId(germplasm.germinatebase.getId());
+				data.setValue(value);
+				data.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+				data.store();
+			}
+		}
+	}
+
+	private void getOrCreateStorage(DSLContext context, Germplasm germplasm)
+	{
+		germplasm.storage.removeAll(context.selectFrom(STORAGEDATA)
+										   .where(STORAGEDATA.GERMINATEBASE_ID.eq(germplasm.germinatebase.getId()))
+										   .and(STORAGEDATA.STORAGE_ID.in(germplasm.storage))
+										   .fetchSet(STORAGEDATA.STORAGE_ID));
+
+		for (Integer id : germplasm.storage)
+		{
+			StoragedataRecord record = context.newRecord(STORAGEDATA);
+			record.setGerminatebaseId(germplasm.germinatebase.getId());
+			record.setStorageId(id);
+			record.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			record.store();
+		}
 	}
 
 	private GerminatebaseRecord getOrCreateGermplasm(DSLContext context, GerminatebaseRecord germinatebase)
@@ -775,9 +908,25 @@ public class McpdImporter extends AbstractImporter
 
 		germplasm.location.setLocationtypeId(1);
 
-		// TODO: Add missing properties
-//		result.setStorage(getCellValue(r, columnNameToIndex, McpdField.STORAGE.name()));
-//		result.setRemarks(getCellValue(r, columnNameToIndex, McpdField.REMARKS.name()));
+		germplasm.remarks = getCellValue(r, columnNameToIndex, McpdField.REMARKS.name());
+		String storage = getCellValue(r, columnNameToIndex, McpdField.STORAGE.name());
+
+		if (!StringUtils.isEmpty(storage))
+		{
+			String[] parts = storage.split(";");
+
+			for (int i = 0; i < parts.length; i++)
+			{
+				try
+				{
+					germplasm.storage.add(Integer.parseInt(parts[i].trim()));
+				}
+				catch (Exception e)
+				{
+					// Ignore anything that goes on here.
+				}
+			}
+		}
 
 		return germplasm;
 	}
@@ -790,6 +939,8 @@ public class McpdImporter extends AbstractImporter
 		private TaxonomiesRecord          taxonomy      = new TaxonomiesRecord();
 		private InstitutionsRecord        institution   = new InstitutionsRecord();
 		private PedigreedefinitionsRecord pedigree      = new PedigreedefinitionsRecord();
+		private List<Integer>             storage       = new ArrayList<>();
+		private String                    remarks;
 
 		public Germplasm()
 		{
