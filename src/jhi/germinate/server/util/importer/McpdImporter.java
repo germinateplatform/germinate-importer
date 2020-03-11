@@ -54,6 +54,16 @@ public class McpdImporter extends AbstractImporter
 	private List<Integer>                     validStorage;
 	private Map<String, Integer>              entityTypeToId;
 
+	public static void main(String[] args)
+	{
+		if (args.length != 9)
+			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+
+		McpdImporter importer = new McpdImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]));
+		importer.init(args);
+		importer.run(RunType.getType(args[8]));
+	}
+
 	public McpdImporter(File input, boolean isUpdate, boolean deleteOnFail)
 	{
 		super(input, isUpdate, deleteOnFail);
@@ -131,7 +141,13 @@ public class McpdImporter extends AbstractImporter
 					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 				  }
 			  });
-
+		}
+		catch (NullPointerException e)
+		{
+			addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "'DATA' sheet not found");
+		}
+		try
+		{
 			wb.getSheets()
 			  .filter(s -> Objects.equals(s.getName(), "ADDITIONAL_ATTRIBUTES"))
 			  .findFirst()
@@ -150,7 +166,7 @@ public class McpdImporter extends AbstractImporter
 		}
 		catch (NullPointerException e)
 		{
-			addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "'DATA' sheet not found");
+			addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "'ADDITIONAL_ATTRIBUTES' sheet not found");
 		}
 	}
 
@@ -383,6 +399,10 @@ public class McpdImporter extends AbstractImporter
 			  .ifPresent(s -> {
 				  try
 				  {
+					  // Map headers to their index
+					  s.openStream()
+					   .findFirst()
+					   .ifPresent(this::getHeaderMapping);
 					  // Import the sheet
 					  s.openStream()
 					   .skip(1)
@@ -872,7 +892,8 @@ public class McpdImporter extends AbstractImporter
 		germplasm.pedigree.setDefinition(getCellValue(r, columnNameToIndex, McpdField.ANCEST.name()));
 		germplasm.germinatebase.setBreedersCode(getCellValue(r, columnNameToIndex, McpdField.BREDCODE.name()));
 		germplasm.germinatebase.setBreedersName(getCellValue(r, columnNameToIndex, McpdField.BREDNAME.name()));
-		germplasm.germinatebase.setColldate(getCellValueDate(r, columnNameToIndex, McpdField.COLLCODE.name()));
+		germplasm.germinatebase.setCollcode(getCellValue(r, columnNameToIndex, McpdField.COLLCODE.name()));
+		germplasm.germinatebase.setColldate(getCellValueDate(r, columnNameToIndex, McpdField.COLLDATE.name()));
 		germplasm.institution.setAddress(getCellValue(r, columnNameToIndex, McpdField.COLLINSTADDRESS.name()));
 		germplasm.germinatebase.setCollmissid(getCellValue(r, columnNameToIndex, McpdField.COLLMISSID.name()));
 		germplasm.germinatebase.setCollname(getCellValue(r, columnNameToIndex, McpdField.COLLNAME.name()));

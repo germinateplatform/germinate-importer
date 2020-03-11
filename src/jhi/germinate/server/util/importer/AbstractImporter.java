@@ -1,19 +1,20 @@
 package jhi.germinate.server.util.importer;
 
+import com.google.gson.Gson;
+
 import org.dhatim.fastexcel.reader.*;
-import org.restlet.data.Status;
-import org.restlet.resource.ResourceException;
 
 import java.io.File;
 import java.math.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.*;
 
 import jhi.germinate.resource.ImportResult;
 import jhi.germinate.resource.enums.ImportStatus;
+import jhi.germinate.server.Database;
 import jhi.germinate.server.util.StringUtils;
 
 /**
@@ -21,17 +22,15 @@ import jhi.germinate.server.util.StringUtils;
  */
 public abstract class AbstractImporter
 {
-	private static Map<String, List<ImportResult>> CONCURRENT_STATUS = new ConcurrentHashMap<>();
-	private        SimpleDateFormat                SDF_FULL_DASH     = new SimpleDateFormat("yyyy-MM-dd");
-	private        SimpleDateFormat                SDF_FULL          = new SimpleDateFormat("yyyyMMdd");
-	private        SimpleDateFormat                SDF_YEAR_MONTH    = new SimpleDateFormat("yyyyMM");
-	private        SimpleDateFormat                SDF_YEAR_DAY      = new SimpleDateFormat("yyyydd");
-	private        SimpleDateFormat                SDF_YEAR          = new SimpleDateFormat("yyyy");
+	private SimpleDateFormat SDF_FULL_DASH  = new SimpleDateFormat("yyyy-MM-dd");
+	private SimpleDateFormat SDF_FULL       = new SimpleDateFormat("yyyyMMdd");
+	private SimpleDateFormat SDF_YEAR_MONTH = new SimpleDateFormat("yyyyMM");
+	private SimpleDateFormat SDF_YEAR_DAY   = new SimpleDateFormat("yyyydd");
+	private SimpleDateFormat SDF_YEAR       = new SimpleDateFormat("yyyy");
 
 	protected boolean                         isUpdate;
 	private   boolean                         deleteOnFail;
 	private   File                            input;
-	private   String                          uuid     = UUID.randomUUID().toString();
 	private   Map<ImportStatus, ImportResult> errorMap = new HashMap<>();
 
 	public AbstractImporter(File input, boolean isUpdate, boolean deleteOnFail)
@@ -41,57 +40,45 @@ public abstract class AbstractImporter
 		this.deleteOnFail = deleteOnFail;
 	}
 
-	public static synchronized List<ImportResult> getStatus(String uuid)
+	protected void init(String[] args)
 	{
-		if (CONCURRENT_STATUS.containsKey(uuid))
-		{
-			List<ImportResult> result = CONCURRENT_STATUS.get(uuid);
-			// If the key is there return the value (null or finished result)
-			return result.size() == 0 ? null : result;
-		}
-		else
-		{
-			// Else throw a not found
-			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND);
-		}
+		Database.init(args[0], args[1], args[2], args[3], args[4], false);
 	}
 
-	public ImportConfig run()
+	public void run(RunType runtype)
 	{
-		// Put an empty list to indicate that the UUID is valid, but not finished
-		CONCURRENT_STATUS.put(uuid, new ArrayList<>());
-		Thread thread = new Thread(() -> {
-			try (ReadableWorkbook wb = new ReadableWorkbook(input))
-			{
-				prepare();
+		try (ReadableWorkbook wb = new ReadableWorkbook(input))
+		{
+			prepare();
 
+			if (runtype.includesCheck())
 				checkFile(wb);
 
-				Logger.getLogger("").log(Level.INFO, getImportResult().toString());
-				if (errorMap.size() < 1)
+			if (errorMap.size() < 1)
+			{
+				if (runtype.includesImport())
 				{
 					if (isUpdate)
 						updateFile(wb);
 					else
 						importFile(wb);
 				}
-				else if (deleteOnFail)
-				{
-					input.delete();
-				}
-
-				// Put the result
-				CONCURRENT_STATUS.put(uuid, getImportResult());
 			}
-			catch (Exception e)
+			else if (deleteOnFail)
 			{
-				e.printStackTrace();
-				CONCURRENT_STATUS.put(uuid, Collections.singletonList(new ImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage())));
+				input.delete();
 			}
-		});
-		thread.start();
 
-		return new ImportConfig(uuid, thread);
+			List<ImportResult> result = getImportResult();
+
+			String jsonFilename = this.input.getName().substring(0, this.input.getName().lastIndexOf("."));
+			File json = new File(input.getParent(), jsonFilename + ".json");
+			Files.write(json.toPath(), Collections.singletonList(new Gson().toJson(result)), StandardCharsets.UTF_8);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	protected BigDecimal getCellValueBigDecimal(Row r, Map<String, Integer> columnNameToIndex, String column)
@@ -142,7 +129,8 @@ public abstract class AbstractImporter
 		return getCellValueDate(r, columnNameToIndex.get(column));
 	}
 
-	protected Date getCellValueDate(Row r, int index) {
+	protected Date getCellValueDate(Row r, int index)
+	{
 		String value = getCellValue(r, index);
 
 		java.util.Date date = null;
@@ -273,7 +261,8 @@ public abstract class AbstractImporter
 
 	protected abstract void updateFile(ReadableWorkbook wb);
 
-	public static class ImportConfig {
+	public static class ImportConfig
+	{
 		private String uuid;
 		private Thread thread;
 
@@ -303,6 +292,35 @@ public abstract class AbstractImporter
 		{
 			this.thread = thread;
 			return this;
+		}
+	}
+
+	public enum RunType
+	{
+		CHECK,
+		IMPORT,
+		CHECK_AND_IMPORT;
+
+		public boolean includesCheck()
+		{
+			return this == CHECK || this == CHECK_AND_IMPORT;
+		}
+
+		public boolean includesImport()
+		{
+			return this == IMPORT || this == CHECK_AND_IMPORT;
+		}
+
+		public static RunType getType(String input)
+		{
+			try
+			{
+				return RunType.valueOf(input);
+			}
+			catch (Exception e)
+			{
+				return CHECK;
+			}
 		}
 	}
 }
