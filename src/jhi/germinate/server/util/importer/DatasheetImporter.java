@@ -33,7 +33,7 @@ public abstract class DatasheetImporter extends AbstractImporter
 	protected DatasetsRecord       dataset;
 	private   Set<LocationsRecord> locations = new LinkedHashSet<>();
 	private   Map<String, Integer> countryCode2ToId;
-	private   Map<String, Integer> metadataLabelToRowIndex;
+	protected Map<String, Integer> metadataLabelToRowIndex;
 
 	public DatasheetImporter(File input, boolean isUpdate, boolean deleteOnFail)
 	{
@@ -224,23 +224,12 @@ public abstract class DatasheetImporter extends AbstractImporter
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "VALUE");
 	}
 
-	private void checkMetadataLabels(Sheet s)
+	protected void checkMetadataLabels(Sheet s)
 	{
 		try
 		{
 			List<Row> rows = s.read();
-			metadataLabelToRowIndex = new HashMap<>();
-
-			for (int i = 1; i < rows.size(); i++)
-			{
-				Row r = rows.get(i);
-
-				if (allCellsEmpty(r))
-					break;
-
-				String label = getCellValue(r.getCell(0));
-				metadataLabelToRowIndex.put(label, i);
-			}
+			readMetadataLabels(rows);
 
 			Arrays.stream(METADATA_LABELS)
 				  .forEachOrdered(c -> {
@@ -270,12 +259,41 @@ public abstract class DatasheetImporter extends AbstractImporter
 		}
 	}
 
+	private void readMetadataLabels(List<Row> rows)
+	{
+		metadataLabelToRowIndex = new HashMap<>();
+
+		for (int i = 1; i < rows.size(); i++)
+		{
+			Row r = rows.get(i);
+
+			if (allCellsEmpty(r))
+				break;
+
+			String label = getCellValue(r.getCell(0));
+			metadataLabelToRowIndex.put(label, i);
+		}
+	}
+
 	@Override
 	protected void importFile(ReadableWorkbook wb)
 	{
 		try (Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
+			wb.findSheet("METADATA")
+			  .ifPresent(s -> {
+				  try
+				  {
+					  List<Row> rows = s.read();
+					  readMetadataLabels(rows);
+				  }
+				  catch (IOException e)
+				  {
+					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				  }
+			  });
+
 			getOrCreateLocations(context, wb);
 			getOrCreateDataset(context, wb);
 			getOrCreateCollaborators(context, wb);

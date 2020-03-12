@@ -36,6 +36,16 @@ public class TraitDataImporter extends DatasheetImporter
 	private Map<String, Integer> treatmentToId;
 	private Set<String>          traitNames;
 
+	public static void main(String[] args)
+	{
+		if (args.length != 9)
+			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+
+		TraitDataImporter importer = new TraitDataImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]));
+		importer.init(args);
+		importer.run(RunType.getType(args[8]));
+	}
+
 	public TraitDataImporter(File input, boolean isUpdate, boolean deleteOnFail)
 	{
 		super(input, isUpdate, deleteOnFail);
@@ -277,7 +287,21 @@ public class TraitDataImporter extends DatasheetImporter
 			 DSLContext context = Database.getContext(conn))
 		{
 			wb.findSheet("PHENOTYPES")
-			  .ifPresent(s -> importTraits(context, s));
+			  .ifPresent(s -> {
+				  try
+				  {
+					  // Map headers to their index
+					  s.openStream()
+					   .findFirst()
+					   .ifPresent(this::getHeaderMapping);
+				  }
+				  catch (IOException e)
+				  {
+					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				  }
+
+				  importTraits(context, s);
+			  });
 
 			wb.findSheet("DATA")
 			  .ifPresent(s -> importGermplasmAndTreatments(context, s));
@@ -368,7 +392,7 @@ public class TraitDataImporter extends DatasheetImporter
 				 {
 					 try
 					 {
-						 dataType = PhenotypesDatatype.valueOf(dataTypeString);
+						 dataType = PhenotypesDatatype.valueOf(dataTypeString + "_");
 					 }
 					 catch (IllegalArgumentException | NullPointerException e)
 					 {
@@ -377,7 +401,7 @@ public class TraitDataImporter extends DatasheetImporter
 
 				 String unitName = getCellValue(r, columnNameToIndex, "Unit Name");
 				 String unitAbbr = getCellValue(r, columnNameToIndex, "Unit Abbreviation");
-				 String unitDescription = getCellValue(r, columnNameToIndex, "Unit Description");
+				 String unitDescription = getCellValue(r, columnNameToIndex, "Unit Descriptions");
 
 				 UnitsRecord unit = context.selectFrom(UNITS)
 										   .where(UNITS.UNIT_NAME.isNotDistinctFrom(unitName))

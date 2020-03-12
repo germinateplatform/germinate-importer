@@ -2,7 +2,7 @@
 
 	<property name="src" location="src"/>
 	<property name="lib" location="lib"/>
-	<property name="cls" location="web/WEB-INF/classes"/>
+	<property name="cls" location="out/production/germinate-importer"/>
 
 	<!-- Development classpath -->
 	<property name="jar" value="germinate-importer.jar"/>
