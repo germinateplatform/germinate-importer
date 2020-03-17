@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 
 import org.dhatim.fastexcel.reader.*;
 
-import java.io.File;
+import java.io.*;
 import java.math.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -68,14 +68,22 @@ public abstract class AbstractImporter
 			{
 				input.delete();
 			}
-
-			List<ImportResult> result = getImportResult();
-
-			String jsonFilename = this.input.getName().substring(0, this.input.getName().lastIndexOf("."));
-			File json = new File(input.getParent(), jsonFilename + ".json");
-			Files.write(json.toPath(), Collections.singletonList(new Gson().toJson(result)), StandardCharsets.UTF_8);
 		}
 		catch (Exception e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+		}
+
+		List<ImportResult> result = getImportResult();
+
+		String jsonFilename = this.input.getName().substring(0, this.input.getName().lastIndexOf("."));
+		File json = new File(input.getParent(), jsonFilename + ".json");
+		try
+		{
+			Files.write(json.toPath(), Collections.singletonList(new Gson().toJson(result)), StandardCharsets.UTF_8);
+		}
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -182,6 +190,9 @@ public abstract class AbstractImporter
 
 	protected String getCellValue(Cell c)
 	{
+		if (c == null)
+			return null;
+
 		String result = c.getText();
 
 		if (result != null)
