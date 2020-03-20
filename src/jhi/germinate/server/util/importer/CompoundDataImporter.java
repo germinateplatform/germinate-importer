@@ -4,6 +4,7 @@ import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
@@ -12,41 +13,39 @@ import java.util.stream.*;
 
 import jhi.germinate.resource.enums.ImportStatus;
 import jhi.germinate.server.Database;
-import jhi.germinate.server.database.enums.PhenotypesDatatype;
 import jhi.germinate.server.database.tables.records.*;
-import jhi.germinate.server.util.StringUtils;
+import jhi.germinate.server.util.*;
 
+import static jhi.germinate.server.database.tables.Compounddata.*;
+import static jhi.germinate.server.database.tables.Compounds.*;
 import static jhi.germinate.server.database.tables.Germinatebase.*;
-import static jhi.germinate.server.database.tables.Phenotypedata.*;
 import static jhi.germinate.server.database.tables.Phenotypes.*;
-import static jhi.germinate.server.database.tables.Treatments.*;
 import static jhi.germinate.server.database.tables.Units.*;
 
 /**
  * @author Sebastian Raubach
  */
-public class TraitDataImporter extends DatasheetImporter
+public class CompoundDataImporter extends DatasheetImporter
 {
 	/** Required column headers */
-	private static final String[] COLUMN_HEADERS = {"Name", "Short Name", "Description", "Data Type", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
+	private static final String[] COLUMN_HEADERS = {"Name", "Description", "Molecular Formula", "Monoisotopic Mass", "Class", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
 
-	private Map<String, Integer> traitNameToId;
+	private Map<String, Integer> compoundNameToId;
 	private Map<String, Integer> germplasmToId;
 	private Map<String, Integer> columnNameToIndex;
-	private Map<String, Integer> treatmentToId;
-	private Set<String>          traitNames;
+	private Set<String>          compoundNames;
 
 	public static void main(String[] args)
 	{
 		if (args.length != 9)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		TraitDataImporter importer = new TraitDataImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]));
+		CompoundDataImporter importer = new CompoundDataImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]));
 		importer.init(args);
 		importer.run(RunType.getType(args[8]));
 	}
 
-	public TraitDataImporter(File input, boolean isUpdate, boolean deleteOnFail)
+	public CompoundDataImporter(File input, boolean isUpdate, boolean deleteOnFail)
 	{
 		super(input, isUpdate, deleteOnFail);
 	}
@@ -59,17 +58,14 @@ public class TraitDataImporter extends DatasheetImporter
 		try (Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
-			traitNameToId = context.selectFrom(PHENOTYPES)
-								   .fetchMap(PHENOTYPES.NAME, PHENOTYPES.ID);
+			compoundNameToId = context.selectFrom(PHENOTYPES)
+									  .fetchMap(PHENOTYPES.NAME, PHENOTYPES.ID);
 
-			traitNames = context.selectFrom(PHENOTYPES)
-								.fetchSet(PHENOTYPES.NAME);
+			compoundNames = context.selectFrom(PHENOTYPES)
+								   .fetchSet(PHENOTYPES.NAME);
 
 			germplasmToId = context.selectFrom(GERMINATEBASE)
 								   .fetchMap(GERMINATEBASE.NAME, GERMINATEBASE.ID);
-
-			treatmentToId = context.selectFrom(TREATMENTS)
-								   .fetchMap(TREATMENTS.NAME, TREATMENTS.ID);
 		}
 		catch (SQLException e)
 		{
@@ -86,7 +82,7 @@ public class TraitDataImporter extends DatasheetImporter
 		try
 		{
 			wb.getSheets()
-			  .filter(s -> Objects.equals(s.getName(), "PHENOTYPES"))
+			  .filter(s -> Objects.equals(s.getName(), "COMPOUNDS"))
 			  .findFirst()
 			  .ifPresent(s ->
 			  {
@@ -99,7 +95,7 @@ public class TraitDataImporter extends DatasheetImporter
 					  // Check the sheet
 					  s.openStream()
 					   .skip(1)
-					   .forEachOrdered(this::checkTrait);
+					   .forEachOrdered(this::checkCompounds);
 				  }
 				  catch (IOException e)
 				  {
@@ -113,7 +109,7 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 		catch (NullPointerException e)
 		{
-			addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "'PHENOTYPES' sheet not found");
+			addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "'COMPOUNDS' sheet not found");
 		}
 	}
 
@@ -127,10 +123,10 @@ public class TraitDataImporter extends DatasheetImporter
 				return;
 			}
 
-			// Check trait names in data sheet against database and phenotypes sheet
+			// Check compound names in data sheet against database and phenotypes sheet
 			data.openStream()
 				.findFirst()
-				.ifPresent(this::checkTraitNames);
+				.ifPresent(this::checkCompoundNames);
 			// Check germplasm names in data sheet against the database
 			data.openStream()
 				.skip(1)
@@ -138,10 +134,10 @@ public class TraitDataImporter extends DatasheetImporter
 
 			if (dates != null)
 			{
-				// Check trait names in dates sheet against database and phenotypes sheet
+				// Check compound names in dates sheet against database and phenotypes sheet
 				dates.openStream()
 					 .findFirst()
-					 .ifPresent(this::checkTraitNames);
+					 .ifPresent(this::checkCompoundNames);
 
 				// Check germplasm names in dates sheet against the database
 				dates.openStream()
@@ -151,13 +147,48 @@ public class TraitDataImporter extends DatasheetImporter
 				List<Row> dataRows = data.read();
 				List<Row> datesRows = dates.read();
 
+				// If there is data
+				if (!CollectionUtils.isEmpty(dataRows) && dataRows.size() > 1)
+				{
+					// Check each data row, skipping the headers
+					for (int i = 1; i < dataRows.size(); i++)
+					{
+						Row row = dataRows.get(i);
+
+						// If it's empty, continue
+						if (allCellsEmpty(row))
+							continue;
+
+						// For each column, skipping the first
+						for (int j = 1; j < row.getPhysicalCellCount(); j++)
+						{
+							// Get the value
+							String value = getCellValue(row, j);
+
+							// If it's not blank
+							if (!StringUtils.isEmpty(value))
+							{
+								try
+								{
+									// Try to parse as a number
+									Double.parseDouble(value);
+								}
+								catch (IllegalArgumentException e)
+								{
+									addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, row.getRowNum(), "Column: " + (j + 1) + " Value: " + value);
+								}
+							}
+						}
+					}
+				}
+
 				// If there is date information
 				if (datesRows.size() > 1 && datesRows.get(0).getPhysicalCellCount() > 1)
 				{
 					// But there aren't the same number of germplasm
 					if (dataRows.size() != datesRows.size())
 					{
-						addImportResult(ImportStatus.TRIALS_DATA_DATE_IDENTIFIER_MISMATCH, 0, "Number of rows on DATA and RECORDING_DATE sheets don't match");
+						addImportResult(ImportStatus.COMPOUND_DATA_DATE_IDENTIFIER_MISMATCH, 0, "Number of rows on DATA and RECORDING_DATE sheets don't match");
 					}
 					else
 					{
@@ -166,7 +197,7 @@ public class TraitDataImporter extends DatasheetImporter
 						if (!areEqual)
 						{
 							// Header rows aren't identical
-							addImportResult(ImportStatus.TRIALS_DATA_DATE_HEADER_MISMATCH, 0, "DATA and RECORDING_DATES headers don't match");
+							addImportResult(ImportStatus.COMPOUND_DATA_DATE_HEADER_MISMATCH, 0, "DATA and RECORDING_DATES headers don't match");
 						}
 						else
 						{
@@ -176,7 +207,7 @@ public class TraitDataImporter extends DatasheetImporter
 
 								// Germplasm identifier isn't identical
 								if (!Objects.equals(getCellValue(dataRows.get(i), 0), getCellValue(datesRow, 0)))
-									addImportResult(ImportStatus.TRIALS_DATA_DATE_IDENTIFIER_MISMATCH, i, "DATA and RECORDING_DATES headers don't match");
+									addImportResult(ImportStatus.COMPOUND_DATA_DATE_IDENTIFIER_MISMATCH, i, "DATA and RECORDING_DATES headers don't match");
 
 								for (int c = 3; c < datesRow.getPhysicalCellCount(); c++)
 								{
@@ -194,10 +225,13 @@ public class TraitDataImporter extends DatasheetImporter
 				}
 			}
 		}
-		catch (IOException e)
+		catch (
+			IOException e)
+
 		{
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
+
 	}
 
 	private void checkGermplasmName(Row r)
@@ -208,17 +242,17 @@ public class TraitDataImporter extends DatasheetImporter
 		String germplasmName = getCellValue(r, 0);
 
 		if (!germplasmToId.containsKey(germplasmName))
-			addImportResult(ImportStatus.TRIALS_INVALID_GERMPLASM, r.getRowNum(), germplasmName);
+			addImportResult(ImportStatus.COMPOUND_INVALID_GERMPLASM, r.getRowNum(), germplasmName);
 	}
 
-	private void checkTraitNames(Row r)
+	private void checkCompoundNames(Row r)
 	{
 		for (int i = 3; i < r.getPhysicalCellCount(); i++)
 		{
-			String traitName = getCellValue(r, i);
-			if (!traitNames.contains(traitName))
+			String compoundName = getCellValue(r, i);
+			if (!compoundNames.contains(compoundName))
 			{
-				addImportResult(ImportStatus.TRIALS_MISSING_TRAIT_DECLARATION, 0, traitName);
+				addImportResult(ImportStatus.COMPOUND_MISSING_COMPOUND_DECLARATION, 0, compoundName);
 			}
 		}
 	}
@@ -246,23 +280,22 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 	}
 
-	private void checkTrait(Row r)
+	private void checkCompounds(Row r)
 	{
 		if (allCellsEmpty(r))
 			return;
 
 		String name = getCellValue(r, columnNameToIndex, "Name");
 		String description = getCellValue(r, columnNameToIndex, "Description");
-		String shortName = getCellValue(r, columnNameToIndex, "Short Name");
-		String dataType = getCellValue(r, columnNameToIndex, "Data Type");
+		String molecularFormula = getCellValue(r, columnNameToIndex, "Molecular Formula");
+		String compoundClass = getCellValue(r, columnNameToIndex, "Class");
+		String monoisotopicMass = getCellValue(r, columnNameToIndex, "Monoisotopic Mass");
+		String averageMass = getCellValue(r, columnNameToIndex, "Average Mass");
 		String unitAbbr = getCellValue(r, columnNameToIndex, "Unit Abbreviation");
 		String unitDescription = getCellValue(r, columnNameToIndex, "Unit Descriptions");
 
 		if (StringUtils.isEmpty(name))
 			addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Name: " + name);
-
-		if (!StringUtils.isEmpty(shortName) && shortName.length() > 10)
-			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Short name: " + shortName + " exceeds 10 characters.");
 
 		if (!StringUtils.isEmpty(description) && description.length() > 255)
 			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Description: " + description + " exceeds 255 characters.");
@@ -270,20 +303,41 @@ public class TraitDataImporter extends DatasheetImporter
 		if (!StringUtils.isEmpty(unitDescription) && unitDescription.length() > 255)
 			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Unit Descriptions: " + unitDescription + " exceeds 255 characters.");
 
-		try
+		if (!StringUtils.isEmpty(molecularFormula) && molecularFormula.length() > 255)
+			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Molecular Formula: " + molecularFormula + " exceeds 255 characters.");
+
+		if (!StringUtils.isEmpty(compoundClass) && compoundClass.length() > 255)
+			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Class: " + compoundClass + " exceeds 255 characters.");
+
+		if (!StringUtils.isEmpty(monoisotopicMass))
 		{
-			PhenotypesDatatype.valueOf(dataType + "_");
+			try
+			{
+				Double.parseDouble(monoisotopicMass);
+			}
+			catch (IllegalArgumentException e)
+			{
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), monoisotopicMass);
+			}
 		}
-		catch (IllegalArgumentException e)
+
+		if (!StringUtils.isEmpty(averageMass))
 		{
-			addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_DATATYPE, r.getRowNum(), "Data Type: " + dataType);
+			try
+			{
+				Double.parseDouble(averageMass);
+			}
+			catch (IllegalArgumentException e)
+			{
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), averageMass);
+			}
 		}
 
 		if (!StringUtils.isEmpty(unitAbbr) && unitAbbr.length() > 10)
 			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Unit Abbreviation: " + unitAbbr + " exceeds 10 characters.");
 
 		// Remember the name, cause we need to check the data sheets against them
-		traitNames.add(name);
+		compoundNames.add(name);
 	}
 
 	@Override
@@ -294,7 +348,7 @@ public class TraitDataImporter extends DatasheetImporter
 		try (Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
-			wb.findSheet("PHENOTYPES")
+			wb.findSheet("COMPOUNDS")
 			  .ifPresent(s -> {
 				  try
 				  {
@@ -308,11 +362,8 @@ public class TraitDataImporter extends DatasheetImporter
 					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 				  }
 
-				  importTraits(context, s);
+				  importCompounds(context, s);
 			  });
-
-			wb.findSheet("DATA")
-			  .ifPresent(s -> importGermplasmAndTreatments(context, s));
 
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			Sheet dates = wb.findSheet("RECORDING_DATES").orElse(null);
@@ -325,63 +376,7 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 	}
 
-	private void importGermplasmAndTreatments(DSLContext context, Sheet s)
-	{
-		try
-		{
-			s.openStream()
-			 .skip(1)
-			 .forEachOrdered(r -> {
-				 if (allCellsEmpty(r))
-					 return;
-
-				 String germplasm = getCellValue(r, 0);
-				 String rep = getCellValue(r, 1);
-				 String treatment = getCellValue(r, 2);
-
-				 if (!StringUtils.isEmpty(rep))
-				 {
-					 String sampleName = germplasm + "-" + dataset.getId() + "-" + rep;
-
-					 if (!germplasmToId.containsKey(sampleName))
-					 {
-						 Integer germplasmId = germplasmToId.get(germplasm);
-
-						 GerminatebaseRecord sample = context.newRecord(GERMINATEBASE);
-						 sample.setEntityparentId(germplasmId);
-						 sample.setEntitytypeId(2);
-						 sample.setName(sampleName);
-						 sample.setGeneralIdentifier(sampleName);
-						 sample.setNumber(sampleName);
-						 sample.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-						 sample.store();
-
-						 germplasmToId.put(sampleName, sample.getId());
-					 }
-				 }
-
-				 if (!StringUtils.isEmpty(treatment) && !treatmentToId.containsKey(treatment))
-				 {
-					 TreatmentsRecord tRecord = context.newRecord(TREATMENTS);
-					 tRecord.setName(treatment);
-					 tRecord.setDescription(treatment);
-					 tRecord.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-					 tRecord.store();
-
-					 treatmentToId.put(treatment, tRecord.getId());
-				 }
-			 });
-		}
-		catch (
-			IOException e)
-
-		{
-			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-		}
-
-	}
-
-	private void importTraits(DSLContext context, Sheet s)
+	private void importCompounds(DSLContext context, Sheet s)
 	{
 		try
 		{
@@ -392,20 +387,11 @@ public class TraitDataImporter extends DatasheetImporter
 					 return;
 
 				 String name = getCellValue(r, columnNameToIndex, "Name");
-				 String shortName = getCellValue(r, columnNameToIndex, "Short Name");
 				 String description = getCellValue(r, columnNameToIndex, "Description");
-				 String dataTypeString = getCellValue(r, columnNameToIndex, "Data Type");
-				 PhenotypesDatatype dataType = PhenotypesDatatype.char_;
-				 if (!StringUtils.isEmpty(dataTypeString))
-				 {
-					 try
-					 {
-						 dataType = PhenotypesDatatype.valueOf(dataTypeString + "_");
-					 }
-					 catch (IllegalArgumentException | NullPointerException e)
-					 {
-					 }
-				 }
+				 String molecularFormula = getCellValue(r, columnNameToIndex, "Molecular Formula");
+				 String compoundClass = getCellValue(r, columnNameToIndex, "Class");
+				 BigDecimal monoisotopicMass = getCellValueBigDecimal(r, columnNameToIndex, "Monoisotopic Mass");
+				 BigDecimal averageMass = getCellValueBigDecimal(r, columnNameToIndex, "Average Mass");
 
 				 String unitName = getCellValue(r, columnNameToIndex, "Unit Name");
 				 String unitAbbr = getCellValue(r, columnNameToIndex, "Unit Abbreviation");
@@ -426,26 +412,30 @@ public class TraitDataImporter extends DatasheetImporter
 					 unit.store();
 				 }
 
-				 PhenotypesRecord trait = context.selectFrom(PHENOTYPES)
-												 .where(PHENOTYPES.NAME.isNotDistinctFrom(name))
-												 .and(PHENOTYPES.SHORT_NAME.isNotDistinctFrom(shortName))
-												 .and(PHENOTYPES.DESCRIPTION.isNotDistinctFrom(description))
-												 .and(PHENOTYPES.DATATYPE.isNotDistinctFrom(dataType))
-												 .and(PHENOTYPES.UNIT_ID.isNotDistinctFrom(unit == null ? null : unit.getId()))
-												 .fetchAny();
+				 CompoundsRecord compound = context.selectFrom(COMPOUNDS)
+												   .where(COMPOUNDS.NAME.isNotDistinctFrom(name))
+												   .and(COMPOUNDS.DESCRIPTION.isNotDistinctFrom(description))
+												   .and(COMPOUNDS.MOLECULAR_FORMULA.isNotDistinctFrom(molecularFormula))
+												   .and(COMPOUNDS.MONOISOTOPIC_MASS.isNotDistinctFrom(monoisotopicMass))
+												   .and(COMPOUNDS.AVERAGE_MASS.isNotDistinctFrom(averageMass))
+												   .and(COMPOUNDS.COMPOUND_CLASS.isNotDistinctFrom(compoundClass))
+												   .and(COMPOUNDS.UNIT_ID.isNotDistinctFrom(unit == null ? null : unit.getId()))
+												   .fetchAny();
 
-				 if (trait == null)
+				 if (compound == null)
 				 {
-					 trait = context.newRecord(PHENOTYPES);
-					 trait.setName(name);
-					 trait.setShortName(shortName);
-					 trait.setDescription(description);
-					 trait.setDatatype(dataType);
-					 trait.setUnitId(unit == null ? null : unit.getId());
-					 trait.store();
+					 compound = context.newRecord(COMPOUNDS);
+					 compound.setName(name);
+					 compound.setDescription(description);
+					 compound.setMolecularFormula(molecularFormula);
+					 compound.setMonoisotopicMass(monoisotopicMass);
+					 compound.setAverageMass(averageMass);
+					 compound.setCompoundClass(compoundClass);
+					 compound.setUnitId(unit == null ? null : unit.getId());
+					 compound.store();
 				 }
 
-				 traitNameToId.put(trait.getName(), trait.getId());
+				 compoundNameToId.put(compound.getName(), compound.getId());
 			 });
 		}
 		catch (IOException e)
@@ -467,7 +457,7 @@ public class TraitDataImporter extends DatasheetImporter
 			if (datesRows != null && (datesRows.size() < 2 || datesRows.get(0).getPhysicalCellCount() < 2))
 				datesRows = null;
 
-			List<PhenotypedataRecord> newData = new ArrayList<>();
+			List<CompounddataRecord> newData = new ArrayList<>();
 
 			Row headerRow = dataRows.get(0);
 
@@ -480,28 +470,15 @@ public class TraitDataImporter extends DatasheetImporter
 					continue;
 
 				String germplasmName = getCellValue(dataRow, 0);
-				String rep = getCellValue(dataRow, 1);
-				Integer germplasmId;
+				Integer germplasmId = germplasmToId.get(germplasmName);
 
-				// If it's a rep, adjust the name
-				if (!StringUtils.isEmpty(rep))
-					germplasmId = germplasmToId.get(germplasmName + "-" + dataset.getId() + "-" + rep);
-				else
-					germplasmId = germplasmToId.get(germplasmName);
-
-				String treatmentName = getCellValue(dataRow, 2);
-				Integer treatmentId = null;
-
-				if (!StringUtils.isEmpty(treatmentName))
-					treatmentId = treatmentToId.get(treatmentName);
-
-				for (int c = 3; c < dataRow.getPhysicalCellCount(); c++)
+				for (int c = 1; c < dataRow.getPhysicalCellCount(); c++)
 				{
-					Integer traitId = traitNameToId.get(getCellValue(headerRow, c));
+					Integer compoundId = compoundNameToId.get(getCellValue(headerRow, c));
 
-					String value = getCellValue(dataRow, c);
+					BigDecimal value = getCellValueBigDecimal(dataRow, c);
 
-					if (StringUtils.isEmpty(value))
+					if (value == null)
 						continue;
 
 					Date date = null;
@@ -509,12 +486,11 @@ public class TraitDataImporter extends DatasheetImporter
 					if (datesRow != null)
 						date = getCellValueDate(datesRow, c);
 
-					PhenotypedataRecord record = context.newRecord(PHENOTYPEDATA);
+					CompounddataRecord record = context.newRecord(COMPOUNDDATA);
 					record.setGerminatebaseId(germplasmId);
-					record.setPhenotypeId(traitId);
-					record.setTreatmentId(treatmentId);
+					record.setCompoundId(compoundId);
 					record.setDatasetId(dataset.getId());
-					record.setPhenotypeValue(value);
+					record.setCompoundValue(value);
 					if (date != null)
 						record.setRecordingDate(new Timestamp(date.getTime()));
 
@@ -552,6 +528,6 @@ public class TraitDataImporter extends DatasheetImporter
 	@Override
 	protected int getDatasetTypeId()
 	{
-		return 3;
+		return 6;
 	}
 }

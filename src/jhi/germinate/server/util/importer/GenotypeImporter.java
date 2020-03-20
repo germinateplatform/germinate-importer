@@ -143,17 +143,14 @@ public class GenotypeImporter extends DatasheetImporter
 
 		exportData(wb);
 
+		flatFileImporter.setDataset(dataset);
 		flatFileImporter.importFile();
 	}
 
 	@Override
 	protected void updateFile(ReadableWorkbook wb)
 	{
-		super.updateFile(wb);
-
-		exportData(wb);
-
-		flatFileImporter.updateFile();
+		this.importFile(wb);
 	}
 
 	@Override

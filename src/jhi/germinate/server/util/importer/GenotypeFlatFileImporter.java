@@ -37,7 +37,6 @@ public class GenotypeFlatFileImporter
 	protected boolean                         isUpdate;
 	private   boolean                         deleteOnFail;
 	protected File                            input;
-	private   File                            forHdf5Conversion;
 	private   File                            hdf5;
 	private   Map<ImportStatus, ImportResult> errorMap      = new HashMap<>();
 
@@ -49,6 +48,8 @@ public class GenotypeFlatFileImporter
 
 	private Set<Integer> markerIdsInFile    = new HashSet<>();
 	private Set<Integer> germplasmIdsInFile = new HashSet<>();
+
+	private DatasetsRecord dataset;
 
 	public static void main(String[] args)
 	{
@@ -233,13 +234,11 @@ public class GenotypeFlatFileImporter
 
 	protected void importFile()
 	{
-		this.forHdf5Conversion = new File(input.getParentFile(), "for-conversion-" + input.getName());
 		// We need to navigate to the correct location for the resulting hdf5 file
 		this.hdf5 = new File(new File(new File(input.getParentFile().getParentFile().getParentFile(), "data"), "genotypes"), input.getName() + ".hdf5");
 		this.hdf5.getParentFile().mkdirs();
 
 		try (BufferedReader br = Files.newBufferedReader(this.input.toPath(), StandardCharsets.UTF_8);
-			 BufferedWriter bw = Files.newBufferedWriter(this.forHdf5Conversion.toPath(), StandardCharsets.UTF_8);
 			 Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
@@ -247,18 +246,10 @@ public class GenotypeFlatFileImporter
 			line = br.readLine();
 			line = br.readLine();
 
-			// Write the markers
-			bw.write(line);
-			bw.newLine();
-
 			while ((line = br.readLine()) != null)
 			{
 				if (StringUtils.isEmpty(line))
 					continue;
-
-				// Write the data
-				bw.write(line);
-				bw.newLine();
 
 				// Remember the germplasm ids
 				String germplasm = line.substring(0, line.indexOf("\t"));
@@ -321,6 +312,7 @@ public class GenotypeFlatFileImporter
 				else
 				{
 					markerIds[i] = id;
+					markerIdsInFile.add(id);
 				}
 			}
 
@@ -373,17 +365,35 @@ public class GenotypeFlatFileImporter
 				}
 			}
 
-			ExperimentsRecord experiment = context.newRecord(EXPERIMENTS);
-			experiment.setExperimentName(headerMapping.get("dataset"));
-			experiment.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-			experiment.store();
+			ExperimentsRecord experiment = context.selectFrom(EXPERIMENTS)
+												  .where(EXPERIMENTS.EXPERIMENT_NAME.eq(headerMapping.get("dataset")))
+												  .fetchAny();
 
-			DatasetsRecord dataset = context.newRecord(DATASETS);
-			dataset.setExperimentId(experiment.getId());
-			dataset.setDatasettypeId(1);
-			dataset.setName(headerMapping.get("dataset"));
-			dataset.setDescription(headerMapping.get("dataset"));
-			dataset.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			if (experiment == null)
+			{
+				experiment = context.newRecord(EXPERIMENTS);
+				experiment.setExperimentName(headerMapping.get("dataset"));
+				experiment.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+				experiment.store();
+			}
+
+			if (dataset == null)
+			{
+				dataset = context.newRecord(DATASETS);
+				dataset.setExperimentId(experiment.getId());
+				dataset.setDatasettypeId(1);
+				dataset.setName(headerMapping.get("dataset"));
+				dataset.setDescription(headerMapping.get("dataset"));
+				dataset.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			}
+			else
+			{
+				// We need to fetch it again, because its database connection has been closed and updates won't be possible
+				dataset = context.selectFrom(DATASETS)
+					.where(DATASETS.ID.eq(dataset.getId()))
+					.fetchAny();
+			}
+
 			dataset.setSourceFile(input.getName() + ".hdf5");
 			dataset.store();
 
@@ -430,7 +440,9 @@ public class GenotypeFlatFileImporter
 					   .execute();
 			}
 
-			FJTabbedToHdf5Converter converter = new FJTabbedToHdf5Converter(forHdf5Conversion, hdf5);
+			FJTabbedToHdf5Converter converter = new FJTabbedToHdf5Converter(input, hdf5);
+			// Tell it to skip the map definition. It skips the other headers automatically anyway.
+			converter.setSkipLines(2);
 			converter.convertToHdf5();
 		}
 		catch (IOException | SQLException e)
@@ -452,6 +464,11 @@ public class GenotypeFlatFileImporter
 			markerIds[entry.getValue()] = markerToId.get(entry.getKey().getMarkerName());
 			markerIdsInFile.add(markerIds[entry.getValue()]);
 		}
+	}
+
+	public void setDataset(DatasetsRecord dataset)
+	{
+		this.dataset = dataset;
 	}
 
 	protected void updateFile()
