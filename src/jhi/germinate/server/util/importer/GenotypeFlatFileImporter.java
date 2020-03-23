@@ -179,7 +179,7 @@ public class GenotypeFlatFileImporter
 				String germplasm = line.substring(0, line.indexOf("\t"));
 
 				if (!germplasmToId.containsKey(germplasm))
-					addImportResult(ImportStatus.GENOTYPE_INVALID_GERMPLASM, counter, germplasm);
+					addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, counter, germplasm);
 
 				counter++;
 			} while ((line = br.readLine()) != null);

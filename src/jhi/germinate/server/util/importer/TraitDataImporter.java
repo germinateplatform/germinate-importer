@@ -208,7 +208,7 @@ public class TraitDataImporter extends DatasheetImporter
 		String germplasmName = getCellValue(r, 0);
 
 		if (!germplasmToId.containsKey(germplasmName))
-			addImportResult(ImportStatus.TRIALS_INVALID_GERMPLASM, r.getRowNum(), germplasmName);
+			addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, r.getRowNum(), germplasmName);
 	}
 
 	private void checkTraitNames(Row r)
