@@ -420,7 +420,7 @@ public class McpdImporter extends AbstractImporter
 					  s.openStream()
 					   .skip(1)
 					   .filter(r -> getCellValue(r, columnNameToIndex, "Entity parent ACCENUMB") != null)
-					   .forEachOrdered(this::setEntityParent);
+					   .forEachOrdered(r -> setEntityParent(context, r));
 				  }
 				  catch (IOException e)
 				  {
@@ -470,6 +470,20 @@ public class McpdImporter extends AbstractImporter
 					  s.openStream()
 					   .skip(1)
 					   .forEachOrdered(r -> insert(context, r, true));
+				  }
+				  catch (IOException e)
+				  {
+					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				  }
+
+				  // Set entity parents
+				  try
+				  {
+					  // Import the sheet
+					  s.openStream()
+					   .skip(1)
+					   .filter(r -> getCellValue(r, columnNameToIndex, "Entity parent ACCENUMB") != null)
+					   .forEachOrdered(r -> setEntityParent(context, r));
 				  }
 				  catch (IOException e)
 				  {
@@ -546,7 +560,7 @@ public class McpdImporter extends AbstractImporter
 		 });
 	}
 
-	private void setEntityParent(Row r)
+	private void setEntityParent(DSLContext context, Row r)
 	{
 		Integer parentId = accenumbToId.get(getCellValue(r, columnNameToIndex, "Entity parent ACCENUMB"));
 		Integer childId = accenumbToId.get(getCellValue(r, columnNameToIndex, McpdField.ACCENUMB.name()));
@@ -556,8 +570,9 @@ public class McpdImporter extends AbstractImporter
 
 		if (parent != null && child != null)
 		{
+			child = context.newRecord(GERMINATEBASE, child);
 			child.setEntityparentId(parent.getId());
-			child.store(GERMINATEBASE.ENTITYPARENT_ID);
+			child.update(GERMINATEBASE.ENTITYPARENT_ID);
 			germinatebaseRecords.put(child.getId(), child);
 		}
 		else
@@ -618,7 +633,7 @@ public class McpdImporter extends AbstractImporter
 			// The existing record from the database
 			GerminatebaseRecord existing = germinatebaseRecords.get(id);
 
-			writeUpdate(context.newRecord(GERMINATEBASE, existing), newStuff, GERMINATEBASE.ID);
+			insert.germinatebase = (GerminatebaseRecord) writeUpdate(context.newRecord(GERMINATEBASE, existing), newStuff, GERMINATEBASE.ID);
 		}
 		else
 		{
@@ -644,7 +659,7 @@ public class McpdImporter extends AbstractImporter
 		}
 	}
 
-	private void writeUpdate(UpdatableRecord existing, UpdatableRecord newStuff, Field<?> idColumn)
+	private UpdatableRecord writeUpdate(UpdatableRecord existing, UpdatableRecord newStuff, Field<?> idColumn)
 	{
 		// Load the changes into the record
 		List<Field<?>> fields = new ArrayList<>(Arrays.asList(existing.fields()));
@@ -677,6 +692,8 @@ public class McpdImporter extends AbstractImporter
 
 		// Update the changed fields
 		existing.update(toUpdate);
+
+		return existing;
 	}
 
 	private void getOrCreateRemarks(DSLContext context, Germplasm germplasm)
