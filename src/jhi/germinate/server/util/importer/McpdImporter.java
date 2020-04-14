@@ -466,6 +466,10 @@ public class McpdImporter extends AbstractImporter
 			  .ifPresent(s -> {
 				  try
 				  {
+					  // Map headers to their index
+					  s.openStream()
+					   .findFirst()
+					   .ifPresent(this::getHeaderMapping);
 					  // Update the sheet
 					  s.openStream()
 					   .skip(1)
