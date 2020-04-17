@@ -948,6 +948,9 @@ public class McpdImporter extends AbstractImporter
 		germplasm.taxonomy.setSubtaxaAuthor(getCellValue(r, columnNameToIndex, McpdField.SUBTAUTHOR.name()));
 		germplasm.taxonomy.setSubtaxa(getCellValue(r, columnNameToIndex, McpdField.SUBTAXA.name()));
 
+		if (germplasm.germinatebase.getEntitytypeId() == null)
+			germplasm.germinatebase.setEntitytypeId(1);
+
 		germplasm.location.setLocationtypeId(1);
 
 		germplasm.remarks = getCellValue(r, columnNameToIndex, McpdField.REMARKS.name());
