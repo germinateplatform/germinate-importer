@@ -1,10 +1,26 @@
-/.idea/
-/out/
-/test/
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
 
 # Package Files #
-/*.jar
-/*.war
-!germinate-importer.jar
+*.war
+*.ear
 
-/*.iml
+/.gradle/
+/gradle/
+
+/out/
+/test/
+/classes/
+/bin/
+/build/
+/web/WEB-INF/classes/
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# Custom ignores
+/gradle.properties
+/config.properties
+/*.jar
