@@ -22,7 +22,7 @@ public class GenotypeImporter extends DatasheetImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 9)
+		if (args.length != 10)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
 		GenotypeImporter importer = new GenotypeImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));

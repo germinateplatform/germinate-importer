@@ -53,7 +53,7 @@ public class GenotypeFlatFileImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 9)
+		if (args.length != 10)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
 		GenotypeFlatFileImporter importer = new GenotypeFlatFileImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]));

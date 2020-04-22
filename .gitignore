@@ -11,7 +11,7 @@
 /gradle/
 
 /out/
-/test/
+/src/test/
 /classes/
 /bin/
 /build/
