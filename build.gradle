@@ -9,15 +9,23 @@ compileJava.options.encoding = 'UTF-8'
 sourceCompatibility = 1.8
 
 repositories {
+    jcenter()
     mavenCentral()
+    maven {
+        url 'https://repo.spring.io/plugins-release/'
+    }
+    maven {
+        url 'http://maven.imagej.net/content/repositories/public/'
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'lib', include: ['*.jar'])
 
+    implementation 'ch.systems.cisd:jhdf5:14.12.0'
+    implementation 'org.flywaydb:flyway-core:6.3.3'
     implementation 'org.jooq:jooq:3.11.10'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'mysql:mysql-connector-java:8.0.16'
     implementation 'org.dhatim:fastexcel-reader:0.10.14'
-
 }

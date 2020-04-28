@@ -243,10 +243,10 @@ public class GenotypeFlatFileImporter
 			 DSLContext context = Database.getContext(conn))
 		{
 			String line = readHeaders(br);
-			line = br.readLine();
-			line = br.readLine();
+//			line = br.readLine();
+//			line = br.readLine();
 
-			while ((line = br.readLine()) != null)
+			do
 			{
 				if (StringUtils.isEmpty(line))
 					continue;
@@ -255,6 +255,7 @@ public class GenotypeFlatFileImporter
 				String germplasm = line.substring(0, line.indexOf("\t"));
 				germplasmIdsInFile.add(germplasmToId.get(germplasm));
 			}
+			while ((line = br.readLine()) != null);
 
 			String markerTypeName = headerMapping.get("markerType");
 			MarkertypesRecord markerType = context.selectFrom(MARKERTYPES)
@@ -355,6 +356,7 @@ public class GenotypeFlatFileImporter
 					{
 						context.batchStore(newDataToIndices)
 							   .execute();
+						newDataToIndices.clear();
 					}
 				}
 
@@ -362,6 +364,7 @@ public class GenotypeFlatFileImporter
 				{
 					context.batchStore(newDataToIndices)
 						   .execute();
+					newDataToIndices.clear();
 				}
 			}
 
@@ -390,8 +393,8 @@ public class GenotypeFlatFileImporter
 			{
 				// We need to fetch it again, because its database connection has been closed and updates won't be possible
 				dataset = context.selectFrom(DATASETS)
-					.where(DATASETS.ID.eq(dataset.getId()))
-					.fetchAny();
+								 .where(DATASETS.ID.eq(dataset.getId()))
+								 .fetchAny();
 			}
 
 			dataset.setSourceFile(input.getName() + ".hdf5");
@@ -411,7 +414,7 @@ public class GenotypeFlatFileImporter
 
 			while (startPosition < dsMembers.size())
 			{
-				List<DatasetmembersRecord> batch = dsMembers.subList(startPosition, Math.min(10000, dsMembers.size() - startPosition));
+				List<DatasetmembersRecord> batch = dsMembers.subList(startPosition, startPosition + Math.min(10000, dsMembers.size() - startPosition));
 				startPosition += batch.size();
 
 				context.batchStore(batch)
@@ -433,7 +436,7 @@ public class GenotypeFlatFileImporter
 
 			while (startPosition < dsMembers.size())
 			{
-				List<DatasetmembersRecord> batch = dsMembers.subList(startPosition, Math.min(10000, dsMembers.size() - startPosition));
+				List<DatasetmembersRecord> batch = dsMembers.subList(startPosition, startPosition + Math.min(10000, dsMembers.size() - startPosition));
 				startPosition += batch.size();
 
 				context.batchStore(batch)
