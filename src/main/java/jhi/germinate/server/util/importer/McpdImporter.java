@@ -266,7 +266,7 @@ public class McpdImporter extends AbstractImporter
 		// Check if country is a valid 3-letter code
 		String countryCode = getCellValue(r, columnNameToIndex, McpdField.ORIGCTY.name());
 		if (!StringUtils.isEmpty(countryCode) && !countryCodeToId.containsKey(countryCode))
-			addImportResult(ImportStatus.MCPD_INVALID_COUNTRY_CODE, r.getRowNum(), countryCode);
+			addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), countryCode);
 
 
 		// Check if declatitute is a number
