@@ -100,6 +100,7 @@ public class GenotypeImporter extends DatasheetImporter
 			  .ifPresent(s -> {
 				  try
 				  {
+					  final long markerCount = s.read().get(2).getPhysicalCellCount();
 					  s.openStream()
 					   .forEachOrdered(r -> {
 						   if (allCellsEmpty(r))
@@ -107,16 +108,15 @@ public class GenotypeImporter extends DatasheetImporter
 
 						   try
 						   {
-							   bw.write(r.stream()
-										 .map(c -> {
-											 String value = getCellValue(c);
+							   // We have to iterate them like this, because simply streaming over all cells would exclude blank cells at the end.
+							   List<String> values = new ArrayList<>();
 
-											 if (value == null)
-												 value = "";
+							   for (int i = 0; i < markerCount; i++)
+								   values.add(getCellValue(r, i));
 
-											 return value;
-										 })
-										 .collect(Collectors.joining("\t", "", System.lineSeparator())));
+							   bw.write(values.stream()
+											  .map(c -> c == null ? "" : c)
+											  .collect(Collectors.joining("\t", "", System.lineSeparator())));
 						   }
 						   catch (IOException e)
 						   {

@@ -315,6 +315,7 @@ public class PedigreeImporter extends AbstractImporter
 						   PedigreedefinitionsRecord def = context.newRecord(PEDIGREEDEFINITIONS);
 						   def.setGerminatebaseId(germplasmId);
 						   def.setPedigreenotationId(notationId);
+						   def.setDefinition(str);
 						   def.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 						   def.store();
 					   }

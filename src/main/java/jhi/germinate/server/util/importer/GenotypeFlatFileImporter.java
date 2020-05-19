@@ -385,6 +385,8 @@ public class GenotypeFlatFileImporter
 				dataset = context.newRecord(DATASETS);
 				dataset.setExperimentId(experiment.getId());
 				dataset.setDatasettypeId(1);
+				// Hide it initially. We don't want people using half-imported data.
+				dataset.setDatasetStateId(3);
 				dataset.setName(headerMapping.get("dataset"));
 				dataset.setDescription(headerMapping.get("dataset"));
 				dataset.setCreatedOn(new Timestamp(System.currentTimeMillis()));
@@ -447,6 +449,10 @@ public class GenotypeFlatFileImporter
 			// Tell it to skip the map definition. It skips the other headers automatically anyway.
 			converter.setSkipLines(2);
 			converter.convertToHdf5();
+
+			// Now set it to be public. Everything has been imported successfully.
+			dataset.setDatasetStateId(1);
+			dataset.store(DATASETS.DATASET_STATE_ID);
 		}
 		catch (IOException | SQLException e)
 		{
