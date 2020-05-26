@@ -36,9 +36,9 @@ public class PedigreeImporter extends AbstractImporter
 	public static String FIELD_NOTATION = "Pedigree Notation";
 
 
-	private Map<String, Integer> germplasmToId;
-	private Map<String, Integer> pedigreeDescriptionToId;
-	private Map<String, Integer> notationToId;
+	private Map<String, Integer> germplasmToId           = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer> pedigreeDescriptionToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer> notationToId            = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	public static void main(String[] args)
 	{
@@ -61,16 +61,16 @@ public class PedigreeImporter extends AbstractImporter
 		try (Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
-			germplasmToId = context.selectFrom(GERMINATEBASE)
-								   .fetchMap(GERMINATEBASE.NAME, GERMINATEBASE.ID);
+			context.selectFrom(GERMINATEBASE)
+				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 
 			Field<String> concat = PEDIGREEDESCRIPTIONS.NAME.concat("|").concat(PEDIGREEDESCRIPTIONS.AUTHOR);
 			pedigreeDescriptionToId = context.select(concat, PEDIGREEDESCRIPTIONS.ID)
 											 .from(PEDIGREEDESCRIPTIONS)
 											 .fetchMap(concat, PEDIGREEDESCRIPTIONS.ID);
 
-			notationToId = context.selectFrom(PEDIGREENOTATIONS)
-								  .fetchMap(PEDIGREENOTATIONS.NAME, PEDIGREENOTATIONS.ID);
+			context.selectFrom(PEDIGREENOTATIONS)
+				   .forEach(p -> notationToId.put(p.getName(), p.getId()));
 		}
 		catch (SQLException e)
 		{
@@ -99,7 +99,7 @@ public class PedigreeImporter extends AbstractImporter
 				{
 					Row headers = rows.get(0);
 
-					if (headers.getPhysicalCellCount() < 6)
+					if (headers.getCellCount() < 6)
 						addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, "Headers in DATA sheet don't match template.");
 					else
 					{
@@ -167,7 +167,7 @@ public class PedigreeImporter extends AbstractImporter
 				{
 					Row headers = rows.get(0);
 
-					if (headers.getPhysicalCellCount() < 3)
+					if (headers.getCellCount() < 3)
 						addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, "Headers in DATA-STRING sheet don't match template.");
 					else
 					{

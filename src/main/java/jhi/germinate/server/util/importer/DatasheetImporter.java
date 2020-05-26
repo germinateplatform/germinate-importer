@@ -549,10 +549,10 @@ public abstract class DatasheetImporter extends AbstractImporter
 
 	protected boolean areEqual(Row one, Row two)
 	{
-		if (one.getPhysicalCellCount() != two.getPhysicalCellCount())
+		if (one.getCellCount() != two.getCellCount())
 			return false;
 
-		for (int i = 0; i < one.getPhysicalCellCount(); i++)
+		for (int i = 0; i < one.getCellCount(); i++)
 		{
 			if (!Objects.equals(getCellValue(one, i), getCellValue(two, i)))
 				return false;

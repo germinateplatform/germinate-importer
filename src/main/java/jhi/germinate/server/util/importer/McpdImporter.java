@@ -41,18 +41,18 @@ public class McpdImporter extends AbstractImporter
 	private static final String[] COLUMN_HEADERS = {"PUID", "INSTCODE", "ACCENUMB", "COLLNUMB", "COLLCODE", "COLLNAME", "COLLINSTADDRESS", "COLLMISSID", "GENUS", "SPECIES", "SPAUTHOR", "SUBTAXA", "SUBTAUTHOR", "CROPNAME", "ACCENAME", "ACQDATE", "ORIGCTY", "COLLSITE", "DECLATITUDE", "LATITUDE", "DECLONGITUDE", "LONGITUDE", "COORDUNCERT", "COORDDATUM", "GEOREFMETH", "ELEVATION", "COLLDATE", "BREDCODE", "BREDNAME", "SAMPSTAT", "ANCEST", "COLLSRC", "DONORCODE", "DONORNAME", "DONORNUMB", "OTHERNUMB", "DUPLSITE", "DUPLINSTNAME", "STORAGE", "MLSSTAT", "REMARKS"};
 
 	private Map<String, Integer>              columnNameToIndex;
-	private Set<String>                       foundAccenumb = new HashSet<>();
-	private List<Integer>                     attributeIds  = new ArrayList<>();
-	private Map<String, Integer>              gidToId;
-	private Map<String, Integer>              countryCodeToId;
-	private Map<String, Integer>              attributeToId;
-	private Map<String, Integer>              accenumbToId;
+	private Set<String>                       foundAccenumb   = new HashSet<>();
+	private List<Integer>                     attributeIds    = new ArrayList<>();
+	private Map<String, Integer>              gidToId         = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer>              countryCodeToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer>              attributeToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer>              accenumbToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<Integer, GerminatebaseRecord> germinatebaseRecords;
 	private Map<Integer, LocationsRecord>     locationRecords;
 	private List<Integer>                     validCollsrc;
 	private List<Integer>                     validSampstat;
 	private List<Integer>                     validStorage;
-	private Map<String, Integer>              entityTypeToId;
+	private Map<String, Integer>              entityTypeToId  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	public static void main(String[] args)
 	{
@@ -75,11 +75,11 @@ public class McpdImporter extends AbstractImporter
 		try (Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
-			gidToId = context.selectFrom(GERMINATEBASE)
-							 .fetchMap(GERMINATEBASE.GENERAL_IDENTIFIER, GERMINATEBASE.ID);
+			context.selectFrom(GERMINATEBASE)
+				   .forEach(g -> gidToId.put(g.getGeneralIdentifier(), g.getId()));
 
-			countryCodeToId = context.selectFrom(COUNTRIES)
-									 .fetchMap(COUNTRIES.COUNTRY_CODE3, COUNTRIES.ID);
+			context.selectFrom(COUNTRIES)
+				   .forEach(c -> countryCodeToId.put(c.getCountryCode3(), c.getId()));
 
 			validCollsrc = context.selectFrom(COLLECTINGSOURCES)
 								  .fetch(COLLECTINGSOURCES.ID);
@@ -90,14 +90,14 @@ public class McpdImporter extends AbstractImporter
 			validStorage = context.selectFrom(STORAGE)
 								  .fetch(STORAGE.ID);
 
-			entityTypeToId = context.selectFrom(ENTITYTYPES)
-									.fetchMap(ENTITYTYPES.NAME, ENTITYTYPES.ID);
+			context.selectFrom(ENTITYTYPES)
+				   .forEach(e -> entityTypeToId.put(e.getName(), e.getId()));
 
-			attributeToId = context.selectFrom(ATTRIBUTES)
-								   .fetchMap(ATTRIBUTES.NAME, ATTRIBUTES.ID);
+			context.selectFrom(ATTRIBUTES)
+				   .forEach(a -> attributeToId.put(a.getName(), a.getId()));
 
-			accenumbToId = context.selectFrom(GERMINATEBASE)
-								  .fetchMap(GERMINATEBASE.NAME, GERMINATEBASE.ID);
+			context.selectFrom(GERMINATEBASE)
+				   .forEach(g -> accenumbToId.put(g.getName(), g.getId()));
 
 			germinatebaseRecords = context.selectFrom(GERMINATEBASE)
 										  .fetchMap(GERMINATEBASE.ID);
@@ -183,7 +183,7 @@ public class McpdImporter extends AbstractImporter
 		try
 		{
 			// Map column names to their index
-			columnNameToIndex = IntStream.range(0, r.getPhysicalCellCount())
+			columnNameToIndex = IntStream.range(0, r.getCellCount())
 										 .boxed()
 										 .collect(Collectors.toMap(r::getCellText, Function.identity()));
 

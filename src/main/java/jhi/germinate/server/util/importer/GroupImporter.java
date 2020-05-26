@@ -24,9 +24,9 @@ import static jhi.germinate.server.database.tables.Markers.*;
  */
 public class GroupImporter extends AbstractImporter
 {
-	private Map<String, Integer> accenumbToId     = new HashMap<>();
-	private Map<String, Integer> markerNameToId   = new HashMap<>();
-	private Map<String, Integer> locationNameToId = new HashMap<>();
+	private Map<String, Integer> accenumbToId     = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer> markerNameToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	private Map<Integer, Map<Integer, Integer>> groupIndexToIdPerType = new HashMap<>();
 
@@ -57,8 +57,8 @@ public class GroupImporter extends AbstractImporter
 		try (Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
-			accenumbToId = context.selectFrom(GERMINATEBASE)
-								  .fetchMap(GERMINATEBASE.NAME, GERMINATEBASE.ID);
+			context.selectFrom(GERMINATEBASE)
+				   .forEach(g -> accenumbToId.put(g.getName(), g.getId()));
 
 			context.selectFrom(MARKERS)
 				   .forEach(m -> markerNameToId.put(m.getMarkerName(), m.getId()));
@@ -89,7 +89,7 @@ public class GroupImporter extends AbstractImporter
 										.limit(3)
 										.collect(Collectors.toList());
 
-					  if (rows.get(1).getPhysicalCellCount() != rows.get(2).getPhysicalCellCount())
+					  if (rows.get(1).getCellCount() != rows.get(2).getCellCount())
 						  addImportResult(ImportStatus.GROUP_HEADER_MISMATCH, 1, "Mismatch between germplasm group names and group visibility.");
 
 					  checkGroupVisibility(rows.get(1));
@@ -123,7 +123,7 @@ public class GroupImporter extends AbstractImporter
 										.limit(3)
 										.collect(Collectors.toList());
 
-					  if (rows.get(1).getPhysicalCellCount() != rows.get(2).getPhysicalCellCount())
+					  if (rows.get(1).getCellCount() != rows.get(2).getCellCount())
 						  addImportResult(ImportStatus.GROUP_HEADER_MISMATCH, 1, "Mismatch between marker group names and group visibility.");
 
 					  checkGroupVisibility(rows.get(1));
@@ -157,7 +157,7 @@ public class GroupImporter extends AbstractImporter
 										.limit(3)
 										.collect(Collectors.toList());
 
-					  if (rows.get(1).getPhysicalCellCount() != rows.get(2).getPhysicalCellCount())
+					  if (rows.get(1).getCellCount() != rows.get(2).getCellCount())
 						  addImportResult(ImportStatus.GROUP_HEADER_MISMATCH, 1, "Mismatch between location group names and group visibility.");
 
 					  checkGroupVisibility(rows.get(1));
@@ -264,11 +264,11 @@ public class GroupImporter extends AbstractImporter
 		Row visibility = rows.get(1);
 		Row names = rows.get(2);
 
-		for (int i = 1; i < names.getPhysicalCellCount(); i++)
+		for (int i = 1; i < names.getCellCount(); i++)
 		{
 			GroupsRecord group = context.newRecord(GROUPS);
 			group.setName(getCellValue(names, i));
-			group.setDescription(descriptions.getPhysicalCellCount() > i ? getCellValue(descriptions, i) : null);
+			group.setDescription(descriptions.getCellCount() > i ? getCellValue(descriptions, i) : null);
 			group.setGrouptypeId(groupTypeId);
 			group.setCreatedBy(userId);
 			group.setVisibility(Objects.equals("public", getCellValue(visibility, i)));

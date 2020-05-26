@@ -32,8 +32,8 @@ import static jhi.germinate.server.database.tables.Markertypes.*;
  */
 public class GenotypeFlatFileImporter
 {
-	private   Map<String, Integer>            germplasmToId = new HashMap<>();
-	private   Map<String, Integer>            markerToId    = new HashMap<>();
+	private   Map<String, Integer>            germplasmToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private   Map<String, Integer>            markerToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	protected boolean                         isUpdate;
 	private   boolean                         deleteOnFail;
 	protected File                            input;
@@ -125,10 +125,10 @@ public class GenotypeFlatFileImporter
 		try (Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
-			germplasmToId = context.selectFrom(GERMINATEBASE)
-								   .fetchMap(GERMINATEBASE.NAME, GERMINATEBASE.ID);
-			markerToId = context.selectFrom(MARKERS)
-								.fetchMap(MARKERS.MARKER_NAME, MARKERS.ID);
+			context.selectFrom(GERMINATEBASE)
+				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
+			context.selectFrom(MARKERS)
+				   .forEach(m -> markerToId.put(m.getMarkerName(), m.getId()));
 		}
 		catch (SQLException e)
 		{

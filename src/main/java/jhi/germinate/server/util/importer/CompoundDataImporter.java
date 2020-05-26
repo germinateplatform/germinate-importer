@@ -30,8 +30,8 @@ public class CompoundDataImporter extends DatasheetImporter
 	/** Required column headers */
 	private static final String[] COLUMN_HEADERS = {"Name", "Description", "Molecular Formula", "Monoisotopic Mass", "Class", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
 
-	private Map<String, Integer> compoundNameToId;
-	private Map<String, Integer> germplasmToId;
+	private Map<String, Integer> compoundNameToId  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer> germplasmToId     = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<String, Integer> columnNameToIndex;
 	private Set<String>          compoundNames;
 
@@ -58,14 +58,14 @@ public class CompoundDataImporter extends DatasheetImporter
 		try (Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
-			compoundNameToId = context.selectFrom(PHENOTYPES)
-									  .fetchMap(PHENOTYPES.NAME, PHENOTYPES.ID);
+			context.selectFrom(COMPOUNDS)
+									  .forEach(c -> compoundNameToId.put(c.getName(), c.getId()));
 
-			compoundNames = context.selectFrom(PHENOTYPES)
-								   .fetchSet(PHENOTYPES.NAME);
+			compoundNames = context.selectFrom(COMPOUNDS)
+								   .fetchSet(COMPOUNDS.NAME);
 
-			germplasmToId = context.selectFrom(GERMINATEBASE)
-								   .fetchMap(GERMINATEBASE.NAME, GERMINATEBASE.ID);
+			context.selectFrom(GERMINATEBASE)
+								   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 		}
 		catch (SQLException e)
 		{
@@ -160,7 +160,7 @@ public class CompoundDataImporter extends DatasheetImporter
 							continue;
 
 						// For each column, skipping the first
-						for (int j = 1; j < row.getPhysicalCellCount(); j++)
+						for (int j = 1; j < row.getCellCount(); j++)
 						{
 							// Get the value
 							String value = getCellValue(row, j);
@@ -183,7 +183,7 @@ public class CompoundDataImporter extends DatasheetImporter
 				}
 
 				// If there is date information
-				if (datesRows.size() > 1 && datesRows.get(0).getPhysicalCellCount() > 1)
+				if (datesRows.size() > 1 && datesRows.get(0).getCellCount() > 1)
 				{
 					// But there aren't the same number of germplasm
 					if (dataRows.size() != datesRows.size())
@@ -209,7 +209,7 @@ public class CompoundDataImporter extends DatasheetImporter
 								if (!Objects.equals(getCellValue(dataRows.get(i), 0), getCellValue(datesRow, 0)))
 									addImportResult(ImportStatus.COMPOUND_DATA_DATE_IDENTIFIER_MISMATCH, i, "DATA and RECORDING_DATES headers don't match");
 
-								for (int c = 3; c < datesRow.getPhysicalCellCount(); c++)
+								for (int c = 3; c < datesRow.getCellCount(); c++)
 								{
 									String dateString = getCellValue(datesRow, c);
 									Date date = getCellValueDate(datesRow, c);
@@ -247,7 +247,7 @@ public class CompoundDataImporter extends DatasheetImporter
 
 	private void checkCompoundNames(Row r)
 	{
-		for (int i = 3; i < r.getPhysicalCellCount(); i++)
+		for (int i = 3; i < r.getCellCount(); i++)
 		{
 			String compoundName = getCellValue(r, i);
 			if (!compoundNames.contains(compoundName))
@@ -262,7 +262,8 @@ public class CompoundDataImporter extends DatasheetImporter
 		try
 		{
 			// Map column names to their index
-			columnNameToIndex = IntStream.range(0, r.getPhysicalCellCount())
+			columnNameToIndex = IntStream.range(0, r.getCellCount())
+										 .filter(i -> !cellEmpty(r, i))
 										 .boxed()
 										 .collect(Collectors.toMap(r::getCellText, Function.identity()));
 
@@ -286,6 +287,10 @@ public class CompoundDataImporter extends DatasheetImporter
 			return;
 
 		String name = getCellValue(r, columnNameToIndex, "Name");
+
+		if (StringUtils.isEmpty(name))
+			return;
+
 		String description = getCellValue(r, columnNameToIndex, "Description");
 		String molecularFormula = getCellValue(r, columnNameToIndex, "Molecular Formula");
 		String compoundClass = getCellValue(r, columnNameToIndex, "Class");
@@ -387,6 +392,10 @@ public class CompoundDataImporter extends DatasheetImporter
 					 return;
 
 				 String name = getCellValue(r, columnNameToIndex, "Name");
+
+				 if (StringUtils.isEmpty(name))
+					 return;
+
 				 String description = getCellValue(r, columnNameToIndex, "Description");
 				 String molecularFormula = getCellValue(r, columnNameToIndex, "Molecular Formula");
 				 String compoundClass = getCellValue(r, columnNameToIndex, "Class");
@@ -454,7 +463,7 @@ public class CompoundDataImporter extends DatasheetImporter
 			if (dates != null)
 				datesRows = dates.read();
 
-			if (datesRows != null && (datesRows.size() < 2 || datesRows.get(0).getPhysicalCellCount() < 2))
+			if (datesRows != null && (datesRows.size() < 2 || datesRows.get(0).getCellCount() < 2))
 				datesRows = null;
 
 			List<CompounddataRecord> newData = new ArrayList<>();
@@ -472,7 +481,7 @@ public class CompoundDataImporter extends DatasheetImporter
 				String germplasmName = getCellValue(dataRow, 0);
 				Integer germplasmId = germplasmToId.get(germplasmName);
 
-				for (int c = 1; c < dataRow.getPhysicalCellCount(); c++)
+				for (int c = 1; c < dataRow.getCellCount(); c++)
 				{
 					Integer compoundId = compoundNameToId.get(getCellValue(headerRow, c));
 

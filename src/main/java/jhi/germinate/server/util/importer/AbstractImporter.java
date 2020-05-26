@@ -246,13 +246,16 @@ public abstract class AbstractImporter
 		}
 	}
 
+	protected boolean cellEmpty(Row r, int i) {
+		return r.getCell(i) == null || r.getCell(i).getType() == CellType.EMPTY || StringUtils.isEmpty(r.getCellText(i).replaceAll("\u00A0", ""));
+	}
+
 	protected boolean allCellsEmpty(Row r)
 	{
-		for (int i = 0; i < r.getPhysicalCellCount(); i++)
+		for (int i = 0; i < r.getCellCount(); i++)
 		{
 			if (r.getCell(i) != null && r.getCell(i).getType() != CellType.EMPTY && !StringUtils.isEmpty(r.getCellText(i).replaceAll("\u00A0", "")))
 				return false;
-
 		}
 
 		return true;

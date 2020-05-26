@@ -100,7 +100,7 @@ public class GenotypeImporter extends DatasheetImporter
 			  .ifPresent(s -> {
 				  try
 				  {
-					  final long markerCount = s.read().get(2).getPhysicalCellCount();
+					  final long markerCount = s.read().get(2).getCellCount();
 					  s.openStream()
 					   .forEachOrdered(r -> {
 						   if (allCellsEmpty(r))

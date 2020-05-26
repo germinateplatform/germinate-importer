@@ -30,10 +30,10 @@ public class TraitDataImporter extends DatasheetImporter
 	/** Required column headers */
 	private static final String[] COLUMN_HEADERS = {"Name", "Short Name", "Description", "Data Type", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
 
-	private Map<String, Integer> traitNameToId;
-	private Map<String, Integer> germplasmToId;
+	private Map<String, Integer> traitNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer> germplasmToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer> treatmentToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<String, Integer> columnNameToIndex;
-	private Map<String, Integer> treatmentToId;
 	private Set<String>          traitNames;
 
 	public static void main(String[] args)
@@ -59,17 +59,17 @@ public class TraitDataImporter extends DatasheetImporter
 		try (Connection conn = Database.getConnection();
 			 DSLContext context = Database.getContext(conn))
 		{
-			traitNameToId = context.selectFrom(PHENOTYPES)
-								   .fetchMap(PHENOTYPES.NAME, PHENOTYPES.ID);
+			context.selectFrom(PHENOTYPES)
+				   .forEach(p -> traitNameToId.put(p.getName(), p.getId()));
 
 			traitNames = context.selectFrom(PHENOTYPES)
 								.fetchSet(PHENOTYPES.NAME);
 
-			germplasmToId = context.selectFrom(GERMINATEBASE)
-								   .fetchMap(GERMINATEBASE.NAME, GERMINATEBASE.ID);
+			context.selectFrom(GERMINATEBASE)
+								   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 
-			treatmentToId = context.selectFrom(TREATMENTS)
-								   .fetchMap(TREATMENTS.NAME, TREATMENTS.ID);
+			context.selectFrom(TREATMENTS)
+				   .forEach(t -> treatmentToId.put(t.getName(), t.getId()));
 		}
 		catch (SQLException e)
 		{
@@ -152,7 +152,7 @@ public class TraitDataImporter extends DatasheetImporter
 				List<Row> datesRows = dates.read();
 
 				// If there is date information
-				if (datesRows.size() > 1 && datesRows.get(0).getPhysicalCellCount() > 1)
+				if (datesRows.size() > 1 && datesRows.get(0).getCellCount() > 1)
 				{
 					// But there aren't the same number of germplasm
 					if (dataRows.size() != datesRows.size())
@@ -178,7 +178,7 @@ public class TraitDataImporter extends DatasheetImporter
 								if (!Objects.equals(getCellValue(dataRows.get(i), 0), getCellValue(datesRow, 0)))
 									addImportResult(ImportStatus.TRIALS_DATA_DATE_IDENTIFIER_MISMATCH, i, "DATA and RECORDING_DATES headers don't match");
 
-								for (int c = 3; c < datesRow.getPhysicalCellCount(); c++)
+								for (int c = 3; c < datesRow.getCellCount(); c++)
 								{
 									String dateString = getCellValue(datesRow, c);
 									Date date = getCellValueDate(datesRow, c);
@@ -213,7 +213,7 @@ public class TraitDataImporter extends DatasheetImporter
 
 	private void checkTraitNames(Row r)
 	{
-		for (int i = 3; i < r.getPhysicalCellCount(); i++)
+		for (int i = 3; i < r.getCellCount(); i++)
 		{
 			String traitName = getCellValue(r, i);
 			if (!traitNames.contains(traitName))
@@ -228,7 +228,8 @@ public class TraitDataImporter extends DatasheetImporter
 		try
 		{
 			// Map column names to their index
-			columnNameToIndex = IntStream.range(0, r.getPhysicalCellCount())
+			columnNameToIndex = IntStream.range(0, r.getCellCount())
+										 .filter(i -> !cellEmpty(r, i))
 										 .boxed()
 										 .collect(Collectors.toMap(r::getCellText, Function.identity()));
 
@@ -252,6 +253,10 @@ public class TraitDataImporter extends DatasheetImporter
 			return;
 
 		String name = getCellValue(r, columnNameToIndex, "Name");
+
+		if (StringUtils.isEmpty(name))
+			return;
+
 		String description = getCellValue(r, columnNameToIndex, "Description");
 		String shortName = getCellValue(r, columnNameToIndex, "Short Name");
 		String dataType = getCellValue(r, columnNameToIndex, "Data Type");
@@ -392,6 +397,10 @@ public class TraitDataImporter extends DatasheetImporter
 					 return;
 
 				 String name = getCellValue(r, columnNameToIndex, "Name");
+
+				 if (StringUtils.isEmpty(name))
+				 	return;
+
 				 String shortName = getCellValue(r, columnNameToIndex, "Short Name");
 				 String description = getCellValue(r, columnNameToIndex, "Description");
 				 String dataTypeString = getCellValue(r, columnNameToIndex, "Data Type");
@@ -464,7 +473,7 @@ public class TraitDataImporter extends DatasheetImporter
 			if (dates != null)
 				datesRows = dates.read();
 
-			if (datesRows != null && (datesRows.size() < 2 || datesRows.get(0).getPhysicalCellCount() < 2))
+			if (datesRows != null && (datesRows.size() < 2 || datesRows.get(0).getCellCount() < 2))
 				datesRows = null;
 
 			List<PhenotypedataRecord> newData = new ArrayList<>();
@@ -495,7 +504,7 @@ public class TraitDataImporter extends DatasheetImporter
 				if (!StringUtils.isEmpty(treatmentName))
 					treatmentId = treatmentToId.get(treatmentName);
 
-				for (int c = 3; c < dataRow.getPhysicalCellCount(); c++)
+				for (int c = 3; c < dataRow.getCellCount(); c++)
 				{
 					Integer traitId = traitNameToId.get(getCellValue(headerRow, c));
 
