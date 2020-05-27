@@ -216,7 +216,7 @@ public class TraitDataImporter extends DatasheetImporter
 		for (int i = 3; i < r.getCellCount(); i++)
 		{
 			String traitName = getCellValue(r, i);
-			if (!traitNames.contains(traitName))
+			if (!StringUtils.isEmpty(traitName) && !traitNames.contains(traitName))
 			{
 				addImportResult(ImportStatus.TRIALS_MISSING_TRAIT_DECLARATION, 0, traitName);
 			}

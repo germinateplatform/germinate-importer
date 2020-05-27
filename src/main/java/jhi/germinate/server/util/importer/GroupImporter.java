@@ -266,8 +266,13 @@ public class GroupImporter extends AbstractImporter
 
 		for (int i = 1; i < names.getCellCount(); i++)
 		{
+			String name = getCellValue(names, i);
+
+			if (StringUtils.isEmpty(name))
+				continue;
+
 			GroupsRecord group = context.newRecord(GROUPS);
-			group.setName(getCellValue(names, i));
+			group.setName(name);
 			group.setDescription(descriptions.getCellCount() > i ? getCellValue(descriptions, i) : null);
 			group.setGrouptypeId(groupTypeId);
 			group.setCreatedBy(userId);

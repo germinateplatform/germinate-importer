@@ -250,7 +250,7 @@ public class CompoundDataImporter extends DatasheetImporter
 		for (int i = 3; i < r.getCellCount(); i++)
 		{
 			String compoundName = getCellValue(r, i);
-			if (!compoundNames.contains(compoundName))
+			if (!StringUtils.isEmpty(compoundName) && !compoundNames.contains(compoundName))
 			{
 				addImportResult(ImportStatus.COMPOUND_MISSING_COMPOUND_DECLARATION, 0, compoundName);
 			}
