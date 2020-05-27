@@ -176,7 +176,15 @@ public class GenotypeFlatFileImporter
 			int counter = 1;
 			do
 			{
-				String germplasm = line.substring(0, line.indexOf("\t"));
+				if (StringUtils.isEmpty(line))
+					continue;
+
+				int index = line.indexOf("\t");
+
+				if (index == -1)
+					continue;
+
+				String germplasm = line.substring(0, index);
 
 				if (!germplasmToId.containsKey(germplasm))
 					addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, counter, germplasm);
@@ -251,8 +259,13 @@ public class GenotypeFlatFileImporter
 				if (StringUtils.isEmpty(line))
 					continue;
 
+				int index = line.indexOf("\t");
+
+				if (index == -1)
+					continue;
+
 				// Remember the germplasm ids
-				String germplasm = line.substring(0, line.indexOf("\t"));
+				String germplasm = line.substring(0, index);
 				germplasmIdsInFile.add(germplasmToId.get(germplasm));
 			}
 			while ((line = br.readLine()) != null);
