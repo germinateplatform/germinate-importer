@@ -506,7 +506,12 @@ public class TraitDataImporter extends DatasheetImporter
 
 				for (int c = 3; c < dataRow.getCellCount(); c++)
 				{
-					Integer traitId = traitNameToId.get(getCellValue(headerRow, c));
+					String name = getCellValue(headerRow, c);
+
+					if (StringUtils.isEmpty(name))
+						continue;
+
+					Integer traitId = traitNameToId.get(name);
 
 					String value = getCellValue(dataRow, c);
 

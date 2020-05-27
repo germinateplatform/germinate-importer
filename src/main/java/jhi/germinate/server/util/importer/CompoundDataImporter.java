@@ -483,7 +483,12 @@ public class CompoundDataImporter extends DatasheetImporter
 
 				for (int c = 1; c < dataRow.getCellCount(); c++)
 				{
-					Integer compoundId = compoundNameToId.get(getCellValue(headerRow, c));
+					String name = getCellValue(headerRow, c);
+
+					if (StringUtils.isEmpty(name))
+						continue;
+
+					Integer compoundId = compoundNameToId.get(name);
 
 					BigDecimal value = getCellValueBigDecimal(dataRow, c);
 
