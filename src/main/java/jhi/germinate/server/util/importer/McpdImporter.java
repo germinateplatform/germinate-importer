@@ -184,6 +184,7 @@ public class McpdImporter extends AbstractImporter
 		{
 			// Map column names to their index
 			columnNameToIndex = IntStream.range(0, r.getCellCount())
+										 .filter(i -> !cellEmpty(r, i))
 										 .boxed()
 										 .collect(Collectors.toMap(r::getCellText, Function.identity()));
 
