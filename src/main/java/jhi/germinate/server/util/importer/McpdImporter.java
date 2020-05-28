@@ -933,8 +933,19 @@ public class McpdImporter extends AbstractImporter
 		germplasm.germinatebase.setDuplinstname(getCellValue(r, columnNameToIndex, McpdField.DUPLINSTNAME.name()));
 		germplasm.germinatebase.setDuplsite(getCellValue(r, columnNameToIndex, McpdField.DUPLSITE.name()));
 		germplasm.location.setElevation(getCellValueBigDecimal(r, columnNameToIndex, McpdField.ELEVATION.name()));
-		germplasm.germinatebase.setEntityparentId(gidToId.get(getCellValue(r, columnNameToIndex, "Entity parent ACCENUMB")));
-		germplasm.germinatebase.setEntitytypeId(entityTypeToId.get(getCellValue(r, columnNameToIndex, "Entity type")));
+		String parentName = getCellValue(r, columnNameToIndex, "Entity parent ACCENUMB");
+		if (!StringUtils.isEmpty(parentName))
+		{
+			germplasm.germinatebase.setEntityparentId(gidToId.get(parentName));
+
+			Integer entityTypeId = 1;
+			String entityType = getCellValue(r, columnNameToIndex, "Entity type");
+
+			if (!StringUtils.isEmpty(entityType))
+				entityTypeId = entityTypeToId.get(entityType);
+
+			germplasm.germinatebase.setEntitytypeId(entityTypeId);
+		}
 		germplasm.taxonomy.setGenus(getCellValue(r, columnNameToIndex, McpdField.GENUS.name()));
 		germplasm.location.setGeoreferencingMethod(getCellValue(r, columnNameToIndex, McpdField.GEOREFMETH.name()));
 		germplasm.institution.setCode(getCellValue(r, columnNameToIndex, McpdField.INSTCODE.name()));
