@@ -151,11 +151,14 @@ public class TraitDataImporter extends DatasheetImporter
 				List<Row> dataRows = data.read();
 				List<Row> datesRows = dates.read();
 
+				long dataCount = dataRows.stream().filter(r -> !allCellsEmpty(r)).count();
+				long dateCount = datesRows.stream().filter(r -> !allCellsEmpty(r)).count();
+
 				// If there is date information
-				if (datesRows.size() > 1 && datesRows.get(0).getCellCount() > 1)
+				if (dateCount > 1 && datesRows.get(0).getCellCount() > 1)
 				{
 					// But there aren't the same number of germplasm
-					if (dataRows.size() != datesRows.size())
+					if (dataCount != dateCount)
 					{
 						addImportResult(ImportStatus.TRIALS_DATA_DATE_IDENTIFIER_MISMATCH, 0, "Number of rows on DATA and RECORDING_DATE sheets don't match");
 					}

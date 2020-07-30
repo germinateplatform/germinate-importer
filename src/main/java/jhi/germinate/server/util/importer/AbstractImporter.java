@@ -202,7 +202,7 @@ public abstract class AbstractImporter
 
 		if (result != null)
 		{
-			result = result.replaceAll("\u00A0", "");
+			result = result.replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
 		}
 
 		if (Objects.equals(result, ""))
@@ -215,7 +215,7 @@ public abstract class AbstractImporter
 	{
 		try
 		{
-			String value = r.getCellText(columnNameToIndex.get(column)).replaceAll("\u00A0", "");
+			String value = r.getCellText(columnNameToIndex.get(column)).replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
 
 			if (Objects.equals(value, ""))
 				return null;
@@ -233,7 +233,7 @@ public abstract class AbstractImporter
 	{
 		try
 		{
-			String value = r.getCellText(index).replaceAll("\u00A0", "");
+			String value = r.getCellText(index).replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
 
 			if (Objects.equals(value, ""))
 				return null;
