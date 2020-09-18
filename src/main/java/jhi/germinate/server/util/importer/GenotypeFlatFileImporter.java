@@ -160,11 +160,11 @@ public class GenotypeFlatFileImporter
 				if (positions.length != chromosomes.length || positions.length != markers.length)
 					addImportResult(ImportStatus.GENOTYPE_HEADER_LENGTH_MISMATCH, -1, "Mismatch between markers, positions and chromosomes.");
 
-				for (int i = 0; i < positions.length; i++)
+				for (String position : positions)
 				{
 					try
 					{
-						Float.parseFloat(positions[i]);
+						Float.parseFloat(position);
 					}
 					catch (NumberFormatException e)
 					{

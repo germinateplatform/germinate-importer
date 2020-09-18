@@ -359,10 +359,10 @@ public class McpdImporter extends AbstractImporter
 			{
 				String[] parts = storage.split(";");
 
-				for (int i = 0; i < parts.length; i++)
+				for (String part : parts)
 				{
-					if (!validStorage.contains(Integer.parseInt(parts[i].trim())))
-						addImportResult(ImportStatus.MCPD_INVALID_STORAGE, r.getRowNum(), parts[i]);
+					if (!validStorage.contains(Integer.parseInt(part.trim())))
+						addImportResult(ImportStatus.MCPD_INVALID_STORAGE, r.getRowNum(), part);
 				}
 			}
 			catch (NumberFormatException | NullPointerException e)
@@ -972,11 +972,11 @@ public class McpdImporter extends AbstractImporter
 		{
 			String[] parts = storage.split(";");
 
-			for (int i = 0; i < parts.length; i++)
+			for (String part : parts)
 			{
 				try
 				{
-					germplasm.storage.add(Integer.parseInt(parts[i].trim()));
+					germplasm.storage.add(Integer.parseInt(part.trim()));
 				}
 				catch (Exception e)
 				{

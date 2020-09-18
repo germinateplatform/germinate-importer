@@ -19,7 +19,6 @@ import jhi.germinate.server.util.*;
 import static jhi.germinate.server.database.tables.Compounddata.*;
 import static jhi.germinate.server.database.tables.Compounds.*;
 import static jhi.germinate.server.database.tables.Germinatebase.*;
-import static jhi.germinate.server.database.tables.Phenotypes.*;
 import static jhi.germinate.server.database.tables.Units.*;
 
 /**
