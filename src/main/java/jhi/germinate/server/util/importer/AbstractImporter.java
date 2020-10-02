@@ -2,6 +2,7 @@ package jhi.germinate.server.util.importer;
 
 import com.google.gson.Gson;
 
+import jhi.germinate.server.database.pojo.*;
 import org.dhatim.fastexcel.reader.*;
 
 import java.io.*;
@@ -13,8 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.*;
 
-import jhi.germinate.resource.ImportResult;
-import jhi.germinate.resource.enums.ImportStatus;
 import jhi.germinate.server.Database;
 import jhi.germinate.server.util.StringUtils;
 

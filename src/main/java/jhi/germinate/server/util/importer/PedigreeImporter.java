@@ -1,5 +1,7 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.database.codegen.enums.PedigreesRelationshipType;
+import jhi.germinate.server.database.pojo.ImportStatus;
 import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
@@ -8,17 +10,15 @@ import java.io.*;
 import java.sql.*;
 import java.util.*;
 
-import jhi.germinate.resource.enums.ImportStatus;
 import jhi.germinate.server.Database;
-import jhi.germinate.server.database.enums.PedigreesRelationshipType;
-import jhi.germinate.server.database.tables.records.*;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.util.*;
 
-import static jhi.germinate.server.database.tables.Germinatebase.*;
-import static jhi.germinate.server.database.tables.Pedigreedefinitions.*;
-import static jhi.germinate.server.database.tables.Pedigreedescriptions.*;
-import static jhi.germinate.server.database.tables.Pedigreenotations.*;
-import static jhi.germinate.server.database.tables.Pedigrees.*;
+import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
+import static jhi.germinate.server.database.codegen.tables.Pedigreedefinitions.*;
+import static jhi.germinate.server.database.codegen.tables.Pedigreedescriptions.*;
+import static jhi.germinate.server.database.codegen.tables.Pedigreenotations.*;
+import static jhi.germinate.server.database.codegen.tables.Pedigrees.*;
 
 /**
  * @author Sebastian Raubach

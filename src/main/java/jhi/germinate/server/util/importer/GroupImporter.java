@@ -1,5 +1,6 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.database.pojo.ImportStatus;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 import org.jooq.tools.StringUtils;
@@ -9,15 +10,14 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import jhi.germinate.resource.enums.ImportStatus;
 import jhi.germinate.server.Database;
-import jhi.germinate.server.database.tables.records.*;
+import jhi.germinate.server.database.codegen.tables.records.*;
 
-import static jhi.germinate.server.database.tables.Germinatebase.*;
-import static jhi.germinate.server.database.tables.Groupmembers.*;
-import static jhi.germinate.server.database.tables.Groups.*;
-import static jhi.germinate.server.database.tables.Locations.*;
-import static jhi.germinate.server.database.tables.Markers.*;
+import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
+import static jhi.germinate.server.database.codegen.tables.Groupmembers.*;
+import static jhi.germinate.server.database.codegen.tables.Groups.*;
+import static jhi.germinate.server.database.codegen.tables.Locations.*;
+import static jhi.germinate.server.database.codegen.tables.Markers.*;
 
 /**
  * @author Sebastian Raubach

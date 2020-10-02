@@ -1,5 +1,6 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.database.pojo.ImportStatus;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
@@ -11,15 +12,14 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
 
-import jhi.germinate.resource.enums.ImportStatus;
 import jhi.germinate.server.Database;
-import jhi.germinate.server.database.tables.records.*;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.util.*;
 
-import static jhi.germinate.server.database.tables.Compounddata.*;
-import static jhi.germinate.server.database.tables.Compounds.*;
-import static jhi.germinate.server.database.tables.Germinatebase.*;
-import static jhi.germinate.server.database.tables.Units.*;
+import static jhi.germinate.server.database.codegen.tables.Compounddata.*;
+import static jhi.germinate.server.database.codegen.tables.Compounds.*;
+import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
+import static jhi.germinate.server.database.codegen.tables.Units.*;
 
 /**
  * @author Sebastian Raubach

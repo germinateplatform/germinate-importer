@@ -1,5 +1,6 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.database.pojo.*;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
@@ -8,20 +9,18 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 
-import jhi.germinate.resource.DublinCore;
-import jhi.germinate.resource.enums.ImportStatus;
 import jhi.germinate.server.Database;
-import jhi.germinate.server.database.tables.records.*;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.util.StringUtils;
 
-import static jhi.germinate.server.database.tables.Collaborators.*;
-import static jhi.germinate.server.database.tables.Countries.*;
-import static jhi.germinate.server.database.tables.Datasetcollaborators.*;
-import static jhi.germinate.server.database.tables.Datasetlocations.*;
-import static jhi.germinate.server.database.tables.Datasets.*;
-import static jhi.germinate.server.database.tables.Experiments.*;
-import static jhi.germinate.server.database.tables.Institutions.*;
-import static jhi.germinate.server.database.tables.Locations.*;
+import static jhi.germinate.server.database.codegen.tables.Collaborators.*;
+import static jhi.germinate.server.database.codegen.tables.Countries.*;
+import static jhi.germinate.server.database.codegen.tables.Datasetcollaborators.*;
+import static jhi.germinate.server.database.codegen.tables.Datasetlocations.*;
+import static jhi.germinate.server.database.codegen.tables.Datasets.*;
+import static jhi.germinate.server.database.codegen.tables.Experiments.*;
+import static jhi.germinate.server.database.codegen.tables.Institutions.*;
+import static jhi.germinate.server.database.codegen.tables.Locations.*;
 
 /**
  * @author Sebastian Raubach

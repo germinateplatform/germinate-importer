@@ -1,5 +1,7 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.database.codegen.enums.AttributesDatatype;
+import jhi.germinate.server.database.pojo.ImportStatus;
 import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
@@ -11,26 +13,24 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
 
-import jhi.germinate.resource.enums.ImportStatus;
 import jhi.germinate.server.Database;
-import jhi.germinate.server.database.enums.AttributesDatatype;
-import jhi.germinate.server.database.tables.records.*;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.util.StringUtils;
 
-import static jhi.germinate.server.database.tables.Attributedata.*;
-import static jhi.germinate.server.database.tables.Attributes.*;
-import static jhi.germinate.server.database.tables.Biologicalstatus.*;
-import static jhi.germinate.server.database.tables.Collectingsources.*;
-import static jhi.germinate.server.database.tables.Countries.*;
-import static jhi.germinate.server.database.tables.Entitytypes.*;
-import static jhi.germinate.server.database.tables.Germinatebase.*;
-import static jhi.germinate.server.database.tables.Institutions.*;
-import static jhi.germinate.server.database.tables.Locations.*;
-import static jhi.germinate.server.database.tables.Pedigreedefinitions.*;
-import static jhi.germinate.server.database.tables.Pedigreenotations.*;
-import static jhi.germinate.server.database.tables.Storage.*;
-import static jhi.germinate.server.database.tables.Storagedata.*;
-import static jhi.germinate.server.database.tables.Taxonomies.*;
+import static jhi.germinate.server.database.codegen.tables.Attributedata.*;
+import static jhi.germinate.server.database.codegen.tables.Attributes.*;
+import static jhi.germinate.server.database.codegen.tables.Biologicalstatus.*;
+import static jhi.germinate.server.database.codegen.tables.Collectingsources.*;
+import static jhi.germinate.server.database.codegen.tables.Countries.*;
+import static jhi.germinate.server.database.codegen.tables.Entitytypes.*;
+import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
+import static jhi.germinate.server.database.codegen.tables.Institutions.*;
+import static jhi.germinate.server.database.codegen.tables.Locations.*;
+import static jhi.germinate.server.database.codegen.tables.Pedigreedefinitions.*;
+import static jhi.germinate.server.database.codegen.tables.Pedigreenotations.*;
+import static jhi.germinate.server.database.codegen.tables.Storage.*;
+import static jhi.germinate.server.database.codegen.tables.Storagedata.*;
+import static jhi.germinate.server.database.codegen.tables.Taxonomies.*;
 
 /**
  * @author Sebastian Raubach

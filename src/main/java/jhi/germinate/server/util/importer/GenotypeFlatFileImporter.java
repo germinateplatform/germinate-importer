@@ -2,6 +2,7 @@ package jhi.germinate.server.util.importer;
 
 import com.google.gson.Gson;
 
+import jhi.germinate.server.database.pojo.*;
 import org.jooq.DSLContext;
 
 import java.io.*;
@@ -11,21 +12,19 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import jhi.germinate.resource.ImportResult;
-import jhi.germinate.resource.enums.ImportStatus;
 import jhi.germinate.server.Database;
-import jhi.germinate.server.database.tables.records.*;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.util.*;
 
-import static jhi.germinate.server.database.tables.Datasetmembers.*;
-import static jhi.germinate.server.database.tables.Datasets.*;
-import static jhi.germinate.server.database.tables.Experiments.*;
-import static jhi.germinate.server.database.tables.Germinatebase.*;
-import static jhi.germinate.server.database.tables.Mapdefinitions.*;
-import static jhi.germinate.server.database.tables.Mapfeaturetypes.*;
-import static jhi.germinate.server.database.tables.Maps.*;
-import static jhi.germinate.server.database.tables.Markers.*;
-import static jhi.germinate.server.database.tables.Markertypes.*;
+import static jhi.germinate.server.database.codegen.tables.Datasetmembers.*;
+import static jhi.germinate.server.database.codegen.tables.Datasets.*;
+import static jhi.germinate.server.database.codegen.tables.Experiments.*;
+import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
+import static jhi.germinate.server.database.codegen.tables.Mapdefinitions.*;
+import static jhi.germinate.server.database.codegen.tables.Mapfeaturetypes.*;
+import static jhi.germinate.server.database.codegen.tables.Maps.*;
+import static jhi.germinate.server.database.codegen.tables.Markers.*;
+import static jhi.germinate.server.database.codegen.tables.Markertypes.*;
 
 /**
  * @author Sebastian Raubach

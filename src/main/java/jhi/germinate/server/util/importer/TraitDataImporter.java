@@ -1,5 +1,8 @@
 package jhi.germinate.server.util.importer;
 
+import com.google.gson.*;
+import jhi.germinate.server.database.codegen.enums.PhenotypesDatatype;
+import jhi.germinate.server.database.pojo.*;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
@@ -10,17 +13,15 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
 
-import jhi.germinate.resource.enums.ImportStatus;
 import jhi.germinate.server.Database;
-import jhi.germinate.server.database.enums.PhenotypesDatatype;
-import jhi.germinate.server.database.tables.records.*;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.util.StringUtils;
 
-import static jhi.germinate.server.database.tables.Germinatebase.*;
-import static jhi.germinate.server.database.tables.Phenotypedata.*;
-import static jhi.germinate.server.database.tables.Phenotypes.*;
-import static jhi.germinate.server.database.tables.Treatments.*;
-import static jhi.germinate.server.database.tables.Units.*;
+import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
+import static jhi.germinate.server.database.codegen.tables.Phenotypedata.*;
+import static jhi.germinate.server.database.codegen.tables.Phenotypes.*;
+import static jhi.germinate.server.database.codegen.tables.Treatments.*;
+import static jhi.germinate.server.database.codegen.tables.Units.*;
 
 /**
  * @author Sebastian Raubach
@@ -66,7 +67,7 @@ public class TraitDataImporter extends DatasheetImporter
 								.fetchSet(PHENOTYPES.NAME);
 
 			context.selectFrom(GERMINATEBASE)
-								   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
+				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 
 			context.selectFrom(TREATMENTS)
 				   .forEach(t -> treatmentToId.put(t.getName(), t.getId()));
@@ -265,6 +266,9 @@ public class TraitDataImporter extends DatasheetImporter
 		String dataType = getCellValue(r, columnNameToIndex, "Data Type");
 		String unitAbbr = getCellValue(r, columnNameToIndex, "Unit Abbreviation");
 		String unitDescription = getCellValue(r, columnNameToIndex, "Unit Descriptions");
+		String categories = getCellValue(r, columnNameToIndex, "Trait categories (comma separated)");
+		String minimum = getCellValue(r, columnNameToIndex, "Min (only for numeric traits)");
+		String maximum = getCellValue(r, columnNameToIndex, "Max (only for numeric traits)");
 
 		if (StringUtils.isEmpty(name))
 			addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Name: " + name);
@@ -289,6 +293,54 @@ public class TraitDataImporter extends DatasheetImporter
 
 		if (!StringUtils.isEmpty(unitAbbr) && unitAbbr.length() > 10)
 			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Unit Abbreviation: " + unitAbbr + " exceeds 10 characters.");
+
+		if (!StringUtils.isEmpty(categories))
+		{
+			try
+			{
+				// Try to parse it
+				TraitCategory[] cats = new Gson().fromJson(categories, TraitCategory[].class);
+
+				if (cats.length > 1)
+				{
+					for (int i = 1; i < cats.length; i++)
+					{
+						if (cats[i - 1].getCategories().length != cats[i].getCategories().length)
+						{
+							addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_CATEGORIES, r.getRowNum(), "Trait categories: " + categories + " has invalid format.");
+						}
+					}
+				}
+			}
+			catch (JsonSyntaxException | NullPointerException e)
+			{
+				addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_CATEGORIES, r.getRowNum(), "Trait categories: " + categories + " has invalid format.");
+			}
+		}
+
+		if (!StringUtils.isEmpty(minimum))
+		{
+			try
+			{
+				Double.parseDouble(minimum);
+			}
+			catch (NumberFormatException e)
+			{
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Minimum isn't a valid number: " + minimum);
+			}
+		}
+
+		if (!StringUtils.isEmpty(maximum))
+		{
+			try
+			{
+				Double.parseDouble(maximum);
+			}
+			catch (NumberFormatException e)
+			{
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Maximum isn't a valid number: " + maximum);
+			}
+		}
 
 		// Remember the name, cause we need to check the data sheets against them
 		traitNames.add(name);
@@ -402,7 +454,7 @@ public class TraitDataImporter extends DatasheetImporter
 				 String name = getCellValue(r, columnNameToIndex, "Name");
 
 				 if (StringUtils.isEmpty(name))
-				 	return;
+					 return;
 
 				 String shortName = getCellValue(r, columnNameToIndex, "Short Name");
 				 String description = getCellValue(r, columnNameToIndex, "Description");

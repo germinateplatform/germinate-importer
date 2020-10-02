@@ -1,5 +1,6 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.database.pojo.*;
 import org.dhatim.fastexcel.reader.*;
 
 import java.io.*;
@@ -7,9 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import jhi.germinate.resource.ImportResult;
-import jhi.germinate.resource.enums.ImportStatus;
 
 /**
  * @author Sebastian Raubach
