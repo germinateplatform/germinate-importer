@@ -2,6 +2,7 @@ package jhi.germinate.server.util.importer;
 
 import com.google.gson.*;
 import jhi.germinate.server.database.codegen.enums.PhenotypesDatatype;
+import jhi.germinate.server.database.codegen.tables.pojos.Phenotypes;
 import jhi.germinate.server.database.pojo.*;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
@@ -31,11 +32,12 @@ public class TraitDataImporter extends DatasheetImporter
 	/** Required column headers */
 	private static final String[] COLUMN_HEADERS = {"Name", "Short Name", "Description", "Data Type", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
 
-	private Map<String, Integer> traitNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer> germplasmToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer> treatmentToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer> columnNameToIndex;
-	private Set<String>          traitNames;
+	private Map<String, Integer>    traitNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer>    germplasmToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer>    treatmentToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer>    columnNameToIndex;
+	/** Used to check trait values against trait definitions during checking stage */
+	private Map<String, Phenotypes> traitDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	public static void main(String[] args)
 	{
@@ -63,8 +65,9 @@ public class TraitDataImporter extends DatasheetImporter
 			context.selectFrom(PHENOTYPES)
 				   .forEach(p -> traitNameToId.put(p.getName(), p.getId()));
 
-			traitNames = context.selectFrom(PHENOTYPES)
-								.fetchSet(PHENOTYPES.NAME);
+			context.selectFrom(PHENOTYPES)
+				   .fetchInto(Phenotypes.class)
+				   .forEach(p -> traitDefinitions.put(p.getName(), p));
 
 			context.selectFrom(GERMINATEBASE)
 				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
@@ -114,6 +117,7 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 		catch (NullPointerException e)
 		{
+			e.printStackTrace();
 			addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "'PHENOTYPES' sheet not found");
 		}
 	}
@@ -136,6 +140,8 @@ public class TraitDataImporter extends DatasheetImporter
 			data.openStream()
 				.skip(1)
 				.forEachOrdered(this::checkGermplasmName);
+
+			checkData(data);
 
 			if (dates != null)
 			{
@@ -220,7 +226,7 @@ public class TraitDataImporter extends DatasheetImporter
 		for (int i = 3; i < r.getCellCount(); i++)
 		{
 			String traitName = getCellValue(r, i);
-			if (!StringUtils.isEmpty(traitName) && !traitNames.contains(traitName))
+			if (!StringUtils.isEmpty(traitName) && !traitDefinitions.containsKey(traitName))
 			{
 				addImportResult(ImportStatus.TRIALS_MISSING_TRAIT_DECLARATION, 0, traitName);
 			}
@@ -269,6 +275,7 @@ public class TraitDataImporter extends DatasheetImporter
 		String categories = getCellValue(r, columnNameToIndex, "Trait categories (comma separated)");
 		String minimum = getCellValue(r, columnNameToIndex, "Min (only for numeric traits)");
 		String maximum = getCellValue(r, columnNameToIndex, "Max (only for numeric traits)");
+		TraitRestrictions restrictions = null;
 
 		if (StringUtils.isEmpty(name))
 			addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Name: " + name);
@@ -282,9 +289,10 @@ public class TraitDataImporter extends DatasheetImporter
 		if (!StringUtils.isEmpty(unitDescription) && unitDescription.length() > 255)
 			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Unit Descriptions: " + unitDescription + " exceeds 255 characters.");
 
+
 		try
 		{
-			PhenotypesDatatype.valueOf(dataType + "_");
+			getDataType(dataType);
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -301,7 +309,7 @@ public class TraitDataImporter extends DatasheetImporter
 				// Try to parse it
 				TraitCategory[] cats = new Gson().fromJson(categories, TraitCategory[].class);
 
-				if (cats.length > 1)
+				if (cats != null && cats.length > 1)
 				{
 					for (int i = 1; i < cats.length; i++)
 					{
@@ -310,6 +318,9 @@ public class TraitDataImporter extends DatasheetImporter
 							addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_CATEGORIES, r.getRowNum(), "Trait categories: " + categories + " has invalid format.");
 						}
 					}
+
+					restrictions = new TraitRestrictions();
+					restrictions.setCategories(cats);
 				}
 			}
 			catch (JsonSyntaxException | NullPointerException e)
@@ -322,7 +333,11 @@ public class TraitDataImporter extends DatasheetImporter
 		{
 			try
 			{
-				Double.parseDouble(minimum);
+				double min = Double.parseDouble(minimum);
+
+				if (restrictions == null)
+					restrictions = new TraitRestrictions();
+				restrictions.setMin(min);
 			}
 			catch (NumberFormatException e)
 			{
@@ -334,7 +349,11 @@ public class TraitDataImporter extends DatasheetImporter
 		{
 			try
 			{
-				Double.parseDouble(maximum);
+				double max = Double.parseDouble(maximum);
+
+				if (restrictions == null)
+					restrictions = new TraitRestrictions();
+				restrictions.setMax(max);
 			}
 			catch (NumberFormatException e)
 			{
@@ -343,7 +362,116 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 
 		// Remember the name, cause we need to check the data sheets against them
-		traitNames.add(name);
+		Phenotypes trait = null;
+		try
+		{
+			trait = new Phenotypes();
+			trait.setName(name);
+			trait.setShortName(shortName);
+			trait.setDescription(description);
+			try
+			{
+				trait.setDatatype(getDataType(dataType));
+			}
+			catch (IllegalArgumentException e)
+			{
+			}
+			trait.setRestrictions(restrictions);
+		}
+		catch (Exception e)
+		{
+		}
+		traitDefinitions.put(name, trait);
+	}
+
+	private void checkData(Sheet s)
+	{
+		try
+		{
+			// TODO: Check data against trait type
+
+			// Get the header row
+			Row headers = s.openStream()
+						   .findFirst()
+						   .orElse(null);
+
+			if (headers != null)
+			{
+				// Get all the traits that have restrictions
+				List<String> traitsWithRestrictions = traitDefinitions.values().stream()
+																	  .filter(t -> t.getRestrictions() != null)
+																	  .map(Phenotypes::getName)
+																	  .collect(Collectors.toList());
+
+				if (traitsWithRestrictions.size() > 0)
+				{
+					// Store trait name to column index mapping
+					Map<String, Integer> traitIndex = new HashMap<>();
+					for (int i = 3; i < headers.getPhysicalCellCount(); i++)
+						traitIndex.put(getCellValue(headers, i), i);
+
+					s.openStream()
+					 .skip(1)
+					 .forEachOrdered(r -> {
+						 traitsWithRestrictions.forEach(t -> {
+							 int index = traitIndex.get(t);
+							 TraitRestrictions restrictions = traitDefinitions.get(t).getRestrictions();
+							 String cellValue = getCellValue(r, index);
+
+							 if (restrictions.getMin() != null)
+							 {
+								 try
+								 {
+									 double value = Double.parseDouble(cellValue);
+									 if (value < restrictions.getMin())
+										 addImportResult(ImportStatus.TRIALS_DATA_VIOLATES_RESTRICTION, r.getRowNum(), "Data point below valid minimum: " + value + " < " + restrictions.getMin());
+								 }
+								 catch (NumberFormatException e)
+								 {
+									 addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Value of a numeric trait isn't a number: " + cellValue);
+								 }
+							 }
+							 if (restrictions.getMax() != null)
+							 {
+								 try
+								 {
+									 double value = Double.parseDouble(cellValue);
+									 if (value > restrictions.getMax())
+										 addImportResult(ImportStatus.TRIALS_DATA_VIOLATES_RESTRICTION, r.getRowNum(), "Data point above valid maximum: " + value + " > " + restrictions.getMax());
+								 }
+								 catch (NumberFormatException e)
+								 {
+									 addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Value of a numeric trait isn't a number: " + cellValue);
+								 }
+							 }
+							 if (restrictions.getCategories() != null)
+							 {
+								 boolean found = false;
+								 outer:
+								 for (TraitCategory cat : restrictions.getCategories())
+								 {
+									 for (String possValue : cat.getCategories())
+									 {
+										 if (Objects.equals(cellValue, possValue))
+										 {
+											 found = true;
+											 break outer;
+										 }
+									 }
+								 }
+
+								 if (!found)
+									 addImportResult(ImportStatus.TRIALS_DATA_VIOLATES_RESTRICTION, r.getRowNum(), "Cell value not within valid category range: " + cellValue + " not in " + restrictions.toString());
+							 }
+						 });
+					 });
+				}
+			}
+		}
+		catch (IOException e)
+		{
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+		}
 	}
 
 	@Override
@@ -459,14 +587,14 @@ public class TraitDataImporter extends DatasheetImporter
 				 String shortName = getCellValue(r, columnNameToIndex, "Short Name");
 				 String description = getCellValue(r, columnNameToIndex, "Description");
 				 String dataTypeString = getCellValue(r, columnNameToIndex, "Data Type");
-				 PhenotypesDatatype dataType = PhenotypesDatatype.char_;
+				 PhenotypesDatatype dataType = PhenotypesDatatype.text;
 				 if (!StringUtils.isEmpty(dataTypeString))
 				 {
 					 try
 					 {
-						 dataType = PhenotypesDatatype.valueOf(dataTypeString + "_");
+						 dataType = getDataType(dataTypeString);
 					 }
-					 catch (IllegalArgumentException | NullPointerException e)
+					 catch (IllegalArgumentException e)
 					 {
 					 }
 				 }
@@ -490,12 +618,67 @@ public class TraitDataImporter extends DatasheetImporter
 					 unit.store();
 				 }
 
+				 TraitRestrictions restrictions = null;
+				 String categories = getCellValue(r, columnNameToIndex, "Trait categories (comma separated)");
+				 String minimum = getCellValue(r, columnNameToIndex, "Min (only for numeric traits)");
+				 String maximum = getCellValue(r, columnNameToIndex, "Max (only for numeric traits)");
+
+				 if (!StringUtils.isEmpty(categories))
+				 {
+					 try
+					 {
+						 // Try to parse it
+						 TraitCategory[] cats = new Gson().fromJson(categories, TraitCategory[].class);
+
+						 if (cats != null && cats.length > 0)
+						 {
+							 restrictions = new TraitRestrictions();
+							 restrictions.setCategories(cats);
+						 }
+					 }
+					 catch (JsonSyntaxException | NullPointerException e)
+					 {
+						 addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_CATEGORIES, r.getRowNum(), "Trait categories: " + categories + " has invalid format.");
+					 }
+				 }
+
+				 if (!StringUtils.isEmpty(minimum))
+				 {
+					 try
+					 {
+						 double min = Double.parseDouble(minimum);
+						 if (restrictions == null)
+							 restrictions = new TraitRestrictions();
+						 restrictions.setMin(min);
+					 }
+					 catch (NumberFormatException e)
+					 {
+						 addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Minimum isn't a valid number: " + minimum);
+					 }
+				 }
+
+				 if (!StringUtils.isEmpty(maximum))
+				 {
+					 try
+					 {
+						 double max = Double.parseDouble(maximum);
+						 if (restrictions == null)
+							 restrictions = new TraitRestrictions();
+						 restrictions.setMax(max);
+					 }
+					 catch (NumberFormatException e)
+					 {
+						 addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Maximum isn't a valid number: " + maximum);
+					 }
+				 }
+
 				 PhenotypesRecord trait = context.selectFrom(PHENOTYPES)
 												 .where(PHENOTYPES.NAME.isNotDistinctFrom(name))
 												 .and(PHENOTYPES.SHORT_NAME.isNotDistinctFrom(shortName))
 												 .and(PHENOTYPES.DESCRIPTION.isNotDistinctFrom(description))
 												 .and(PHENOTYPES.DATATYPE.isNotDistinctFrom(dataType))
 												 .and(PHENOTYPES.UNIT_ID.isNotDistinctFrom(unit == null ? null : unit.getId()))
+												 .and(PHENOTYPES.RESTRICTIONS.isNotDistinctFrom(restrictions))
 												 .fetchAny();
 
 				 if (trait == null)
@@ -506,6 +689,7 @@ public class TraitDataImporter extends DatasheetImporter
 					 trait.setDescription(description);
 					 trait.setDatatype(dataType);
 					 trait.setUnitId(unit == null ? null : unit.getId());
+					 trait.setRestrictions(restrictions);
 					 trait.store();
 				 }
 
@@ -622,5 +806,32 @@ public class TraitDataImporter extends DatasheetImporter
 	protected int getDatasetTypeId()
 	{
 		return 3;
+	}
+
+	private PhenotypesDatatype getDataType(String dt)
+	{
+		PhenotypesDatatype result = null;
+
+		if (Objects.equals(dt, "int") || Objects.equals(dt, "float") || Objects.equals(dt, "numeric"))
+		{
+			result = PhenotypesDatatype.numeric;
+		}
+		else if (Objects.equals(dt, "char") || Objects.equals(dt, "text"))
+		{
+			result = PhenotypesDatatype.text;
+		}
+		else if (Objects.equals(dt, "date"))
+		{
+			result = PhenotypesDatatype.date;
+		}
+		else if (Objects.equals(dt, "categorical"))
+		{
+			result = PhenotypesDatatype.categorical;
+		}
+
+		if (result == null)
+			throw new IllegalArgumentException();
+		else
+			return result;
 	}
 }

@@ -553,7 +553,7 @@ public class McpdImporter extends AbstractImporter
 			 {
 				 AttributesRecord attribute = context.newRecord(ATTRIBUTES);
 				 attribute.setName(name);
-				 attribute.setDatatype(AttributesDatatype.char_);
+				 attribute.setDatatype(AttributesDatatype.text);
 				 attribute.setTargetTable("germinatebase");
 				 attribute.store();
 
@@ -710,7 +710,7 @@ public class McpdImporter extends AbstractImporter
 			AttributesRecord attribute = context.newRecord(ATTRIBUTES);
 			attribute.setName("Remarks");
 			attribute.setDescription("Remarks");
-			attribute.setDatatype(AttributesDatatype.char_);
+			attribute.setDatatype(AttributesDatatype.text);
 			attribute.setTargetTable("germinatebase");
 			attribute.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 			attribute.store();
