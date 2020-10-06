@@ -167,8 +167,8 @@ public abstract class AbstractImporter
 
 					try
 					{
-						boolean noMonth = value.substring(4, 6).equals("00");
-						boolean noDay = value.substring(6, 8).equals("00");
+						boolean noMonth = value.startsWith("00", 4);
+						boolean noDay = value.startsWith("00", 6);
 
 						if (noDay && noMonth)
 							date = SDF_YEAR.parse(value.substring(0, 4));
@@ -228,8 +228,11 @@ public abstract class AbstractImporter
 		}
 	}
 
-	protected String getCellValue(Row r, int index)
+	protected String getCellValue(Row r, Integer index)
 	{
+		if (index == null)
+			return null;
+
 		try
 		{
 			String value = r.getCellText(index).replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
