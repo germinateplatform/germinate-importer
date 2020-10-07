@@ -311,11 +311,8 @@ public class TraitDataImporter extends DatasheetImporter
 
 				if (cats != null && cats.length > 1)
 				{
-					TraitCategory[] formatted = new TraitCategory[cats.length];
 					for (int i = 1; i < cats.length; i++)
 					{
-						formatted[i] = new TraitCategory();
-						formatted[i].setCategories(cats[i]);
 						if (cats[i - 1].length != cats[i].length)
 						{
 							addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_CATEGORIES, r.getRowNum(), "Trait categories: " + categories + " has invalid format.");
@@ -323,7 +320,7 @@ public class TraitDataImporter extends DatasheetImporter
 					}
 
 					restrictions = new TraitRestrictions();
-					restrictions.setCategories(formatted);
+					restrictions.setCategories(cats);
 				}
 			}
 			catch (JsonSyntaxException | NullPointerException e)
@@ -504,9 +501,9 @@ public class TraitDataImporter extends DatasheetImporter
 							 {
 								 boolean found = false;
 								 outer:
-								 for (TraitCategory cat : restrictions.getCategories())
+								 for (String[] cat : restrictions.getCategories())
 								 {
-									 for (String possValue : cat.getCategories())
+									 for (String possValue : cat)
 									 {
 										 if (Objects.equals(cellValue, possValue))
 										 {
@@ -689,16 +686,7 @@ public class TraitDataImporter extends DatasheetImporter
 						 if (cats != null && cats.length > 0)
 						 {
 							 restrictions = new TraitRestrictions();
-
-							 TraitCategory[] formatted = new TraitCategory[cats.length];
-							 for (int i = 1; i < cats.length; i++)
-							 {
-								 formatted[i] = new TraitCategory();
-								 formatted[i].setCategories(cats[i]);
-							 }
-
-							 restrictions = new TraitRestrictions();
-							 restrictions.setCategories(formatted);
+							 restrictions.setCategories(cats);
 						 }
 					 }
 					 catch (JsonSyntaxException | NullPointerException e)
