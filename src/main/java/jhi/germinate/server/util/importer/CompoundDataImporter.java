@@ -1,6 +1,9 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.Database;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
+import jhi.germinate.server.util.*;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
@@ -11,10 +14,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
-
-import jhi.germinate.server.Database;
-import jhi.germinate.server.database.codegen.tables.records.*;
-import jhi.germinate.server.util.*;
 
 import static jhi.germinate.server.database.codegen.tables.Compounddata.*;
 import static jhi.germinate.server.database.codegen.tables.Compounds.*;
@@ -29,8 +28,8 @@ public class CompoundDataImporter extends DatasheetImporter
 	/** Required column headers */
 	private static final String[] COLUMN_HEADERS = {"Name", "Description", "Molecular Formula", "Monoisotopic Mass", "Class", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
 
-	private Map<String, Integer> compoundNameToId  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer> germplasmToId     = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer> compoundNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer> germplasmToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<String, Integer> columnNameToIndex;
 	private Set<String>          compoundNames;
 
@@ -54,22 +53,16 @@ public class CompoundDataImporter extends DatasheetImporter
 	{
 		super.prepare();
 
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			context.selectFrom(COMPOUNDS)
-									  .forEach(c -> compoundNameToId.put(c.getName(), c.getId()));
+				   .forEach(c -> compoundNameToId.put(c.getName(), c.getId()));
 
 			compoundNames = context.selectFrom(COMPOUNDS)
 								   .fetchSet(COMPOUNDS.NAME);
 
 			context.selectFrom(GERMINATEBASE)
-								   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-			// TODO
+				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 		}
 	}
 
@@ -349,8 +342,7 @@ public class CompoundDataImporter extends DatasheetImporter
 	{
 		super.importFile(wb);
 
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			wb.findSheet("COMPOUNDS")
 			  .ifPresent(s -> {
@@ -372,11 +364,6 @@ public class CompoundDataImporter extends DatasheetImporter
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			Sheet dates = wb.findSheet("RECORDING_DATES").orElse(null);
 			importData(context, data, dates);
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-			// TODO
 		}
 	}
 

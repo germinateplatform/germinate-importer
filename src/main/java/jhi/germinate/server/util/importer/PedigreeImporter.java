@@ -1,18 +1,17 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.enums.PedigreesRelationshipType;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
+import jhi.germinate.server.util.*;
 import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Timestamp;
 import java.util.*;
-
-import jhi.germinate.server.Database;
-import jhi.germinate.server.database.codegen.tables.records.*;
-import jhi.germinate.server.util.*;
 
 import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
 import static jhi.germinate.server.database.codegen.tables.Pedigreedefinitions.*;
@@ -58,8 +57,7 @@ public class PedigreeImporter extends AbstractImporter
 	@Override
 	protected void prepare()
 	{
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			context.selectFrom(GERMINATEBASE)
 				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
@@ -71,11 +69,6 @@ public class PedigreeImporter extends AbstractImporter
 
 			context.selectFrom(PEDIGREENOTATIONS)
 				   .forEach(p -> notationToId.put(p.getName(), p.getId()));
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-			// TODO
 		}
 	}
 
@@ -215,8 +208,7 @@ public class PedigreeImporter extends AbstractImporter
 	{
 		wb.findSheet("DATA")
 		  .ifPresent(s -> {
-			  try (Connection conn = Database.getConnection();
-				   DSLContext context = Database.getContext(conn))
+			  try (DSLContext context = Database.getContext())
 			  {
 				  s.openStream()
 				   .skip(1)
@@ -275,7 +267,7 @@ public class PedigreeImporter extends AbstractImporter
 					   }
 				   });
 			  }
-			  catch (IOException | SQLException e)
+			  catch (IOException e)
 			  {
 				  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 			  }
@@ -283,8 +275,7 @@ public class PedigreeImporter extends AbstractImporter
 
 		wb.findSheet("DATA-STRING")
 		  .ifPresent(s -> {
-			  try (Connection conn = Database.getConnection();
-				   DSLContext context = Database.getContext(conn))
+			  try (DSLContext context = Database.getContext())
 			  {
 				  s.openStream()
 				   .skip(1)
@@ -321,7 +312,7 @@ public class PedigreeImporter extends AbstractImporter
 					   }
 				   });
 			  }
-			  catch (IOException | SQLException e)
+			  catch (IOException e)
 			  {
 				  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 			  }

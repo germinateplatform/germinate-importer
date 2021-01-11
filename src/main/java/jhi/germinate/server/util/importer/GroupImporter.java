@@ -1,17 +1,16 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.Database;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 import org.jooq.tools.StringUtils;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import jhi.germinate.server.Database;
-import jhi.germinate.server.database.codegen.tables.records.*;
 
 import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
 import static jhi.germinate.server.database.codegen.tables.Groupmembers.*;
@@ -54,8 +53,7 @@ public class GroupImporter extends AbstractImporter
 	@Override
 	protected void prepare()
 	{
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			context.selectFrom(GERMINATEBASE)
 				   .forEach(g -> accenumbToId.put(g.getName(), g.getId()));
@@ -65,11 +63,6 @@ public class GroupImporter extends AbstractImporter
 
 			context.selectFrom(LOCATIONS)
 				   .forEach(l -> locationNameToId.put(l.getSiteName(), l.getId()));
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-			// TODO
 		}
 	}
 
@@ -345,8 +338,7 @@ public class GroupImporter extends AbstractImporter
 	@Override
 	protected void importFile(ReadableWorkbook wb)
 	{
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			try
 			{
@@ -428,10 +420,6 @@ public class GroupImporter extends AbstractImporter
 			{
 				addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "'GERMPLASM' sheet not found");
 			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
 		}
 	}
 

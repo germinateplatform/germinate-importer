@@ -1,7 +1,10 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.enums.AttributesDatatype;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
+import jhi.germinate.server.util.StringUtils;
 import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
@@ -12,10 +15,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
-
-import jhi.germinate.server.Database;
-import jhi.germinate.server.database.codegen.tables.records.*;
-import jhi.germinate.server.util.StringUtils;
 
 import static jhi.germinate.server.database.codegen.tables.Attributedata.*;
 import static jhi.germinate.server.database.codegen.tables.Attributes.*;
@@ -72,8 +71,7 @@ public class McpdImporter extends AbstractImporter
 	@Override
 	protected void prepare()
 	{
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			context.selectFrom(GERMINATEBASE)
 				   .forEach(g -> gidToId.put(g.getGeneralIdentifier(), g.getId()));
@@ -104,11 +102,6 @@ public class McpdImporter extends AbstractImporter
 
 			locationRecords = context.selectFrom(LOCATIONS)
 									 .fetchMap(LOCATIONS.ID);
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-			// TODO
 		}
 	}
 
@@ -390,8 +383,7 @@ public class McpdImporter extends AbstractImporter
 	@Override
 	protected void importFile(ReadableWorkbook wb)
 	{
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			// Import the data
 			wb.getSheets()
@@ -449,17 +441,12 @@ public class McpdImporter extends AbstractImporter
 				  }
 			  });
 		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
 	}
 
 	@Override
 	protected void updateFile(ReadableWorkbook wb)
 	{
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			wb.getSheets()
 			  .filter(s -> Objects.equals(s.getName(), "DATA"))
@@ -495,10 +482,6 @@ public class McpdImporter extends AbstractImporter
 					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 				  }
 			  });
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
 		}
 	}
 

@@ -1,17 +1,16 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.Database;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.*;
+import jhi.germinate.server.util.StringUtils;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Timestamp;
 import java.util.*;
-
-import jhi.germinate.server.Database;
-import jhi.germinate.server.database.codegen.tables.records.*;
-import jhi.germinate.server.util.StringUtils;
 
 import static jhi.germinate.server.database.codegen.tables.Collaborators.*;
 import static jhi.germinate.server.database.codegen.tables.Countries.*;
@@ -42,15 +41,10 @@ public abstract class DatasheetImporter extends AbstractImporter
 	@Override
 	protected void prepare()
 	{
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			countryCode2ToId = context.selectFrom(COUNTRIES)
 									  .fetchMap(COUNTRIES.COUNTRY_CODE2, COUNTRIES.ID);
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
 		}
 	}
 
@@ -277,8 +271,7 @@ public abstract class DatasheetImporter extends AbstractImporter
 	@Override
 	protected void importFile(ReadableWorkbook wb)
 	{
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			wb.findSheet("METADATA")
 			  .ifPresent(s -> {
@@ -296,10 +289,6 @@ public abstract class DatasheetImporter extends AbstractImporter
 			getOrCreateLocations(context, wb);
 			getOrCreateDataset(context, wb);
 			getOrCreateCollaborators(context, wb);
-		}
-		catch (SQLException e)
-		{
-			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 

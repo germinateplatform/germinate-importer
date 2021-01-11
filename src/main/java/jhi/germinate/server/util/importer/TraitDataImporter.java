@@ -1,9 +1,12 @@
 package jhi.germinate.server.util.importer;
 
 import com.google.gson.*;
+import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.enums.PhenotypesDatatype;
 import jhi.germinate.server.database.codegen.tables.pojos.Phenotypes;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.*;
+import jhi.germinate.server.util.StringUtils;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
@@ -13,10 +16,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
-
-import jhi.germinate.server.Database;
-import jhi.germinate.server.database.codegen.tables.records.*;
-import jhi.germinate.server.util.StringUtils;
 
 import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
 import static jhi.germinate.server.database.codegen.tables.Phenotypedata.*;
@@ -59,8 +58,7 @@ public class TraitDataImporter extends DatasheetImporter
 	{
 		super.prepare();
 
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			context.selectFrom(PHENOTYPES)
 				   .forEach(p -> traitNameToId.put(p.getName(), p.getId()));
@@ -74,11 +72,6 @@ public class TraitDataImporter extends DatasheetImporter
 
 			context.selectFrom(TREATMENTS)
 				   .forEach(t -> treatmentToId.put(t.getName(), t.getId()));
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-			// TODO
 		}
 	}
 
@@ -428,7 +421,7 @@ public class TraitDataImporter extends DatasheetImporter
 							 case date:
 								 Date date = getCellValueDate(r, i);
 								 if (date == null)
-								 	addImportResult(ImportStatus.GENERIC_INVALID_DATE, r.getRowNum(), "Value of a date trait isn't a date: " + cellValue);
+									 addImportResult(ImportStatus.GENERIC_INVALID_DATE, r.getRowNum(), "Value of a date trait isn't a date: " + cellValue);
 								 break;
 
 							 case categorical:
@@ -460,13 +453,13 @@ public class TraitDataImporter extends DatasheetImporter
 							 Integer index = traitIndex.get(t);
 
 							 if (index == null)
-							 	return;
+								 return;
 
 							 TraitRestrictions restrictions = traitDefinitions.get(t).getRestrictions();
 							 String cellValue = getCellValue(r, index);
 
 							 if (StringUtils.isEmpty(cellValue))
-							 	return;
+								 return;
 
 							 // Check minimum restriction
 							 if (restrictions.getMin() != null)
@@ -475,7 +468,7 @@ public class TraitDataImporter extends DatasheetImporter
 								 {
 									 double value = Double.parseDouble(cellValue);
 									 if (value < restrictions.getMin())
-										 addImportResult(ImportStatus.TRIALS_DATA_VIOLATES_RESTRICTION, r.getRowNum(), "Data point above valid maximum (" + t + "): " +  + value + " < " + restrictions.getMin());
+										 addImportResult(ImportStatus.TRIALS_DATA_VIOLATES_RESTRICTION, r.getRowNum(), "Data point above valid maximum (" + t + "): " + +value + " < " + restrictions.getMin());
 								 }
 								 catch (NumberFormatException e)
 								 {
@@ -532,8 +525,7 @@ public class TraitDataImporter extends DatasheetImporter
 	{
 		super.importFile(wb);
 
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			wb.findSheet("PHENOTYPES")
 			  .ifPresent(s -> {
@@ -558,11 +550,6 @@ public class TraitDataImporter extends DatasheetImporter
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			Sheet dates = wb.findSheet("RECORDING_DATES").orElse(null);
 			importData(context, data, dates);
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-			// TODO
 		}
 	}
 

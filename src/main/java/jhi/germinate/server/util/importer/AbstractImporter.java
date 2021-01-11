@@ -1,8 +1,9 @@
 package jhi.germinate.server.util.importer;
 
 import com.google.gson.Gson;
-
+import jhi.germinate.server.Database;
 import jhi.germinate.server.database.pojo.*;
+import jhi.germinate.server.util.StringUtils;
 import org.dhatim.fastexcel.reader.*;
 
 import java.io.*;
@@ -13,9 +14,6 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.*;
-
-import jhi.germinate.server.Database;
-import jhi.germinate.server.util.StringUtils;
 
 /**
  * @author Sebastian Raubach
@@ -248,7 +246,8 @@ public abstract class AbstractImporter
 		}
 	}
 
-	protected boolean cellEmpty(Row r, int i) {
+	protected boolean cellEmpty(Row r, int i)
+	{
 		return r.getCell(i) == null || r.getCell(i).getType() == CellType.EMPTY || StringUtils.isEmpty(r.getCellText(i).replaceAll("\u00A0", ""));
 	}
 

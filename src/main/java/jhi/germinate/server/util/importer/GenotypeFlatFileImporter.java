@@ -1,20 +1,18 @@
 package jhi.germinate.server.util.importer;
 
 import com.google.gson.Gson;
-
+import jhi.germinate.server.Database;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.*;
+import jhi.germinate.server.util.*;
 import org.jooq.DSLContext;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.sql.*;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import jhi.germinate.server.Database;
-import jhi.germinate.server.database.codegen.tables.records.*;
-import jhi.germinate.server.util.*;
 
 import static jhi.germinate.server.database.codegen.tables.Datasetmembers.*;
 import static jhi.germinate.server.database.codegen.tables.Datasets.*;
@@ -121,18 +119,12 @@ public class GenotypeFlatFileImporter
 
 	protected void prepare()
 	{
-		try (Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+		try (DSLContext context = Database.getContext())
 		{
 			context.selectFrom(GERMINATEBASE)
 				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 			context.selectFrom(MARKERS)
 				   .forEach(m -> markerToId.put(m.getMarkerName(), m.getId()));
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-			// TODO
 		}
 	}
 
@@ -246,8 +238,7 @@ public class GenotypeFlatFileImporter
 		this.hdf5.getParentFile().mkdirs();
 
 		try (BufferedReader br = Files.newBufferedReader(this.input.toPath(), StandardCharsets.UTF_8);
-			 Connection conn = Database.getConnection();
-			 DSLContext context = Database.getContext(conn))
+			 DSLContext context = Database.getContext())
 		{
 			String line = readHeaders(br);
 //			line = br.readLine();
@@ -466,7 +457,7 @@ public class GenotypeFlatFileImporter
 			dataset.setDatasetStateId(1);
 			dataset.store(DATASETS.DATASET_STATE_ID);
 		}
-		catch (IOException | SQLException e)
+		catch (IOException e)
 		{
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
