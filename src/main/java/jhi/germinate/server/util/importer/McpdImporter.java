@@ -10,6 +10,7 @@ import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
@@ -276,6 +277,15 @@ public class McpdImporter extends AbstractImporter
 				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), McpdField.DECLATITUDE.name() + ": " + declatitude);
 			}
 		}
+		// Check if latitude is valid DMS
+		String latitude = getCellValue(r, columnNameToIndex, McpdField.LATITUDE.name());
+		if (!StringUtils.isEmpty(latitude))
+		{
+			BigDecimal dms = getCellValueDMS(r, columnNameToIndex, McpdField.LATITUDE.name());
+
+			if (dms == null)
+				addImportResult(ImportStatus.MCPD_INVALID_DMS, r.getRowNum(), McpdField.LATITUDE.name() + ": " + latitude);
+		}
 
 		// Check if declongitude is a number
 		String declongitude = getCellValue(r, columnNameToIndex, McpdField.DECLONGITUDE.name());
@@ -289,6 +299,15 @@ public class McpdImporter extends AbstractImporter
 			{
 				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), McpdField.DECLONGITUDE.name() + ": " + declongitude);
 			}
+		}
+		// Check if longitude is valid DMS
+		String longitude = getCellValue(r, columnNameToIndex, McpdField.LONGITUDE.name());
+		if (!StringUtils.isEmpty(longitude))
+		{
+			BigDecimal dms = getCellValueDMS(r, columnNameToIndex, McpdField.LONGITUDE.name());
+
+			if (dms == null)
+				addImportResult(ImportStatus.MCPD_INVALID_DMS, r.getRowNum(), McpdField.LONGITUDE.name() + ": " + longitude);
 		}
 
 		// Check if elevation is a valid number
@@ -496,11 +515,11 @@ public class McpdImporter extends AbstractImporter
 		r.stream()
 		 .skip(1)
 		 .forEachOrdered(c -> {
-			 Integer attributeId = attributeIds.get(c.getColumnIndex() - 1);
 			 String value = getCellValue(c);
 
 			 if (!StringUtils.isEmpty(value))
 			 {
+				 Integer attributeId = attributeIds.get(c.getColumnIndex() - 1);
 				 AttributedataRecord data = context.selectFrom(ATTRIBUTEDATA)
 												   .where(ATTRIBUTEDATA.ATTRIBUTE_ID.eq(attributeId))
 												   .and(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasmId))
@@ -909,7 +928,13 @@ public class McpdImporter extends AbstractImporter
 		germplasm.taxonomy.setCropname(getCellValue(r, columnNameToIndex, McpdField.CROPNAME.name()));
 		germplasm.location.setSiteName(getCellValue(r, columnNameToIndex, McpdField.COLLSITE.name()));
 		germplasm.location.setLatitude(getCellValueBigDecimal(r, columnNameToIndex, McpdField.DECLATITUDE.name()));
+		// If there's no decimal, try and parse the DMS
+		if (germplasm.location.getLatitude() == null && !StringUtils.isEmpty(getCellValue(r, columnNameToIndex, McpdField.LATITUDE.name())))
+			germplasm.location.setLatitude(getCellValueDMS(r, columnNameToIndex, McpdField.LATITUDE.name()));
 		germplasm.location.setLongitude(getCellValueBigDecimal(r, columnNameToIndex, McpdField.DECLONGITUDE.name()));
+		// If there's no decimal, try and parse the DMS
+		if (germplasm.location.getLongitude() == null && !StringUtils.isEmpty(getCellValue(r, columnNameToIndex, McpdField.LONGITUDE.name())))
+			germplasm.location.setLongitude(getCellValueDMS(r, columnNameToIndex, McpdField.LONGITUDE.name()));
 		germplasm.germinatebase.setDonorCode(getCellValue(r, columnNameToIndex, McpdField.DONORCODE.name()));
 		germplasm.germinatebase.setDonorName(getCellValue(r, columnNameToIndex, McpdField.DONORNAME.name()));
 		germplasm.germinatebase.setDonorNumber(getCellValue(r, columnNameToIndex, McpdField.DONORNUMB.name()));

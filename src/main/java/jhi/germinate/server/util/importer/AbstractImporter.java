@@ -96,6 +96,68 @@ public abstract class AbstractImporter
 		return getCellValueBigDecimal(r, columnNameToIndex.get(column));
 	}
 
+	protected BigDecimal getCellValueDMS(Row r, Map<String, Integer> columnNameToIndex, String column)
+	{
+		String degreeMinuteSecond = getCellValue(r, columnNameToIndex, column);
+
+		if (StringUtils.isEmpty(degreeMinuteSecond))
+			return null;
+
+		if (degreeMinuteSecond.length() == 7 || degreeMinuteSecond.length() == 8)
+		{
+			boolean lat = degreeMinuteSecond.length() == 7;
+
+			int degree;
+			int minute = 0;
+			int second = 0;
+
+			try
+			{
+				if (lat)
+					degree = Integer.parseInt(degreeMinuteSecond.substring(0, 2));
+				else
+					degree = Integer.parseInt(degreeMinuteSecond.substring(0, 3));
+			}
+			catch (NumberFormatException e)
+			{
+				return null;
+			}
+			try
+			{
+				if (lat)
+					minute = Integer.parseInt(degreeMinuteSecond.substring(2, 4));
+				else
+					minute = Integer.parseInt(degreeMinuteSecond.substring(3, 5));
+			}
+			catch (NumberFormatException e)
+			{
+			}
+			try
+			{
+				if (lat)
+					second = Integer.parseInt(degreeMinuteSecond.substring(4, 6));
+				else
+					second = Integer.parseInt(degreeMinuteSecond.substring(5, 7));
+			}
+			catch (NumberFormatException e)
+			{
+			}
+
+			double value = degree + minute / 60d + second / 3600d;
+
+			if (degreeMinuteSecond.endsWith("S") || degreeMinuteSecond.endsWith("W"))
+				value = -value;
+
+			BigDecimal result = new BigDecimal(value, MathContext.DECIMAL64);
+			result = result.setScale(10, RoundingMode.HALF_UP);
+			return result;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	protected BigDecimal getCellValueBigDecimal(Row r, int index)
 	{
 		try
