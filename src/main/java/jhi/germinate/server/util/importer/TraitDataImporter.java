@@ -392,7 +392,9 @@ public class TraitDataImporter extends DatasheetImporter
 				// Get the data type for each column
 				List<PhenotypesDatatype> dataTypes = headers.stream()
 															.skip(3)
-															.map(c -> traitDefinitions.get(getCellValue(c)).getDatatype())
+															.map(this::getCellValue)
+															.filter(c -> !StringUtils.isEmpty(c))
+															.map(c -> traitDefinitions.get(c).getDatatype())
 															.collect(Collectors.toList());
 
 				// Now check them to make sure their content fits the data type
@@ -752,7 +754,7 @@ public class TraitDataImporter extends DatasheetImporter
 			if (dates != null)
 				datesRows = dates.read();
 
-			if (datesRows != null && (datesRows.size() < 2 || datesRows.get(0).getCellCount() < 2))
+			if (datesRows != null && (datesRows.size() < 2 || datesRows.get(0).getCellCount() < 4))
 				datesRows = null;
 
 			List<PhenotypedataRecord> newData = new ArrayList<>();

@@ -26,6 +26,7 @@ import static jhi.germinate.server.database.codegen.tables.Entitytypes.*;
 import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
 import static jhi.germinate.server.database.codegen.tables.Institutions.*;
 import static jhi.germinate.server.database.codegen.tables.Locations.*;
+import static jhi.germinate.server.database.codegen.tables.Mlsstatus.*;
 import static jhi.germinate.server.database.codegen.tables.Pedigreedefinitions.*;
 import static jhi.germinate.server.database.codegen.tables.Pedigreenotations.*;
 import static jhi.germinate.server.database.codegen.tables.Storage.*;
@@ -51,6 +52,7 @@ public class McpdImporter extends AbstractImporter
 	private Map<Integer, LocationsRecord>     locationRecords;
 	private List<Integer>                     validCollsrc;
 	private List<Integer>                     validSampstat;
+	private List<Integer> 					  validMlsStatus;
 	private List<Integer>                     validStorage;
 	private Map<String, Integer>              entityTypeToId  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -79,6 +81,9 @@ public class McpdImporter extends AbstractImporter
 
 			context.selectFrom(COUNTRIES)
 				   .forEach(c -> countryCodeToId.put(c.getCountryCode3(), c.getId()));
+
+			validMlsStatus = context.selectFrom(MLSSTATUS)
+								    .fetch(MLSSTATUS.ID);
 
 			validCollsrc = context.selectFrom(COLLECTINGSOURCES)
 								  .fetch(COLLECTINGSOURCES.ID);
@@ -348,6 +353,21 @@ public class McpdImporter extends AbstractImporter
 			}
 		}
 
+		// Check MLSSTATUS
+		String mlsStatus = getCellValue(r, columnNameToIndex, McpdField.MLSSTAT.name());
+		if (!StringUtils.isEmpty(mlsStatus))
+		{
+			try
+			{
+				if (!validMlsStatus.contains(Integer.parseInt(mlsStatus)))
+					addImportResult(ImportStatus.MCPD_INVALID_MLSSTATUS, r.getRowNum(), mlsStatus);
+			}
+			catch (NumberFormatException e)
+			{
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), McpdField.MLSSTAT.name() + ": " + mlsStatus);
+			}
+		}
+
 		// Check COLLSRC
 		String collsrc = getCellValue(r, columnNameToIndex, McpdField.COLLSRC.name());
 		if (!StringUtils.isEmpty(collsrc))
@@ -501,7 +521,69 @@ public class McpdImporter extends AbstractImporter
 					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 				  }
 			  });
+
+			// Import the attributes
+			wb.getSheets()
+			  .filter(s -> Objects.equals(s.getName(), "ADDITIONAL_ATTRIBUTES"))
+			  .findFirst()
+			  .ifPresent(s -> {
+				  try
+				  {
+					  s.openStream()
+					   .findFirst()
+					   .ifPresent(r -> getOrCreateAttributes(context, r));
+					  s.openStream()
+					   .skip(1)
+					   .forEachOrdered(r -> updateAttributeData(context, r));
+				  }
+				  catch (IOException e)
+				  {
+					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				  }
+			  });
 		}
+	}
+
+	private void updateAttributeData(DSLContext context, Row r)
+	{
+		if (allCellsEmpty(r))
+			return;
+
+		String accenumb = getCellValue(r.getCell(0));
+		Integer germplasmId = accenumbToId.get(accenumb);
+
+		r.stream()
+		 .skip(1)
+		 .forEachOrdered(c -> {
+			 String value = getCellValue(c);
+
+			 if (!StringUtils.isEmpty(value))
+			 {
+				 Integer attributeId = attributeIds.get(c.getColumnIndex() - 1);
+
+				 AttributedataRecord data = context.selectFrom(ATTRIBUTEDATA)
+												   .where(ATTRIBUTEDATA.ATTRIBUTE_ID.eq(attributeId))
+												   .and(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasmId))
+												   .fetchAny();
+
+				 if (data != null)
+				 {
+					 // Update it
+					 data.setValue(value);
+					 data.store();
+				 }
+				 else
+				 {
+					 // Insert new entry
+					 data = context.newRecord(ATTRIBUTEDATA);
+					 data.setAttributeId(attributeId);
+					 data.setForeignId(germplasmId);
+					 data.setValue(value);
+					 data.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+					 data.store();
+				 }
+			 }
+		 });
 	}
 
 	private void insertAttributeData(DSLContext context, Row r)
@@ -614,7 +696,7 @@ public class McpdImporter extends AbstractImporter
 		else if (!StringUtils.isEmpty(insert.country.getCountryCode3()))
 		{
 			// We get here, if there isn't a specific location, but a country. In this case, we add a dummy location.
-			insert.location.setSiteName("UNKNOWN LOCATION");
+			insert.location.setSiteName("N/A");
 			insert.location = getOrCreateLocation(context, insert.location);
 		}
 
