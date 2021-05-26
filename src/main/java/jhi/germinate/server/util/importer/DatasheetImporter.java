@@ -1,6 +1,7 @@
 package jhi.germinate.server.util.importer;
 
 import jhi.germinate.server.Database;
+import jhi.germinate.server.database.codegen.enums.AttributesDatatype;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.*;
 import jhi.germinate.server.util.StringUtils;
@@ -12,6 +13,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 
+import static jhi.germinate.server.database.codegen.tables.Attributedata.*;
+import static jhi.germinate.server.database.codegen.tables.Attributes.*;
 import static jhi.germinate.server.database.codegen.tables.Collaborators.*;
 import static jhi.germinate.server.database.codegen.tables.Countries.*;
 import static jhi.germinate.server.database.codegen.tables.Datasetcollaborators.*;
@@ -29,9 +32,10 @@ public abstract class DatasheetImporter extends AbstractImporter
 	private static final String[] METADATA_LABELS = {"Title", "Description", "Rights", "Date of creation", "Publisher", "Format", "Language", "Source", "Type", "Subject", "Contact"};
 
 	protected DatasetsRecord       dataset;
-	private   Set<LocationsRecord> locations = new LinkedHashSet<>();
+	protected Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private   Map<String, Integer> countryCode2ToId;
 	protected Map<String, Integer> metadataLabelToRowIndex;
+	private   Map<String, Integer> attributeToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	public DatasheetImporter(File input, boolean isUpdate, boolean deleteOnFail, int userId)
 	{
@@ -45,6 +49,10 @@ public abstract class DatasheetImporter extends AbstractImporter
 		{
 			countryCode2ToId = context.selectFrom(COUNTRIES)
 									  .fetchMap(COUNTRIES.COUNTRY_CODE2, COUNTRIES.ID);
+
+			context.selectFrom(ATTRIBUTES)
+				   .where(ATTRIBUTES.TARGET_TABLE.eq("datasets"))
+				   .forEach(a -> attributeToId.put(a.getName(), a.getId()));
 		}
 	}
 
@@ -57,8 +65,65 @@ public abstract class DatasheetImporter extends AbstractImporter
 		wb.findSheet("LOCATION")
 		  .ifPresent(this::checkLocationSheet);
 
+		wb.findSheet("ATTRIBUTES")
+		  .ifPresent(this::checkAttributeSheet);
+
 		wb.findSheet("COLLABORATORS")
 		  .ifPresent(this::checkCollaboratorsSheet);
+	}
+
+	private void checkAttributeSheet(Sheet s)
+	{
+		try
+		{
+			s.openStream()
+			 .findFirst()
+			 .ifPresent(r -> {
+				 if (allCellsEmpty(r))
+					 return;
+
+				 if (!Objects.equals(getCellValue(r, 0), "Attribute"))
+					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Attribute");
+				 if (!Objects.equals(getCellValue(r, 1), "Type"))
+					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, "Type");
+				 if (!Objects.equals(getCellValue(r, 2), "Value"))
+					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 2, "Value");
+			 });
+
+			s.openStream()
+			 .skip(1)
+			 .forEachOrdered(r -> {
+				 if (allCellsEmpty(r))
+					 return;
+
+				 String attribute = getCellValue(r, 0);
+				 String dataType = getCellValue(r, 1);
+				 AttributesDatatype dt = null;
+				 try
+				 {
+					 dt = AttributesDatatype.valueOf(dataType);
+				 }
+				 catch (Exception e)
+				 {
+				 }
+
+				 String value = getCellValue(r, 2);
+
+				 if (dt == null && StringUtils.isEmpty(attribute) && StringUtils.isEmpty(value))
+				 	return;
+
+				 if (dt == null)
+					 addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "Data Type: " + dataType);
+				 if (StringUtils.isEmpty(attribute))
+					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Attribute");
+				 if (StringUtils.isEmpty(value))
+					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Value");
+			 });
+		}
+		catch (IOException e)
+		{
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+		}
 	}
 
 	private void checkCollaboratorsSheet(Sheet s)
@@ -71,19 +136,19 @@ public abstract class DatasheetImporter extends AbstractImporter
 				 if (allCellsEmpty(r))
 					 return;
 
-				 if (!Objects.equals(getCellValue(r.getCell(0)), "Last Name"))
+				 if (!Objects.equals(getCellValue(r, 0), "Last Name"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Last Name");
-				 if (!Objects.equals(getCellValue(r.getCell(1)), "First Name"))
+				 if (!Objects.equals(getCellValue(r, 1), "First Name"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "First Name");
-				 if (!Objects.equals(getCellValue(r.getCell(2)), "Email"))
+				 if (!Objects.equals(getCellValue(r, 2), "Email"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Email");
-				 if (!Objects.equals(getCellValue(r.getCell(3)), "Phone"))
+				 if (!Objects.equals(getCellValue(r, 3), "Phone"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Phone");
-				 if (!Objects.equals(getCellValue(r.getCell(4)), "Contributor"))
+				 if (!Objects.equals(getCellValue(r, 4), "Contributor"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Contributor");
-				 if (!Objects.equals(getCellValue(r.getCell(5)), "Address"))
+				 if (!Objects.equals(getCellValue(r, 5), "Address"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Address");
-				 if (!Objects.equals(getCellValue(r.getCell(6)), "Country"))
+				 if (!Objects.equals(getCellValue(r, 6), "Country"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Country");
 			 });
 
@@ -127,38 +192,43 @@ public abstract class DatasheetImporter extends AbstractImporter
 		}
 	}
 
-	private void checkLocationSheet(Sheet s)
+	protected List<String> checkLocationSheet(Sheet s)
 	{
 		try
 		{
+			List<String> result = new ArrayList<>();
+			// Check the headers
 			s.openStream()
 			 .findFirst()
 			 .ifPresent(r -> {
-				 if (!Objects.equals(getCellValue(r.getCell(0)), "Name"))
+				 if (!Objects.equals(getCellValue(r, 0), "Name"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Name");
-				 if (!Objects.equals(getCellValue(r.getCell(1)), "Short name"))
+				 if (!Objects.equals(getCellValue(r, 1), "Short name"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Short name");
-				 if (!Objects.equals(getCellValue(r.getCell(2)), "Country"))
+				 if (!Objects.equals(getCellValue(r, 2), "Country"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Country");
-				 if (!Objects.equals(getCellValue(r.getCell(3)), "Elevation"))
+				 if (!Objects.equals(getCellValue(r, 3), "Elevation"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Elevation");
-				 if (!Objects.equals(getCellValue(r.getCell(4)), "Latitude"))
+				 if (!Objects.equals(getCellValue(r, 4), "Latitude"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Latitude");
-				 if (!Objects.equals(getCellValue(r.getCell(5)), "Longitude"))
+				 if (!Objects.equals(getCellValue(r, 5), "Longitude"))
 					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Longitude");
 			 });
+			// Check the data
 			s.openStream()
 			 .skip(1)
 			 .forEachOrdered(r -> {
 				 if (allCellsEmpty(r))
 					 return;
 
-				 String name = getCellValue(r.getCell(0));
-				 String shortName = getCellValue(r.getCell(1));
-				 String country = getCellValue(r.getCell(2));
-				 String elevation = getCellValue(r.getCell(3));
-				 String latitude = getCellValue(r.getCell(3));
-				 String longitude = getCellValue(r.getCell(3));
+				 String name = getCellValue(r, 0);
+				 String shortName = getCellValue(r, 1);
+				 String country = getCellValue(r, 2);
+				 String elevation = getCellValue(r, 3);
+				 String latitude = getCellValue(r, 4);
+				 String longitude = getCellValue(r, 5);
+
+				 result.add(name);
 
 				 if (StringUtils.isEmpty(name))
 					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Location Name");
@@ -200,20 +270,24 @@ public abstract class DatasheetImporter extends AbstractImporter
 					 }
 				 }
 			 });
+
+			return result;
 		}
 		catch (IOException e)
 		{
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
+
+		return null;
 	}
 
 	private void checkMetadataHeaders(Row r)
 	{
-		if (!Objects.equals(getCellValue(r.getCell(0)), "LABEL"))
+		if (!Objects.equals(getCellValue(r, 0), "LABEL"))
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "LABEL");
-		if (!Objects.equals(getCellValue(r.getCell(1)), "DEFINITION"))
+		if (!Objects.equals(getCellValue(r, 1), "DEFINITION"))
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "DEFINITION");
-		if (!Objects.equals(getCellValue(r.getCell(2)), "VALUE"))
+		if (!Objects.equals(getCellValue(r, 2), "VALUE"))
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "VALUE");
 	}
 
@@ -233,7 +307,7 @@ public abstract class DatasheetImporter extends AbstractImporter
 			Integer index = metadataLabelToRowIndex.get("Title");
 			if (index != null)
 			{
-				String name = getCellValue(rows.get(index).getCell(0));
+				String name = getCellValue(rows.get(index), 0);
 				if (StringUtils.isEmpty(name))
 					addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, index, "Title");
 			}
@@ -241,7 +315,7 @@ public abstract class DatasheetImporter extends AbstractImporter
 			index = metadataLabelToRowIndex.get("Description");
 			if (index != null)
 			{
-				String description = getCellValue(rows.get(index).getCell(0));
+				String description = getCellValue(rows.get(index), 0);
 				if (StringUtils.isEmpty(description))
 					addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, index, "Description");
 			}
@@ -263,7 +337,7 @@ public abstract class DatasheetImporter extends AbstractImporter
 			if (allCellsEmpty(r))
 				break;
 
-			String label = getCellValue(r.getCell(0));
+			String label = getCellValue(r, 0);
 			metadataLabelToRowIndex.put(label, i);
 		}
 	}
@@ -288,8 +362,66 @@ public abstract class DatasheetImporter extends AbstractImporter
 
 			getOrCreateLocations(context, wb);
 			getOrCreateDataset(context, wb);
+			getOrCreateAttributes(context, wb);
 			getOrCreateCollaborators(context, wb);
 		}
+	}
+
+	private void getOrCreateAttributes(DSLContext context, ReadableWorkbook wb)
+	{
+		wb.findSheet("ATTRIBUTES")
+		  .ifPresent(s -> {
+			  try
+			  {
+				  s.openStream()
+				   .skip(1)
+				   .forEachOrdered(r -> {
+					   if (allCellsEmpty(r))
+						   return;
+
+					   String attribute = getCellValue(r, 0);
+					   String dataType = getCellValue(r, 1);
+					   AttributesDatatype dt = null;
+					   try
+					   {
+						   dt = AttributesDatatype.valueOf(dataType);
+					   }
+					   catch (Exception e)
+					   {
+					   }
+					   String value = getCellValue(r, 2);
+
+					   if (dt == null && StringUtils.isEmpty(attribute) && StringUtils.isEmpty(value))
+						   return;
+
+					   Integer attributeId = attributeToId.get(attribute);
+
+					   if (attributeId == null)
+					   {
+						   AttributesRecord a = context.newRecord(ATTRIBUTES);
+						   a.setName(attribute);
+						   a.setTargetTable("datasets");
+						   a.setDatatype(dt);
+						   a.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+						   a.store();
+
+						   attributeId = a.getId();
+						   attributeToId.put(a.getName(), a.getId());
+					   }
+
+					   AttributedataRecord ad = context.newRecord(ATTRIBUTEDATA);
+					   ad.setAttributeId(attributeId);
+					   ad.setValue(value);
+					   ad.setForeignId(dataset.getId());
+					   ad.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+					   ad.store();
+				   });
+			  }
+			  catch (IOException e)
+			  {
+				  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+			  }
+		  });
 	}
 
 	private void getOrCreateCollaborators(DSLContext context, ReadableWorkbook wb)
@@ -414,7 +546,7 @@ public abstract class DatasheetImporter extends AbstractImporter
 						   location.store();
 					   }
 
-					   locations.add(location);
+					   locationNameToId.put(location.getSiteName(), location.getId());
 				   });
 			  }
 			  catch (IOException e)
@@ -433,49 +565,51 @@ public abstract class DatasheetImporter extends AbstractImporter
 				  DublinCore dublinCore = new DublinCore();
 				  String name = null;
 				  String description = null;
+				  Integer datasetType = getDatasetTypeId();
 
 				  List<Row> rows = s.read();
 				  Integer index = metadataLabelToRowIndex.get("Title");
 				  if (index != null)
 				  {
-					  name = getCellValue(rows.get(index).getCell(2));
+					  name = getCellValue(rows.get(index), 2);
 					  dublinCore.setTitle(new String[]{name});
 				  }
 				  index = metadataLabelToRowIndex.get("Description");
 				  if (index != null)
 				  {
-					  description = getCellValue(rows.get(index).getCell(2));
+					  description = getCellValue(rows.get(index), 2);
 					  dublinCore.setTitle(new String[]{description});
 				  }
 				  index = metadataLabelToRowIndex.get("Rights");
 				  if (index != null)
-					  dublinCore.setRights(new String[]{getCellValue(rows.get(index).getCell(2))});
+					  dublinCore.setRights(new String[]{getCellValue(rows.get(index), 2)});
 				  index = metadataLabelToRowIndex.get("Date of creation");
 				  if (index != null)
-					  dublinCore.setDate(new String[]{getCellValue(rows.get(index).getCell(2))});
+					  dublinCore.setDate(new String[]{getCellValue(rows.get(index), 2)});
 				  index = metadataLabelToRowIndex.get("Publisher");
 				  if (index != null)
-					  dublinCore.setPublisher(new String[]{getCellValue(rows.get(index).getCell(2))});
+					  dublinCore.setPublisher(new String[]{getCellValue(rows.get(index), 2)});
 				  index = metadataLabelToRowIndex.get("Format");
 				  if (index != null)
-					  dublinCore.setFormat(new String[]{getCellValue(rows.get(index).getCell(2))});
+					  dublinCore.setFormat(new String[]{getCellValue(rows.get(index), 2)});
 				  index = metadataLabelToRowIndex.get("Language");
 				  if (index != null)
-					  dublinCore.setLanguage(new String[]{getCellValue(rows.get(index).getCell(2))});
+					  dublinCore.setLanguage(new String[]{getCellValue(rows.get(index), 2)});
 				  index = metadataLabelToRowIndex.get("Source");
 				  if (index != null)
-					  dublinCore.setSource(new String[]{getCellValue(rows.get(index).getCell(2))});
+					  dublinCore.setSource(new String[]{getCellValue(rows.get(index), 2)});
 				  index = metadataLabelToRowIndex.get("Type");
 				  if (index != null)
-					  dublinCore.setType(new String[]{getCellValue(rows.get(index).getCell(2))});
+					  dublinCore.setType(new String[]{getCellValue(rows.get(index), 2)});
 				  index = metadataLabelToRowIndex.get("Subject");
 				  if (index != null)
-					  dublinCore.setSubject(new String[]{getCellValue(rows.get(index).getCell(2))});
+					  dublinCore.setSubject(new String[]{getCellValue(rows.get(index), 2)});
 
 				  // Check if the dataset exists (assuming name+description are unique
 				  dataset = context.selectFrom(DATASETS)
 								   .where(DATASETS.NAME.isNotDistinctFrom(name))
 								   .and(DATASETS.DESCRIPTION.isNotDistinctFrom(description))
+								   .and(DATASETS.DATASETTYPE_ID.eq(datasetType))
 								   .fetchAny();
 
 				  if (dataset == null)
@@ -504,17 +638,17 @@ public abstract class DatasheetImporter extends AbstractImporter
 
 					  index = metadataLabelToRowIndex.get("Contact");
 					  if (index != null)
-						  dataset.setContact(getCellValue(rows.get(index).getCell(2)));
+						  dataset.setContact(getCellValue(rows.get(index), 2));
 
 					  dataset.setDatasetStateId(1);
 					  dataset.setDublinCore(dublinCore);
 					  dataset.store();
 
 
-					  for (LocationsRecord location : locations)
+					  for (Integer locationId : locationNameToId.values())
 					  {
 						  DatasetlocationsRecord dslr = context.selectFrom(DATASETLOCATIONS)
-															   .where(DATASETLOCATIONS.LOCATION_ID.eq(location.getId()))
+															   .where(DATASETLOCATIONS.LOCATION_ID.eq(locationId))
 															   .and(DATASETLOCATIONS.DATASET_ID.eq(dataset.getId()))
 															   .fetchAny();
 
@@ -522,7 +656,7 @@ public abstract class DatasheetImporter extends AbstractImporter
 						  {
 							  dslr = context.newRecord(DATASETLOCATIONS);
 							  dslr.setDatasetId(dataset.getId());
-							  dslr.setLocationId(location.getId());
+							  dslr.setLocationId(locationId);
 							  dslr.store();
 						  }
 					  }

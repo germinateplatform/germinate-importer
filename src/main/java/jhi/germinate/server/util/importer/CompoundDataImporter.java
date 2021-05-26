@@ -289,16 +289,16 @@ public class CompoundDataImporter extends DatasheetImporter
 		String monoisotopicMass = getCellValue(r, columnNameToIndex, "Monoisotopic Mass");
 		String averageMass = getCellValue(r, columnNameToIndex, "Average Mass");
 		String unitAbbr = getCellValue(r, columnNameToIndex, "Unit Abbreviation");
-		String unitDescription = getCellValue(r, columnNameToIndex, "Unit Descriptions");
+		String unitName = getCellValue(r, columnNameToIndex, "Unit Name");
 
 		if (StringUtils.isEmpty(name))
 			addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Name: " + name);
 
-		if (!StringUtils.isEmpty(description) && description.length() > 255)
-			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Description: " + description + " exceeds 255 characters.");
+		if (!StringUtils.isEmpty(name) && name.length() > 255)
+			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Name: " + name + " exceeds 255 characters.");
 
-		if (!StringUtils.isEmpty(unitDescription) && unitDescription.length() > 255)
-			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Unit Descriptions: " + unitDescription + " exceeds 255 characters.");
+		if (!StringUtils.isEmpty(unitName) && unitName.length() > 255)
+			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Unit Name: " + unitName + " exceeds 255 characters.");
 
 		if (!StringUtils.isEmpty(molecularFormula) && molecularFormula.length() > 255)
 			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Molecular Formula: " + molecularFormula + " exceeds 255 characters.");

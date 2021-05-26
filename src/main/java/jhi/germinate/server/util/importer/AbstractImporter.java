@@ -308,6 +308,18 @@ public abstract class AbstractImporter
 		}
 	}
 
+	protected Double getCellValueDouble(Row r, Integer index)
+	{
+		try
+		{
+			return Double.parseDouble(getCellValue(r, index));
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
+	}
+
 	protected boolean cellEmpty(Row r, int i)
 	{
 		return r.getCell(i) == null || r.getCell(i).getType() == CellType.EMPTY || StringUtils.isEmpty(r.getCellText(i).replaceAll("\u00A0", ""));

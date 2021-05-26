@@ -28,4 +28,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'mysql:mysql-connector-java:8.0.16'
     implementation 'org.dhatim:fastexcel-reader:0.10.14'
+
+    implementation 'com.zaxxer:HikariCP:3.4.5'
 }

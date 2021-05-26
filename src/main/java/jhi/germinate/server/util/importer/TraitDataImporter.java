@@ -38,6 +38,10 @@ public class TraitDataImporter extends DatasheetImporter
 	/** Used to check trait values against trait definitions during checking stage */
 	private Map<String, Phenotypes> traitDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
+	private List<String> locationNames;
+
+	private int traitColumnStartIndex = 3;
+
 	public static void main(String[] args)
 	{
 		if (args.length != 10)
@@ -104,6 +108,8 @@ public class TraitDataImporter extends DatasheetImporter
 				  }
 			  });
 
+			this.locationNames = checkLocationSheet(wb.findSheet("LOCATION").orElse(null));
+
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			Sheet dates = wb.findSheet("RECORDING_DATES").orElse(null);
 			checkDataAndRecordingDates(data, dates);
@@ -113,6 +119,25 @@ public class TraitDataImporter extends DatasheetImporter
 			e.printStackTrace();
 			addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "'PHENOTYPES' sheet not found");
 		}
+	}
+
+	private void checkPredefinedHeaders(Row headers)
+	{
+		String line = getCellValue(headers, 0);
+		String rep = getCellValue(headers, 1);
+		String treatment = getCellValue(headers, 2);
+		String location = getCellValue(headers, 3);
+
+		// Check the predefined column headers are correct
+		if (!Objects.equals(line, "Line/Phenotype"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Line/Phenotype' column not found");
+		if (!Objects.equals(rep, "Rep"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Rep' column not found");
+		if (!Objects.equals(treatment, "Treatment"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Treatment' column not found");
+		// If location is defined, then this is a new template, so move the trait start index
+		if (Objects.equals(location, "Location"))
+			this.traitColumnStartIndex = 4;
 	}
 
 	private void checkDataAndRecordingDates(Sheet data, Sheet dates)
@@ -125,6 +150,10 @@ public class TraitDataImporter extends DatasheetImporter
 				return;
 			}
 
+			data.openStream()
+				.findFirst()
+				.ifPresent(this::checkPredefinedHeaders);
+
 			// Check trait names in data sheet against database and phenotypes sheet
 			data.openStream()
 				.findFirst()
@@ -134,10 +163,18 @@ public class TraitDataImporter extends DatasheetImporter
 				.skip(1)
 				.forEachOrdered(this::checkGermplasmName);
 
+			data.openStream()
+				.skip(1)
+				.forEachOrdered(this::checkLocationName);
+
 			checkData(data);
 
 			if (dates != null)
 			{
+				dates.openStream()
+					 .findFirst()
+					 .ifPresent(this::checkPredefinedHeaders);
+
 				// Check trait names in dates sheet against database and phenotypes sheet
 				dates.openStream()
 					 .findFirst()
@@ -181,7 +218,7 @@ public class TraitDataImporter extends DatasheetImporter
 								if (!Objects.equals(getCellValue(dataRows.get(i), 0), getCellValue(datesRow, 0)))
 									addImportResult(ImportStatus.TRIALS_DATA_DATE_IDENTIFIER_MISMATCH, i, "DATA and RECORDING_DATES headers don't match");
 
-								for (int c = 3; c < datesRow.getCellCount(); c++)
+								for (int c = this.traitColumnStartIndex; c < datesRow.getCellCount(); c++)
 								{
 									String dateString = getCellValue(datesRow, c);
 									Date date = getCellValueDate(datesRow, c);
@@ -203,6 +240,16 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 	}
 
+	private void checkLocationName(Row r) {
+		if (allCellsEmpty(r) || this.traitColumnStartIndex < 4)
+			return;
+
+		String location = getCellValue(r, 3);
+
+		if (!StringUtils.isEmpty(location) && !this.locationNames.contains(location))
+			addImportResult(ImportStatus.CLIMATE_MISSING_LOCATION_DECLARATION, r.getRowNum(), "A location referenced in 'DATA' is not defined in 'LOCATION': " + location);
+	}
+
 	private void checkGermplasmName(Row r)
 	{
 		if (allCellsEmpty(r))
@@ -210,13 +257,15 @@ public class TraitDataImporter extends DatasheetImporter
 
 		String germplasmName = getCellValue(r, 0);
 
-		if (!germplasmToId.containsKey(germplasmName))
+		if (StringUtils.isEmpty(germplasmName))
+			addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "ACCENUMB missing");
+		else if (!germplasmToId.containsKey(germplasmName))
 			addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, r.getRowNum(), germplasmName);
 	}
 
 	private void checkTraitNames(Row r)
 	{
-		for (int i = 3; i < r.getCellCount(); i++)
+		for (int i = this.traitColumnStartIndex; i < r.getCellCount(); i++)
 		{
 			String traitName = getCellValue(r, i);
 			if (!StringUtils.isEmpty(traitName) && !traitDefinitions.containsKey(traitName))
@@ -264,7 +313,7 @@ public class TraitDataImporter extends DatasheetImporter
 		String shortName = getCellValue(r, columnNameToIndex.get("Short Name"));
 		String dataType = getCellValue(r, columnNameToIndex.get("Data Type"));
 		String unitAbbr = getCellValue(r, columnNameToIndex.get("Unit Abbreviation"));
-		String unitDescription = getCellValue(r, columnNameToIndex.get("Unit Descriptions"));
+		String unitName = getCellValue(r, columnNameToIndex.get("Unit Name"));
 		String categories = getCellValue(r, columnNameToIndex.get("Trait categories (comma separated)"));
 		String minimum = getCellValue(r, columnNameToIndex.get("Min (only for numeric traits)"));
 		String maximum = getCellValue(r, columnNameToIndex.get("Max (only for numeric traits)"));
@@ -276,19 +325,20 @@ public class TraitDataImporter extends DatasheetImporter
 		if (!StringUtils.isEmpty(shortName) && shortName.length() > 10)
 			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Short name: " + shortName + " exceeds 10 characters.");
 
-		if (!StringUtils.isEmpty(description) && description.length() > 255)
-			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Description: " + description + " exceeds 255 characters.");
+		if (!StringUtils.isEmpty(name) && name.length() > 255)
+			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Name: " + name + " exceeds 255 characters.");
 
-		if (!StringUtils.isEmpty(unitDescription) && unitDescription.length() > 255)
-			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Unit Descriptions: " + unitDescription + " exceeds 255 characters.");
+		if (!StringUtils.isEmpty(unitName) && unitName.length() > 255)
+			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Unit Name: " + unitName + " exceeds 255 characters.");
 
-
+		PhenotypesDatatype dt;
 		try
 		{
-			getDataType(dataType);
+			dt = getDataType(dataType);
 		}
-		catch (IllegalArgumentException e)
+		catch (Exception e)
 		{
+			dt = PhenotypesDatatype.text;
 			addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_DATATYPE, r.getRowNum(), "Data Type: " + dataType);
 		}
 
@@ -363,13 +413,7 @@ public class TraitDataImporter extends DatasheetImporter
 			trait.setName(name);
 			trait.setShortName(shortName);
 			trait.setDescription(description);
-			try
-			{
-				trait.setDatatype(getDataType(dataType));
-			}
-			catch (IllegalArgumentException e)
-			{
-			}
+			trait.setDatatype(dt);
 			trait.setRestrictions(restrictions);
 		}
 		catch (Exception e)
@@ -391,7 +435,7 @@ public class TraitDataImporter extends DatasheetImporter
 			{
 				// Get the data type for each column
 				List<PhenotypesDatatype> dataTypes = headers.stream()
-															.skip(3)
+															.skip(this.traitColumnStartIndex)
 															.map(this::getCellValue)
 															.filter(c -> !StringUtils.isEmpty(c))
 															.map(c -> traitDefinitions.get(c).getDatatype())
@@ -401,14 +445,14 @@ public class TraitDataImporter extends DatasheetImporter
 				s.openStream()
 				 .skip(1)
 				 .forEachOrdered(r -> {
-					 for (int i = 3; i < r.getPhysicalCellCount(); i++)
+					 for (int i = this.traitColumnStartIndex; i < r.getPhysicalCellCount(); i++)
 					 {
 						 String cellValue = getCellValue(r, i);
 
 						 if (StringUtils.isEmpty(cellValue))
 							 continue;
 
-						 switch (dataTypes.get(i - 3))
+						 switch (dataTypes.get(i - this.traitColumnStartIndex))
 						 {
 							 case numeric:
 								 try
@@ -445,7 +489,7 @@ public class TraitDataImporter extends DatasheetImporter
 				{
 					// Store trait name to column index mapping
 					Map<String, Integer> traitIndex = new HashMap<>();
-					for (int i = 3; i < headers.getPhysicalCellCount(); i++)
+					for (int i = this.traitColumnStartIndex; i < headers.getPhysicalCellCount(); i++)
 						traitIndex.put(getCellValue(headers, i), i);
 
 					s.openStream()
@@ -748,6 +792,11 @@ public class TraitDataImporter extends DatasheetImporter
 	{
 		try
 		{
+			// Before we start, let's check the headers again to set the correct trait start index
+			data.openStream()
+				.findFirst()
+				.ifPresent(this::checkPredefinedHeaders);
+
 			List<Row> dataRows = data.read();
 			List<Row> datesRows = null;
 
@@ -771,6 +820,7 @@ public class TraitDataImporter extends DatasheetImporter
 
 				String germplasmName = getCellValue(dataRow, 0);
 				String rep = getCellValue(dataRow, 1);
+				String locationName = getCellValue(dataRow, 3);
 				Integer germplasmId;
 
 				// If it's a rep, adjust the name
@@ -785,7 +835,7 @@ public class TraitDataImporter extends DatasheetImporter
 				if (!StringUtils.isEmpty(treatmentName))
 					treatmentId = treatmentToId.get(treatmentName);
 
-				for (int c = 3; c < dataRow.getCellCount(); c++)
+				for (int c = this.traitColumnStartIndex; c < dataRow.getCellCount(); c++)
 				{
 					String name = getCellValue(headerRow, c);
 
@@ -812,6 +862,8 @@ public class TraitDataImporter extends DatasheetImporter
 					record.setPhenotypeValue(value);
 					if (date != null)
 						record.setRecordingDate(new Timestamp(date.getTime()));
+					if (!StringUtils.isEmpty(locationName))
+						record.setLocationId(this.locationNameToId.get(locationName));
 
 					newData.add(record);
 
