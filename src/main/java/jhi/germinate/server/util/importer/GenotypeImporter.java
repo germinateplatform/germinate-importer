@@ -139,7 +139,10 @@ public class GenotypeImporter extends DatasheetImporter
 	{
 		super.importFile(wb);
 
-		exportData(wb);
+		// Only export the file again if it doesn't exist. If we get to the import step, a check will either have been run (then the file will exist),
+		// or this is a direct call to import without a check and then it won't exist at all.
+		if (!this.txtFile.exists() || this.txtFile.length() < 1)
+			exportData(wb);
 
 		flatFileImporter.setDataset(dataset);
 		flatFileImporter.importFile();
