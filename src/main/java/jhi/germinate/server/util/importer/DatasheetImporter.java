@@ -10,7 +10,7 @@ import org.jooq.DSLContext;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.*;
 
 import static jhi.germinate.server.database.codegen.tables.Attributedata.*;
@@ -35,7 +35,7 @@ public abstract class DatasheetImporter extends AbstractImporter
 	protected Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private   Map<String, Integer> countryCode2ToId;
 	protected Map<String, Integer> metadataLabelToRowIndex;
-	private   Map<String, Integer> attributeToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private   Map<String, Integer> attributeToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	public DatasheetImporter(File input, boolean isUpdate, boolean deleteOnFail, int userId)
 	{
@@ -45,14 +45,20 @@ public abstract class DatasheetImporter extends AbstractImporter
 	@Override
 	protected void prepare()
 	{
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			countryCode2ToId = context.selectFrom(COUNTRIES)
 									  .fetchMap(COUNTRIES.COUNTRY_CODE2, COUNTRIES.ID);
 
 			context.selectFrom(ATTRIBUTES)
 				   .where(ATTRIBUTES.TARGET_TABLE.eq("datasets"))
 				   .forEach(a -> attributeToId.put(a.getName(), a.getId()));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 
@@ -110,7 +116,7 @@ public abstract class DatasheetImporter extends AbstractImporter
 				 String value = getCellValue(r, 2);
 
 				 if (dt == null && StringUtils.isEmpty(attribute) && StringUtils.isEmpty(value))
-				 	return;
+					 return;
 
 				 if (dt == null)
 					 addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "Data Type: " + dataType);
@@ -345,8 +351,9 @@ public abstract class DatasheetImporter extends AbstractImporter
 	@Override
 	protected void importFile(ReadableWorkbook wb)
 	{
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			wb.findSheet("METADATA")
 			  .ifPresent(s -> {
 				  try
@@ -364,6 +371,11 @@ public abstract class DatasheetImporter extends AbstractImporter
 			getOrCreateDataset(context, wb);
 			getOrCreateAttributes(context, wb);
 			getOrCreateCollaborators(context, wb);
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 

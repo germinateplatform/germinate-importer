@@ -29,7 +29,7 @@ public class ClimateDataImporter extends DatasheetImporter
 	/** Required column headers */
 	private static final String[] COLUMN_HEADERS = {"Name", "Short Name", "Description", "Data Type", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
 
-	private List<String> locationNames;
+	private List<String>          locationNames;
 	private Map<String, Integer>  climateNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<String, Integer>  columnNameToIndex;
 	/** Used to check climate values against climate definitions during checking stage */
@@ -55,14 +55,20 @@ public class ClimateDataImporter extends DatasheetImporter
 	{
 		super.prepare();
 
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			context.selectFrom(CLIMATES)
 				   .forEach(p -> climateNameToId.put(p.getName(), p.getId()));
 
 			context.selectFrom(CLIMATES)
 				   .fetchInto(Climates.class)
 				   .forEach(p -> climateDefinitions.put(p.getName(), p));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 
@@ -328,8 +334,9 @@ public class ClimateDataImporter extends DatasheetImporter
 	{
 		super.importFile(wb);
 
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			wb.findSheet("CLIMATES")
 			  .ifPresent(s -> {
 				  try
@@ -349,6 +356,11 @@ public class ClimateDataImporter extends DatasheetImporter
 
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			importData(context, data);
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 

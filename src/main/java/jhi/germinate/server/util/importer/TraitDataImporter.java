@@ -62,8 +62,9 @@ public class TraitDataImporter extends DatasheetImporter
 	{
 		super.prepare();
 
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			context.selectFrom(PHENOTYPES)
 				   .forEach(p -> traitNameToId.put(p.getName(), p.getId()));
 
@@ -76,6 +77,11 @@ public class TraitDataImporter extends DatasheetImporter
 
 			context.selectFrom(TREATMENTS)
 				   .forEach(t -> treatmentToId.put(t.getName(), t.getId()));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 
@@ -240,7 +246,8 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 	}
 
-	private void checkLocationName(Row r) {
+	private void checkLocationName(Row r)
+	{
 		if (allCellsEmpty(r) || this.traitColumnStartIndex < 4)
 			return;
 
@@ -571,8 +578,9 @@ public class TraitDataImporter extends DatasheetImporter
 	{
 		super.importFile(wb);
 
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			wb.findSheet("PHENOTYPES")
 			  .ifPresent(s -> {
 				  try
@@ -596,6 +604,11 @@ public class TraitDataImporter extends DatasheetImporter
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			Sheet dates = wb.findSheet("RECORDING_DATES").orElse(null);
 			importData(context, data, dates);
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 

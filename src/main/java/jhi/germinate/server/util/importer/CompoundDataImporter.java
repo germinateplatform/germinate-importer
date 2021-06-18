@@ -53,8 +53,9 @@ public class CompoundDataImporter extends DatasheetImporter
 	{
 		super.prepare();
 
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			context.selectFrom(COMPOUNDS)
 				   .forEach(c -> compoundNameToId.put(c.getName(), c.getId()));
 
@@ -63,6 +64,10 @@ public class CompoundDataImporter extends DatasheetImporter
 
 			context.selectFrom(GERMINATEBASE)
 				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 
@@ -342,8 +347,9 @@ public class CompoundDataImporter extends DatasheetImporter
 	{
 		super.importFile(wb);
 
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			wb.findSheet("COMPOUNDS")
 			  .ifPresent(s -> {
 				  try
@@ -364,6 +370,10 @@ public class CompoundDataImporter extends DatasheetImporter
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			Sheet dates = wb.findSheet("RECORDING_DATES").orElse(null);
 			importData(context, data, dates);
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 

@@ -52,7 +52,7 @@ public class McpdImporter extends AbstractImporter
 	private Map<Integer, LocationsRecord>     locationRecords;
 	private List<Integer>                     validCollsrc;
 	private List<Integer>                     validSampstat;
-	private List<Integer> 					  validMlsStatus;
+	private List<Integer>                     validMlsStatus;
 	private List<Integer>                     validStorage;
 	private Map<String, Integer>              entityTypeToId  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -74,8 +74,9 @@ public class McpdImporter extends AbstractImporter
 	@Override
 	protected void prepare()
 	{
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			context.selectFrom(GERMINATEBASE)
 				   .forEach(g -> gidToId.put(g.getGeneralIdentifier(), g.getId()));
 
@@ -83,7 +84,7 @@ public class McpdImporter extends AbstractImporter
 				   .forEach(c -> countryCodeToId.put(c.getCountryCode3(), c.getId()));
 
 			validMlsStatus = context.selectFrom(MLSSTATUS)
-								    .fetch(MLSSTATUS.ID);
+									.fetch(MLSSTATUS.ID);
 
 			validCollsrc = context.selectFrom(COLLECTINGSOURCES)
 								  .fetch(COLLECTINGSOURCES.ID);
@@ -108,6 +109,11 @@ public class McpdImporter extends AbstractImporter
 
 			locationRecords = context.selectFrom(LOCATIONS)
 									 .fetchMap(LOCATIONS.ID);
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 
@@ -422,8 +428,9 @@ public class McpdImporter extends AbstractImporter
 	@Override
 	protected void importFile(ReadableWorkbook wb)
 	{
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			// Import the data
 			wb.getSheets()
 			  .filter(s -> Objects.equals(s.getName(), "DATA"))
@@ -480,13 +487,19 @@ public class McpdImporter extends AbstractImporter
 				  }
 			  });
 		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+		}
 	}
 
 	@Override
 	protected void updateFile(ReadableWorkbook wb)
 	{
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			wb.getSheets()
 			  .filter(s -> Objects.equals(s.getName(), "DATA"))
 			  .findFirst()
@@ -541,6 +554,11 @@ public class McpdImporter extends AbstractImporter
 					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 				  }
 			  });
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 

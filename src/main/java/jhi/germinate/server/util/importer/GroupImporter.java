@@ -8,7 +8,7 @@ import org.jooq.DSLContext;
 import org.jooq.tools.StringUtils;
 
 import java.io.*;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,8 +53,9 @@ public class GroupImporter extends AbstractImporter
 	@Override
 	protected void prepare()
 	{
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			context.selectFrom(GERMINATEBASE)
 				   .forEach(g -> accenumbToId.put(g.getName(), g.getId()));
 
@@ -63,6 +64,11 @@ public class GroupImporter extends AbstractImporter
 
 			context.selectFrom(LOCATIONS)
 				   .forEach(l -> locationNameToId.put(l.getSiteName(), l.getId()));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 
@@ -338,8 +344,9 @@ public class GroupImporter extends AbstractImporter
 	@Override
 	protected void importFile(ReadableWorkbook wb)
 	{
-		try (DSLContext context = Database.getContext())
+		try (Connection conn = Database.getConnection())
 		{
+			DSLContext context = Database.getContext(conn);
 			try
 			{
 				wb.getSheets()
@@ -420,6 +427,11 @@ public class GroupImporter extends AbstractImporter
 			{
 				addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "'GERMPLASM' sheet not found");
 			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
 	}
 
