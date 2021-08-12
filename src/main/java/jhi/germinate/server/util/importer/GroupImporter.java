@@ -37,7 +37,7 @@ public class GroupImporter extends AbstractImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 10)
+		if (args.length != 11)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
 		GroupImporter importer = new GroupImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));

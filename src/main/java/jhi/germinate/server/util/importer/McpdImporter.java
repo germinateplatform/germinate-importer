@@ -31,6 +31,7 @@ import static jhi.germinate.server.database.codegen.tables.Pedigreedefinitions.*
 import static jhi.germinate.server.database.codegen.tables.Pedigreenotations.*;
 import static jhi.germinate.server.database.codegen.tables.Storage.*;
 import static jhi.germinate.server.database.codegen.tables.Storagedata.*;
+import static jhi.germinate.server.database.codegen.tables.Synonyms.*;
 import static jhi.germinate.server.database.codegen.tables.Taxonomies.*;
 
 /**
@@ -58,7 +59,7 @@ public class McpdImporter extends AbstractImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 10)
+		if (args.length != 11)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
 		McpdImporter importer = new McpdImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
@@ -271,9 +272,18 @@ public class McpdImporter extends AbstractImporter
 
 		// Check if country is a valid 3-letter code
 		String countryCode = getCellValue(r, columnNameToIndex, McpdField.ORIGCTY.name());
-		if (!StringUtils.isEmpty(countryCode) && !countryCodeToId.containsKey(countryCode))
-			addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), countryCode);
+		Integer countryId = null;
+		if (!StringUtils.isEmpty(countryCode))
+		{
+			countryId = countryCodeToId.get(countryCode);
+			if (countryId == null)
+				addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), countryCode);
+		}
 
+		// Check if the collsite is specified, but the country isn't
+		String collsite = getCellValue(r, columnNameToIndex, McpdField.COLLSITE.name());
+		if (!StringUtils.isEmpty(collsite) && countryId == null)
+			addImportResult(ImportStatus.GENERIC_MISSING_COUNTRY, r.getRowNum(), collsite + " " + countryCode);
 
 		// Check if declatitute is a number
 		String declatitude = getCellValue(r, columnNameToIndex, McpdField.DECLATITUDE.name());
@@ -701,17 +711,15 @@ public class McpdImporter extends AbstractImporter
 			insert.germinatebase.setTaxonomyId(insert.taxonomy.getId());
 		}
 
-		if (!StringUtils.isEmpty(insert.country.getCountryCode3()))
-		{
-			insert.country = getCountry(context, insert.country);
-			insert.location.setCountryId(insert.country.getId());
-		}
+		String countryCode = insert.country.getCountryCode3();
+		int countryId = StringUtils.isEmpty(countryCode) ? -1 : countryCodeToId.get(countryCode);
+		insert.location.setCountryId(countryId);
 
 		if (!StringUtils.isEmpty(insert.location.getSiteName()))
 		{
 			insert.location = getOrCreateLocation(context, insert.location);
 		}
-		else if (!StringUtils.isEmpty(insert.country.getCountryCode3()))
+		else if (countryId != -1)
 		{
 			// We get here, if there isn't a specific location, but a country. In this case, we add a dummy location.
 			insert.location.setSiteName("N/A");
@@ -745,6 +753,35 @@ public class McpdImporter extends AbstractImporter
 		else
 		{
 			insert.germinatebase = getOrCreateGermplasm(context, insert.germinatebase);
+		}
+
+		List<String> synonyms = new ArrayList<>();
+		// Add the ACCENAME as a synonym
+		if (!StringUtils.isEmpty(insert.germinatebase.getNumber()))
+			synonyms.add(insert.germinatebase.getNumber());
+		// Add all OTHERNUMB parts as synonyms
+		if (!StringUtils.isEmpty(insert.germinatebase.getOthernumb()))
+		{
+			Arrays.stream(insert.germinatebase.getOthernumb().split(";"))
+				  .map(String::trim)
+				  .forEach(synonyms::add);
+		}
+
+		// Insert/Update the synonyms if there are any.
+		if (synonyms.size() > 0)
+		{
+			SynonymsRecord synRec = context.selectFrom(SYNONYMS).where(SYNONYMS.SYNONYMTYPE_ID.eq(1).and(SYNONYMS.FOREIGN_ID.eq(insert.germinatebase.getId()))).fetchAny();
+
+			if (synRec == null)
+			{
+				synRec = context.newRecord(SYNONYMS);
+				synRec.setForeignId(insert.germinatebase.getId());
+				synRec.setSynonymtypeId(1);
+				synRec.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			}
+
+			synRec.setSynonyms(synonyms.toArray(new String[0]));
+			synRec.store();
 		}
 
 		if (!StringUtils.isEmpty(insert.pedigree.getDefinition()))

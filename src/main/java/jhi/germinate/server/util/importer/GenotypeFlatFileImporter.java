@@ -12,8 +12,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.*;
+import java.time.*;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Logger;
 
 import static jhi.germinate.server.database.codegen.tables.Datasetmembers.*;
 import static jhi.germinate.server.database.codegen.tables.Datasets.*;
@@ -37,6 +39,7 @@ public class GenotypeFlatFileImporter
 	protected File                            input;
 	private   File                            hdf5;
 	private   Map<ImportStatus, ImportResult> errorMap      = new HashMap<>();
+	private   Integer userId;
 
 	private String[]            markers       = null;
 	private int[]               markerIds     = null;
@@ -48,27 +51,36 @@ public class GenotypeFlatFileImporter
 	private Set<Integer> germplasmIdsInFile = new HashSet<>();
 
 	private DatasetsRecord dataset;
+	private int datasetStateId;
+
+	private Instant start;
+
+	private CountDownLatch latch;
 
 	public static void main(String[] args)
 	{
-		if (args.length != 10)
+		if (args.length != 11)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		GenotypeFlatFileImporter importer = new GenotypeFlatFileImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]));
+		GenotypeFlatFileImporter importer = new GenotypeFlatFileImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
 		importer.init(args);
 		importer.run(AbstractImporter.RunType.getType(args[8]));
 	}
 
-	public GenotypeFlatFileImporter(File input, boolean isUpdate, boolean deleteOnFail)
+	public GenotypeFlatFileImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, Integer userId)
 	{
 		this.input = input;
 		this.isUpdate = isUpdate;
 		this.deleteOnFail = deleteOnFail;
+		this.userId = userId;
+		this.datasetStateId = datasetStateId;
 	}
 
 	protected void init(String[] args)
 	{
 		Database.init(args[0], args[1], args[2], args[3], args[4], false);
+
+		start = Instant.now();
 	}
 
 	public void run(AbstractImporter.RunType runtype)
@@ -105,6 +117,11 @@ public class GenotypeFlatFileImporter
 		{
 			e.printStackTrace();
 		}
+
+		Duration duration = Duration.between(start, Instant.now());
+
+		Logger.getLogger("").info("DURATION: " + duration);
+		System.out.println("DURATION: " + duration);
 	}
 
 	private List<ImportResult> getImportResult()
@@ -128,7 +145,8 @@ public class GenotypeFlatFileImporter
 			context.selectFrom(MARKERS)
 				   .forEach(m -> markerToId.put(m.getMarkerName(), m.getId()));
 		}
-		catch (SQLException e) {
+		catch (SQLException e)
+		{
 			e.printStackTrace();
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
@@ -296,6 +314,7 @@ public class GenotypeFlatFileImporter
 			map.setName(headerMapping.get("map"));
 			map.setDescription(headerMapping.get("map"));
 			map.setVisibility(true);
+			map.setUserId(userId);
 			map.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 			map.store();
 
@@ -314,7 +333,7 @@ public class GenotypeFlatFileImporter
 					record.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 					newMarkersToIndices.put(record, i);
 
-					if (newMarkersToIndices.size() > 10000)
+					if (newMarkersToIndices.size() > 2000)
 					{
 						insertMarkers(context, newMarkersToIndices);
 						newMarkersToIndices.clear();
@@ -331,51 +350,6 @@ public class GenotypeFlatFileImporter
 			{
 				insertMarkers(context, newMarkersToIndices);
 				newMarkersToIndices.clear();
-			}
-
-			if (!CollectionUtils.isEmpty(positions) && !CollectionUtils.isEmpty(chromosomes))
-			{
-				List<MapdefinitionsRecord> newDataToIndices = new ArrayList<>();
-
-				for (int i = 0; i < markers.length; i++)
-				{
-					int markerId = markerIds[i];
-					int mapId = map.getId();
-					int mapFeatureTypeId = mapFeatureType.getId();
-					String chromosome = chromosomes[i];
-					Double position = 0d;
-					try
-					{
-						position = Double.parseDouble(positions[i]);
-					}
-					catch (Exception e)
-					{
-					}
-
-					MapdefinitionsRecord record = context.newRecord(MAPDEFINITIONS);
-					record.setMarkerId(markerId);
-					record.setMapId(mapId);
-					record.setMapfeaturetypeId(mapFeatureTypeId);
-					record.setChromosome(chromosome);
-					record.setDefinitionStart(position);
-					record.setDefinitionEnd(position);
-					record.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-					newDataToIndices.add(record);
-
-					if (newDataToIndices.size() > 10000)
-					{
-						context.batchStore(newDataToIndices)
-							   .execute();
-						newDataToIndices.clear();
-					}
-				}
-
-				if (newDataToIndices.size() > 0)
-				{
-					context.batchStore(newDataToIndices)
-						   .execute();
-					newDataToIndices.clear();
-				}
 			}
 
 			ExperimentsRecord experiment = context.selectFrom(EXPERIMENTS)
@@ -395,6 +369,7 @@ public class GenotypeFlatFileImporter
 				dataset = context.newRecord(DATASETS);
 				dataset.setExperimentId(experiment.getId());
 				dataset.setDatasettypeId(1);
+				dataset.setDatasetStateId(datasetStateId);
 				// Hide it initially. We don't want people using half-imported data.
 				dataset.setDatasetStateId(3);
 				dataset.setName(headerMapping.get("dataset"));
@@ -412,57 +387,165 @@ public class GenotypeFlatFileImporter
 			dataset.setSourceFile(input.getName() + ".hdf5");
 			dataset.store();
 
-			List<DatasetmembersRecord> dsMembers = markerIdsInFile.stream()
-																  .map(id -> {
-																	  DatasetmembersRecord dsm = context.newRecord(DATASETMEMBERS);
-																	  dsm.setDatasetId(dataset.getId());
-																	  dsm.setDatasetmembertypeId(1);
-																	  dsm.setForeignId(id);
-																	  dsm.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-																	  return dsm;
-																  })
-																  .collect(Collectors.toList());
-			int startPosition = 0;
+			final Integer mftId = mapFeatureType.getId();
 
-			while (startPosition < dsMembers.size())
+			if (!CollectionUtils.isEmpty(positions) && !CollectionUtils.isEmpty(chromosomes))
 			{
-				List<DatasetmembersRecord> batch = dsMembers.subList(startPosition, startPosition + Math.min(10000, dsMembers.size() - startPosition));
-				startPosition += batch.size();
+				latch = new CountDownLatch(2);
 
-				context.batchStore(batch)
-					   .execute();
+				new Thread(() -> {
+					try
+					{
+						// Write the data to a temporary file
+						File temp = Files.createTempFile("mapdefinitions", "txt").toFile();
+						try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp, StandardCharsets.UTF_8)))
+						{
+							bw.write("mapfeaturetype_id\tmarker_id\tmap_id\tdefinition_start\tdefinition_end\tchromosome");
+							bw.newLine();
+							for (int i = 0; i < markers.length; i++)
+							{
+								int markerId = markerIds[i];
+								int mapId = map.getId();
+								int mapFeatureTypeId = mftId;
+								String chromosome = chromosomes[i];
+								Double position = 0d;
+								try
+								{
+									position = Double.parseDouble(positions[i]);
+								}
+								catch (Exception e)
+								{
+								}
+
+								bw.write(mapFeatureTypeId + "\t" + markerId + "\t" + mapId + "\t" + position + "\t" + position + "\t" + chromosome);
+								bw.newLine();
+							}
+						}
+
+						try (Connection conn2 = Database.getConnection())
+						{
+							DSLContext context2 = Database.getContext(conn2);
+							context2.execute("SET autocommit=0;");
+							context2.execute("SET unique_checks=0;");
+							context2.execute("SET foreign_key_checks=0;");
+
+							// Then load it using the LOAD INTO mechanism
+							context.loadInto(MAPDEFINITIONS)
+								   .bulkAfter(2000)
+								   .loadCSV(temp, StandardCharsets.UTF_8)
+								   .fields(MAPDEFINITIONS.MAPFEATURETYPE_ID, MAPDEFINITIONS.MARKER_ID, MAPDEFINITIONS.MAP_ID, MAPDEFINITIONS.DEFINITION_START, MAPDEFINITIONS.DEFINITION_END, MAPDEFINITIONS.CHROMOSOME)
+								   .separator('\t')
+								   .execute();
+
+							context2.execute("SET autocommit=1;");
+							context2.execute("SET unique_checks=1;");
+							context2.execute("SET foreign_key_checks=1;");
+						}
+						catch (SQLException e)
+						{
+							addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+						}
+					}
+					catch (IOException e)
+					{
+						addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+					}
+					finally
+					{
+						latch.countDown();
+					}
+				}).start();
+			}
+			else
+			{
+				latch = new CountDownLatch(1);
 			}
 
-			dsMembers = germplasmIdsInFile.stream()
-										  .map(id -> {
-											  DatasetmembersRecord dsm = context.newRecord(DATASETMEMBERS);
-											  dsm.setDatasetId(dataset.getId());
-											  dsm.setDatasetmembertypeId(2);
-											  dsm.setForeignId(id);
-											  dsm.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-											  return dsm;
-										  })
-										  .collect(Collectors.toList());
+			new Thread(() -> {
+				try
+				{
+					// Write the data to a temporary file
+					File temp = Files.createTempFile("datasetmembers", "txt").toFile();
+					try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp, StandardCharsets.UTF_8)))
+					{
+						bw.write("dataset_id\tforeign_id\tdatasetmembertype_id");
+						bw.newLine();
 
-			startPosition = 0;
+						markerIdsInFile.forEach(id -> {
+							try
+							{
+								bw.write(dataset.getId() + "\t" + id + "\t1");
+								bw.newLine();
+							}
+							catch (IOException e) {
+								// Do nothing here
+							}
+						});
 
-			while (startPosition < dsMembers.size())
+						germplasmIdsInFile.forEach(id -> {
+							try
+							{
+								bw.write(dataset.getId() + "\t" + id + "\t2");
+								bw.newLine();
+							}
+							catch (IOException e) {
+								// Do nothing here
+							}
+						});
+					}
+
+					try (Connection conn2 = Database.getConnection())
+					{
+						DSLContext context2 = Database.getContext(conn2);
+						context2.execute("SET autocommit=0;");
+						context2.execute("SET unique_checks=0;");
+						context2.execute("SET foreign_key_checks=0;");
+
+						// Then load it using the LOAD INTO mechanism
+						context.loadInto(DATASETMEMBERS)
+							   .bulkAfter(2000)
+							   .loadCSV(temp, StandardCharsets.UTF_8)
+							   .fields(DATASETMEMBERS.DATASET_ID, DATASETMEMBERS.FOREIGN_ID, DATASETMEMBERS.DATASETMEMBERTYPE_ID)
+							   .separator('\t')
+							   .execute();
+
+						context2.execute("SET autocommit=1;");
+						context2.execute("SET unique_checks=1;");
+						context2.execute("SET foreign_key_checks=1;");
+					}
+					catch (SQLException e)
+					{
+						addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+					}
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
+				finally
+				{
+					latch.countDown();
+				}
+			}).start();
+
+			try
 			{
-				List<DatasetmembersRecord> batch = dsMembers.subList(startPosition, startPosition + Math.min(10000, dsMembers.size() - startPosition));
-				startPosition += batch.size();
+				// Wait for the others to finish
+				latch.await();
 
-				context.batchStore(batch)
-					   .execute();
+				FJTabbedToHdf5Converter converter = new FJTabbedToHdf5Converter(input, hdf5);
+				// Tell it to skip the map definition. It skips the other headers automatically anyway.
+				converter.setSkipLines(2);
+				converter.convertToHdf5();
+
+				// Now set it to be public. Everything has been imported successfully.
+				dataset.setDatasetStateId(1);
+				dataset.store(DATASETS.DATASET_STATE_ID);
 			}
-
-			FJTabbedToHdf5Converter converter = new FJTabbedToHdf5Converter(input, hdf5);
-			// Tell it to skip the map definition. It skips the other headers automatically anyway.
-			converter.setSkipLines(2);
-			converter.convertToHdf5();
-
-			// Now set it to be public. Everything has been imported successfully.
-			dataset.setDatasetStateId(1);
-			dataset.store(DATASETS.DATASET_STATE_ID);
+			catch (InterruptedException e)
+			{
+				addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+			}
 		}
 		catch (SQLException | IOException e)
 		{

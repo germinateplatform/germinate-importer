@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.time.*;
 import java.util.*;
 import java.util.logging.*;
 
@@ -32,6 +33,8 @@ public abstract class AbstractImporter
 	protected final int                             userId;
 	private         Map<ImportStatus, ImportResult> errorMap = new HashMap<>();
 
+	private Instant start;
+
 	public AbstractImporter(File input, boolean isUpdate, boolean deleteOnFail, int userId)
 	{
 		this.input = input;
@@ -43,6 +46,8 @@ public abstract class AbstractImporter
 	protected void init(String[] args)
 	{
 		Database.init(args[0], args[1], args[2], args[3], args[4], false);
+
+		start = Instant.now();
 	}
 
 	public void run(RunType runtype)
@@ -89,6 +94,11 @@ public abstract class AbstractImporter
 		{
 			e.printStackTrace();
 		}
+
+		Duration duration = Duration.between(start, Instant.now());
+
+		Logger.getLogger("").info("DURATION: " + duration);
+		System.out.println("DURATION: " + duration);
 	}
 
 	protected BigDecimal getCellValueBigDecimal(Row r, Map<String, Integer> columnNameToIndex, String column)

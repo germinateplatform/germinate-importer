@@ -32,14 +32,16 @@ public abstract class DatasheetImporter extends AbstractImporter
 	private static final String[] METADATA_LABELS = {"Title", "Description", "Rights", "Date of creation", "Publisher", "Format", "Language", "Source", "Type", "Subject", "Contact"};
 
 	protected DatasetsRecord       dataset;
+	protected int datasetStateId;
 	protected Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private   Map<String, Integer> countryCode2ToId;
 	protected Map<String, Integer> metadataLabelToRowIndex;
 	private   Map<String, Integer> attributeToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-	public DatasheetImporter(File input, boolean isUpdate, boolean deleteOnFail, int userId)
+	public DatasheetImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
 	{
 		super(input, isUpdate, deleteOnFail, userId);
+		this.datasetStateId = datasetStateId;
 	}
 
 	@Override
@@ -646,13 +648,13 @@ public abstract class DatasheetImporter extends AbstractImporter
 					  dataset.setExperimentId(experiment.getId());
 					  dataset.setDatasettypeId(getDatasetTypeId());
 					  dataset.setName(name);
+					  dataset.setDatasetStateId(datasetStateId);
 					  dataset.setDescription(description);
 
 					  index = metadataLabelToRowIndex.get("Contact");
 					  if (index != null)
 						  dataset.setContact(getCellValue(rows.get(index), 2));
 
-					  dataset.setDatasetStateId(1);
 					  dataset.setDublinCore(dublinCore);
 					  dataset.store();
 

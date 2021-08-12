@@ -44,17 +44,17 @@ public class TraitDataImporter extends DatasheetImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 10)
+		if (args.length != 11)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		TraitDataImporter importer = new TraitDataImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		TraitDataImporter importer = new TraitDataImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
 		importer.init(args);
 		importer.run(RunType.getType(args[8]));
 	}
 
-	public TraitDataImporter(File input, boolean isUpdate, boolean deleteOnFail, int userId)
+	public TraitDataImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
 	{
-		super(input, isUpdate, deleteOnFail, userId);
+		super(input, isUpdate, datasetStateId, deleteOnFail, userId);
 	}
 
 	@Override
@@ -826,7 +826,7 @@ public class TraitDataImporter extends DatasheetImporter
 			for (int r = 1; r < dataRows.size(); r++)
 			{
 				Row dataRow = dataRows.get(r);
-				Row datesRow = datesRows == null ? null : datesRows.get(r);
+				Row datesRow = (datesRows == null || r > datesRows.size() - 1) ? null : datesRows.get(r);
 
 				if (allCellsEmpty(dataRow))
 					continue;
