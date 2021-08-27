@@ -626,26 +626,26 @@ public class TraitDataImporter extends DatasheetImporter
 				 String rep = getCellValue(r, 1);
 				 String treatment = getCellValue(r, 2);
 
-				 if (!StringUtils.isEmpty(rep))
-				 {
-					 String sampleName = germplasm + "-" + dataset.getId() + "-" + rep;
-
-					 if (!germplasmToId.containsKey(sampleName))
-					 {
-						 Integer germplasmId = germplasmToId.get(germplasm);
-
-						 GerminatebaseRecord sample = context.newRecord(GERMINATEBASE);
-						 sample.setEntityparentId(germplasmId);
-						 sample.setEntitytypeId(2);
-						 sample.setName(sampleName);
-						 sample.setGeneralIdentifier(sampleName);
-						 sample.setNumber(sampleName);
-						 sample.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-						 sample.store();
-
-						 germplasmToId.put(sampleName, sample.getId());
-					 }
-				 }
+//				 if (!StringUtils.isEmpty(rep))
+//				 {
+//					 String sampleName = germplasm + "-" + dataset.getId() + "-" + rep;
+//
+//					 if (!germplasmToId.containsKey(sampleName))
+//					 {
+//						 Integer germplasmId = germplasmToId.get(germplasm);
+//
+//						 GerminatebaseRecord sample = context.newRecord(GERMINATEBASE);
+//						 sample.setEntityparentId(germplasmId);
+//						 sample.setEntitytypeId(2);
+//						 sample.setName(sampleName);
+//						 sample.setGeneralIdentifier(sampleName);
+//						 sample.setNumber(sampleName);
+//						 sample.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+//						 sample.store();
+//
+//						 germplasmToId.put(sampleName, sample.getId());
+//					 }
+//				 }
 
 				 if (!StringUtils.isEmpty(treatment) && !treatmentToId.containsKey(treatment))
 				 {
@@ -833,13 +833,15 @@ public class TraitDataImporter extends DatasheetImporter
 
 				String germplasmName = getCellValue(dataRow, 0);
 				String rep = getCellValue(dataRow, 1);
+				if (StringUtils.isEmpty(rep))
+					rep = Integer.toString(r);
 				String locationName = getCellValue(dataRow, 3);
 				Integer germplasmId;
 
 				// If it's a rep, adjust the name
-				if (!StringUtils.isEmpty(rep))
-					germplasmId = germplasmToId.get(germplasmName + "-" + dataset.getId() + "-" + rep);
-				else
+//				if (!StringUtils.isEmpty(rep))
+//					germplasmId = germplasmToId.get(germplasmName + "-" + dataset.getId() + "-" + rep);
+//				else
 					germplasmId = germplasmToId.get(germplasmName);
 
 				String treatmentName = getCellValue(dataRow, 2);
@@ -870,6 +872,7 @@ public class TraitDataImporter extends DatasheetImporter
 					PhenotypedataRecord record = context.newRecord(PHENOTYPEDATA);
 					record.setGerminatebaseId(germplasmId);
 					record.setPhenotypeId(traitId);
+					record.setRep(rep);
 					record.setTreatmentId(treatmentId);
 					record.setDatasetId(dataset.getId());
 					record.setPhenotypeValue(value);
