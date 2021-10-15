@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.2.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.2.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -229,7 +229,14 @@
       <option name="project" value="LOCAL" />
       <updated>1628784860577</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
+      <created>1630077053907</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1630077053907</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -262,7 +269,8 @@
     <MESSAGE value="- CHG: Improved genotypic data import by removing the step where the data is exported from the Excel file in the import step if a check has been performed previously." />
     <MESSAGE value="- CHG: Updated code to reflect changes to database connection code." />
     <MESSAGE value="- ADD: Added new parameter to all CLI tools (dataset state id).&#10;- ADD: Added better time tracking to all tools.&#10;- CHG: Significantly improved genotypic data import speed by using LOAD DATA INFILE instead of bulked queries.&#10;- FIX: MCPD: Fixed an issue where a location could be specified without a country code." />
-    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added new parameter to all CLI tools (dataset state id).&#10;- ADD: Added better time tracking to all tools.&#10;- CHG: Significantly improved genotypic data import speed by using LOAD DATA INFILE instead of bulked queries.&#10;- FIX: MCPD: Fixed an issue where a location could be specified without a country code." />
+    <MESSAGE value="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

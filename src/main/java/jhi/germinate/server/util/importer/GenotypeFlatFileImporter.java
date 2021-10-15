@@ -179,7 +179,7 @@ public class GenotypeFlatFileImporter
 				{
 					try
 					{
-						Float.parseFloat(position);
+						Double.parseDouble(position);
 					}
 					catch (NumberFormatException e)
 					{
@@ -391,7 +391,7 @@ public class GenotypeFlatFileImporter
 
 			if (!CollectionUtils.isEmpty(positions) && !CollectionUtils.isEmpty(chromosomes))
 			{
-				latch = new CountDownLatch(2);
+				latch = new CountDownLatch(3);
 
 				new Thread(() -> {
 					try
@@ -440,6 +440,7 @@ public class GenotypeFlatFileImporter
 							context2.execute("SET autocommit=1;");
 							context2.execute("SET unique_checks=1;");
 							context2.execute("SET foreign_key_checks=1;");
+							temp.delete();
 						}
 						catch (SQLException e)
 						{
@@ -458,7 +459,7 @@ public class GenotypeFlatFileImporter
 			}
 			else
 			{
-				latch = new CountDownLatch(1);
+				latch = new CountDownLatch(2);
 			}
 
 			new Thread(() -> {
@@ -512,6 +513,8 @@ public class GenotypeFlatFileImporter
 						context2.execute("SET autocommit=1;");
 						context2.execute("SET unique_checks=1;");
 						context2.execute("SET foreign_key_checks=1;");
+
+						temp.delete();
 					}
 					catch (SQLException e)
 					{
@@ -528,15 +531,26 @@ public class GenotypeFlatFileImporter
 				}
 			}).start();
 
+			new Thread(() -> {
+				try
+				{
+					FJTabbedToHdf5Converter converter = new FJTabbedToHdf5Converter(input, hdf5);
+					// Tell it to skip the map definition. It skips the other headers automatically anyway.
+					converter.setSkipLines(2);
+					converter.convertToHdf5();
+
+					Logger.getLogger("").info("HDF5 file written to: " + hdf5.getAbsolutePath() + " " + hdf5.exists() + " " + hdf5.length());
+				}
+				finally
+				{
+					latch.countDown();
+				}
+			}).start();
+
 			try
 			{
 				// Wait for the others to finish
 				latch.await();
-
-				FJTabbedToHdf5Converter converter = new FJTabbedToHdf5Converter(input, hdf5);
-				// Tell it to skip the map definition. It skips the other headers automatically anyway.
-				converter.setSkipLines(2);
-				converter.convertToHdf5();
 
 				// Now set it to be public. Everything has been imported successfully.
 				dataset.setDatasetStateId(1);

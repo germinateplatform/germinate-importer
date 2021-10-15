@@ -622,28 +622,35 @@ public class McpdImporter extends AbstractImporter
 		String accenumb = getCellValue(r.getCell(0));
 		Integer germplasmId = accenumbToId.get(accenumb);
 
+		// Get all the attribute data for this germplasm
+		Set<String> existingData = new HashSet<>();
+		context.selectFrom(ATTRIBUTEDATA).where(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasmId))
+			   .forEach(a -> existingData.add(a.getAttributeId() + "|" + a.getValue()));
+
 		r.stream()
 		 .skip(1)
 		 .forEachOrdered(c -> {
 			 String value = getCellValue(c);
 
+			 // Is there a value?
 			 if (!StringUtils.isEmpty(value))
 			 {
+				 // Get the attribute id
 				 Integer attributeId = attributeIds.get(c.getColumnIndex() - 1);
-				 AttributedataRecord data = context.selectFrom(ATTRIBUTEDATA)
-												   .where(ATTRIBUTEDATA.ATTRIBUTE_ID.eq(attributeId))
-												   .and(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasmId))
-												   .and(ATTRIBUTEDATA.VALUE.eq(value))
-												   .fetchAny();
 
-				 if (data == null)
+				 // Check if the data exists
+				 if (!existingData.contains(attributeId + "|" + value))
 				 {
-					 data = context.newRecord(ATTRIBUTEDATA);
+					 // Insert it if not
+					 AttributedataRecord data = context.newRecord(ATTRIBUTEDATA);
 					 data.setAttributeId(attributeId);
 					 data.setForeignId(germplasmId);
 					 data.setValue(value);
 					 data.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 					 data.store();
+
+					 // Remember the newly inserted data to prevent duplicates
+					 existingData.add(attributeId + "|" + value);
 				 }
 			 }
 		 });
