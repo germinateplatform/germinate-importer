@@ -243,7 +243,14 @@
       <option name="project" value="LOCAL" />
       <updated>1634307476547</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="- CHG: Added explicit HDF5 output paths to genotypic importers.">
+      <created>1634569773049</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1634569773049</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -278,7 +285,8 @@
     <MESSAGE value="- ADD: Added new parameter to all CLI tools (dataset state id).&#10;- ADD: Added better time tracking to all tools.&#10;- CHG: Significantly improved genotypic data import speed by using LOAD DATA INFILE instead of bulked queries.&#10;- FIX: MCPD: Fixed an issue where a location could be specified without a country code." />
     <MESSAGE value="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table." />
     <MESSAGE value="- CHG: Improved performance of the attribute data import.&#10;- CHG: Smaller changes to the genotype import." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Improved performance of the attribute data import.&#10;- CHG: Smaller changes to the genotype import." />
+    <MESSAGE value="- CHG: Added explicit HDF5 output paths to genotypic importers." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Added explicit HDF5 output paths to genotypic importers." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
