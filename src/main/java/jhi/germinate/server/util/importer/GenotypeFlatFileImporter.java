@@ -38,8 +38,9 @@ public class GenotypeFlatFileImporter
 	private   boolean                         deleteOnFail;
 	protected File                            input;
 	private   File                            hdf5;
+	private   File                            hdf5TargetFolder;
 	private   Map<ImportStatus, ImportResult> errorMap      = new HashMap<>();
-	private   Integer userId;
+	private   Integer                         userId;
 
 	private String[]            markers       = null;
 	private int[]               markerIds     = null;
@@ -51,7 +52,7 @@ public class GenotypeFlatFileImporter
 	private Set<Integer> germplasmIdsInFile = new HashSet<>();
 
 	private DatasetsRecord dataset;
-	private int datasetStateId;
+	private int            datasetStateId;
 
 	private Instant start;
 
@@ -59,21 +60,22 @@ public class GenotypeFlatFileImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 11)
+		if (args.length != 12)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		GenotypeFlatFileImporter importer = new GenotypeFlatFileImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		GenotypeFlatFileImporter importer = new GenotypeFlatFileImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[11]));
 		importer.init(args);
 		importer.run(AbstractImporter.RunType.getType(args[8]));
 	}
 
-	public GenotypeFlatFileImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, Integer userId)
+	public GenotypeFlatFileImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, Integer userId, File hdf5TargetFolder)
 	{
 		this.input = input;
 		this.isUpdate = isUpdate;
 		this.deleteOnFail = deleteOnFail;
 		this.userId = userId;
 		this.datasetStateId = datasetStateId;
+		this.hdf5TargetFolder = hdf5TargetFolder;
 	}
 
 	protected void init(String[] args)
@@ -258,7 +260,7 @@ public class GenotypeFlatFileImporter
 	protected void importFile()
 	{
 		// We need to navigate to the correct location for the resulting hdf5 file
-		this.hdf5 = new File(new File(new File(input.getParentFile().getParentFile().getParentFile(), "data"), "genotypes"), input.getName() + ".hdf5");
+		this.hdf5 = new File(this.hdf5TargetFolder, input.getName() + ".hdf5");
 		this.hdf5.getParentFile().mkdirs();
 
 		try (BufferedReader br = Files.newBufferedReader(this.input.toPath(), StandardCharsets.UTF_8);
@@ -478,7 +480,8 @@ public class GenotypeFlatFileImporter
 								bw.write(dataset.getId() + "\t" + id + "\t1");
 								bw.newLine();
 							}
-							catch (IOException e) {
+							catch (IOException e)
+							{
 								// Do nothing here
 							}
 						});
@@ -489,7 +492,8 @@ public class GenotypeFlatFileImporter
 								bw.write(dataset.getId() + "\t" + id + "\t2");
 								bw.newLine();
 							}
-							catch (IOException e) {
+							catch (IOException e)
+							{
 								// Do nothing here
 							}
 						});
