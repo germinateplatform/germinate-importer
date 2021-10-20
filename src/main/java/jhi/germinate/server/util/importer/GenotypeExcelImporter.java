@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * @author Sebastian Raubach
  */
-public class GenotypeImporter extends DatasheetImporter
+public class GenotypeExcelImporter extends DatasheetImporter
 {
 	private static final String[]                 ADDITIONAL_METADATA_LABELS = {"Map Name", "Marker Technology", "Genetic or Physical", "Map Units"};
 	private              File                     txtFile;
@@ -23,12 +23,12 @@ public class GenotypeImporter extends DatasheetImporter
 		if (args.length != 12)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		GenotypeImporter importer = new GenotypeImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[11]));
+		GenotypeExcelImporter importer = new GenotypeExcelImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[11]));
 		importer.init(args);
 		importer.run(RunType.getType(args[8]));
 	}
 
-	public GenotypeImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId, File hdf5TargetFolder)
+	public GenotypeExcelImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId, File hdf5TargetFolder)
 	{
 		super(input, isUpdate, datasetStateId, deleteOnFail, userId);
 
@@ -63,7 +63,9 @@ public class GenotypeImporter extends DatasheetImporter
 
 		exportData(wb);
 
-		Map<ImportStatus, ImportResult> result = flatFileImporter.checkFile();
+		flatFileImporter.checkFile();
+
+		Map<ImportStatus, ImportResult> result = flatFileImporter.getErrorMap();
 
 		for (Map.Entry<ImportStatus, ImportResult> entry : result.entrySet())
 			addImportResult(entry.getKey(), entry.getValue().getRowIndex(), entry.getValue().getMessage());

@@ -22,7 +22,7 @@ import static jhi.germinate.server.database.codegen.tables.Pedigrees.*;
 /**
  * @author Sebastian Raubach
  */
-public class PedigreeImporter extends AbstractImporter
+public class PedigreeImporter extends AbstractExcelImporter
 {
 	public static String FIELD_ACCENUMB              = "ACCENUMB";
 	public static String FIELD_ACCENUMB_PARENT_1     = "Parent 1 ACCENUMB";

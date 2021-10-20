@@ -27,7 +27,7 @@ import static jhi.germinate.server.database.codegen.tables.Locations.*;
 /**
  * @author Sebastian Raubach
  */
-public abstract class DatasheetImporter extends AbstractImporter
+public abstract class DatasheetImporter extends AbstractExcelImporter
 {
 	private static final String[] METADATA_LABELS = {"Title", "Description", "Rights", "Date of creation", "Publisher", "Format", "Language", "Source", "Type", "Subject", "Contact"};
 

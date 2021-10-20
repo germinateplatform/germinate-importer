@@ -21,42 +21,44 @@ import static jhi.germinate.server.database.codegen.tables.Maps.*;
 import static jhi.germinate.server.database.codegen.tables.Markers.*;
 import static jhi.germinate.server.database.codegen.tables.Markertypes.*;
 
-/**
- * @author Sebastian Raubach
- */
-public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
+public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 {
 	private final Map<String, Integer> germplasmToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer> markerToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final File                 hdf5TargetFolder;
-
-	private       String[]            markers       = null;
-	private       int[]               markerIds     = null;
-	private       String[]            chromosomes   = null;
-	private       String[]            positions     = null;
-	private final Map<String, String> headerMapping = new HashMap<>();
 
 	private final Set<Integer> markerIdsInFile    = new HashSet<>();
 	private final Set<Integer> germplasmIdsInFile = new HashSet<>();
 
+	private final File hdf5TargetFolder;
+
 	private       DatasetsRecord dataset;
 	private final int            datasetStateId;
 
-	private CountDownLatch latch;
-
 	public static void main(String[] args)
 	{
+		args = new String[] {
+			"localhost", "germinate_gobii_benchmark", "", "root", "",
+			"C:/Users/sr41756/germinate/gobii-benchmark/async/5e42186f-6b32-406d-b577-0220472c2ea2/5e42186f-6b32-406d-b577-0220472c2ea2.hapmap",
+			"false",
+			"false",
+			"IMPORT",
+			"109",
+			"1",
+			"C:/Users/sr41756/germinate/gobii-benchmark/data/genotypes"
+		};
+
 		if (args.length != 12)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		GenotypeFlatFileImporter importer = new GenotypeFlatFileImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[11]));
+		GenotypeHapmapImporter importer = new GenotypeHapmapImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[11]));
 		importer.init(args);
 		importer.run(AbstractExcelImporter.RunType.getType(args[8]));
 	}
 
-	public GenotypeFlatFileImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, Integer userId, File hdf5TargetFolder)
+	public GenotypeHapmapImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, Integer userId, File hdf5TargetFolder)
 	{
 		super(input, isUpdate, deleteOnFail, userId);
+
 		this.datasetStateId = datasetStateId;
 		this.hdf5TargetFolder = hdf5TargetFolder;
 	}
@@ -84,26 +86,37 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 	{
 		try
 		{
-			String line = readHeaders(br);
+			String line = br.readLine();
 
-			if (CollectionUtils.isEmpty(markers))
-			{
-				addImportResult(ImportStatus.GENOTYPE_MISSING_ROW, -1, "Markers row empty");
-			}
-			else if (positions == null)
-			{
-				addImportResult(ImportStatus.GENOTYPE_MISSING_ROW, -1, "Marker position row is missing.");
-			}
-			else if (chromosomes == null)
-			{
-				addImportResult(ImportStatus.GENOTYPE_MISSING_ROW, -1, "Marker chromosomes row is missing.");
-			}
-			else if (!CollectionUtils.isEmpty(positions) || !CollectionUtils.isEmpty(chromosomes))
-			{
-				if (positions.length != chromosomes.length || positions.length != markers.length)
-					addImportResult(ImportStatus.GENOTYPE_HEADER_LENGTH_MISMATCH, -1, "Mismatch between markers, positions and chromosomes.");
+			if (!line.startsWith("rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode"))
+				addImportResult(ImportStatus.GENOTYPE_HAPMAP_INCORRECT_HEADER, 1, "Hapmap header wrong incorrect");
 
-				for (String position : positions)
+			String[] parts = line.split("\t", -1);
+			int headerLength = parts.length;
+
+			String[] germplasm = Arrays.copyOfRange(parts, 11, parts.length);
+
+			for (String g : germplasm)
+			{
+				if (!germplasmToId.containsKey(g))
+					addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, 1, g);
+			}
+
+			int counter = 1;
+			while ((line = br.readLine()) != null)
+			{
+				counter++;
+				parts = line.split("\t", -1);
+
+				if (parts.length != headerLength)
+					addImportResult(ImportStatus.GENOTYPE_HAPMAP_INCORRECT_ROW_LENGTH, counter, parts[0]);
+
+				String markerName = parts[0];
+				String position = parts[3];
+
+				if (StringUtils.isEmpty(markerName))
+					addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, counter, "Marker name missing.");
+				if (!StringUtils.isEmpty(position))
 				{
 					try
 					{
@@ -115,70 +128,11 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 					}
 				}
 			}
-
-			int counter = 1;
-			do
-			{
-				if (StringUtils.isEmpty(line))
-					continue;
-
-				int index = line.indexOf("\t");
-
-				if (index == -1)
-					continue;
-
-				String germplasm = line.substring(0, index);
-
-				if (!germplasmToId.containsKey(germplasm))
-					addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, counter, germplasm);
-
-				counter++;
-			} while ((line = br.readLine()) != null);
 		}
 		catch (IOException e)
 		{
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
-	}
-
-	private String readHeaders(BufferedReader br)
-		throws IOException
-	{
-		String line;
-
-		// Read the headers, set defaults first
-		headerMapping.put("dataset", this.getInputFile().getName());
-		headerMapping.put("map", this.getInputFile().getName());
-		headerMapping.put("markerType", "UNKNOWN");
-		while ((line = br.readLine()) != null && line.startsWith("#"))
-		{
-			String[] parts = line.substring(1).split("=", -1);
-			if (parts.length == 2)
-			{
-				parts[0] = parts[0].trim();
-				parts[1] = parts[1].trim();
-
-				headerMapping.put(parts[0], parts[1]);
-			}
-		}
-
-		// Now the map
-		while ((markers == null || chromosomes == null || positions == null) && line != null)
-		{
-			if (line.startsWith("Linkage Group / Chromosome"))
-				chromosomes = line.replace("Linkage Group / Chromosome\t", "").split("\t", -1);
-			if (line.startsWith("Position"))
-				positions = line.replace("Position\t", "").split("\t", -1);
-			if (line.startsWith("Lines/Markers"))
-			{
-				markers = line.replace("Lines/Markers\t", "").split("\t", -1);
-				markerIds = new int[markers.length];
-			}
-
-			line = br.readLine();
-		}
-
-		return line;
 	}
 
 	@Override
@@ -191,27 +145,33 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			String line = readHeaders(br);
-//			line = br.readLine();
-//			line = br.readLine();
 
-			do
+			String line = br.readLine();
+
+			String[] parts = line.split("\t", -1);
+
+			String[] germplasm = Arrays.copyOfRange(parts, 11, parts.length);
+
+			for (String g : germplasm)
+				germplasmIdsInFile.add(germplasmToId.get(g));
+
+			List<String> markers = new ArrayList<>();
+			List<String> chromosomes = new ArrayList<>();
+			List<String> positions = new ArrayList<>();
+
+			while ((line = br.readLine()) != null)
 			{
-				if (StringUtils.isEmpty(line))
-					continue;
+				parts = line.split("\t", -1);
+				String markerName = parts[0];
+				String chromosome = parts[2];
+				String position = parts[3];
 
-				int index = line.indexOf("\t");
-
-				if (index == -1)
-					continue;
-
-				// Remember the germplasm ids
-				String germplasm = line.substring(0, index);
-				germplasmIdsInFile.add(germplasmToId.get(germplasm));
+				markers.add(markerName);
+				chromosomes.add(chromosome);
+				positions.add(position);
 			}
-			while ((line = br.readLine()) != null);
 
-			String markerTypeName = headerMapping.get("markerType");
+			String markerTypeName = "SNP";
 			MarkertypesRecord markerType = context.selectFrom(MARKERTYPES)
 												  .where(MARKERTYPES.DESCRIPTION.eq(markerTypeName))
 												  .fetchAny();
@@ -236,9 +196,11 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 				mapFeatureType.store();
 			}
 
+			String fileName = getInputFile().getName();
+
 			MapsRecord map = context.newRecord(MAPS);
-			map.setName(headerMapping.get("map"));
-			map.setDescription(headerMapping.get("map"));
+			map.setName(fileName);
+			map.setDescription(fileName);
 			map.setVisibility(true);
 			map.setUserId(userId);
 			map.setCreatedOn(new Timestamp(System.currentTimeMillis()));
@@ -246,7 +208,7 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 
 			// Import markers
 			int markerTypeId = markerType.getId();
-			List<String> newMarkers = Arrays.stream(markers).filter(m -> !markerToId.containsKey(m)).collect(Collectors.toList());
+			List<String> newMarkers = markers.stream().filter(m -> !markerToId.containsKey(m)).collect(Collectors.toList());
 
 			// Run the marker importer synchronously (we need the markers before we can continue
 			new MarkerImporterTask(newMarkers, markerTypeId, this::addImportResult).run();
@@ -256,9 +218,11 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 			context.selectFrom(MARKERS)
 				   .forEach(m -> markerToId.put(m.getMarkerName(), m.getId()));
 
-			for (int i = 0; i < markers.length; i++)
+			int[] markerIds = new int[markers.size()];
+
+			for (int i = 0; i < markers.size(); i++)
 			{
-				String marker = markers[i];
+				String marker = markers.get(i);
 				Integer id = markerToId.get(marker);
 
 				markerIds[i] = id;
@@ -266,13 +230,13 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 			}
 
 			ExperimentsRecord experiment = context.selectFrom(EXPERIMENTS)
-												  .where(EXPERIMENTS.EXPERIMENT_NAME.eq(headerMapping.get("dataset")))
+												  .where(EXPERIMENTS.EXPERIMENT_NAME.eq(fileName))
 												  .fetchAny();
 
 			if (experiment == null)
 			{
 				experiment = context.newRecord(EXPERIMENTS);
-				experiment.setExperimentName(headerMapping.get("dataset"));
+				experiment.setExperimentName(fileName);
 				experiment.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 				experiment.store();
 			}
@@ -285,8 +249,8 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 				dataset.setDatasetStateId(datasetStateId);
 				// Hide it initially. We don't want people using half-imported data.
 				dataset.setDatasetStateId(3);
-				dataset.setName(headerMapping.get("dataset"));
-				dataset.setDescription(headerMapping.get("dataset"));
+				dataset.setName(fileName);
+				dataset.setDescription(fileName);
 				dataset.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 			}
 			else
@@ -300,18 +264,18 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 			dataset.setSourceFile(hdf5.getName());
 			dataset.store();
 
-			latch = new CountDownLatch(3);
+			CountDownLatch latch = new CountDownLatch(3);
 
 			if (!CollectionUtils.isEmpty(positions) && !CollectionUtils.isEmpty(chromosomes))
 			{
 				// Start the mapdefinition importer
 				new Thread(new MapdefinitionImporterTask(
-					markers,
+					markers.toArray(new String[0]),
 					markerIds,
 					map.getId(),
 					mapFeatureType.getId(),
-					chromosomes,
-					positions,
+					chromosomes.toArray(new String[0]),
+					positions.toArray(new String[0]),
 					this::addImportResult)
 				{
 					@Override
@@ -342,7 +306,7 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 			}).start();
 
 			// Convert the Flapjack file to HDF5
-			new Thread(new FJTabbedToHdf5Task(this.getInputFile(), hdf5, this::addImportResult)
+			new Thread(new HapmapToHdf5Task(this.getInputFile(), hdf5, this::addImportResult)
 			{
 				@Override
 				protected void onFinished()
@@ -369,11 +333,6 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 		{
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
-	}
-
-	public void setDataset(DatasetsRecord dataset)
-	{
-		this.dataset = dataset;
 	}
 
 	@Override

@@ -21,7 +21,7 @@ import static jhi.germinate.server.database.codegen.tables.Markers.*;
 /**
  * @author Sebastian Raubach
  */
-public class GroupImporter extends AbstractImporter
+public class GroupImporter extends AbstractExcelImporter
 {
 	private Map<String, Integer> accenumbToId     = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<String, Integer> markerNameToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
