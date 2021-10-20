@@ -36,17 +36,6 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 
 	public static void main(String[] args)
 	{
-		args = new String[] {
-			"localhost", "germinate_gobii_benchmark", "", "root", "",
-			"C:/Users/sr41756/germinate/gobii-benchmark/async/5e42186f-6b32-406d-b577-0220472c2ea2/5e42186f-6b32-406d-b577-0220472c2ea2.hapmap",
-			"false",
-			"false",
-			"IMPORT",
-			"109",
-			"1",
-			"C:/Users/sr41756/germinate/gobii-benchmark/data/genotypes"
-		};
-
 		if (args.length != 12)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
