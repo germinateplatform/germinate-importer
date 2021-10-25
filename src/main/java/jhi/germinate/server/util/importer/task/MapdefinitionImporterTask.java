@@ -2,6 +2,7 @@ package jhi.germinate.server.util.importer.task;
 
 import jhi.germinate.server.Database;
 import jhi.germinate.server.database.pojo.ImportStatus;
+import jhi.germinate.server.util.StringUtils;
 import org.jooq.DSLContext;
 
 import java.io.*;
@@ -46,8 +47,8 @@ public abstract class MapdefinitionImporterTask implements Runnable
 				for (int i = 0; i < markers.length; i++)
 				{
 					int markerId = markerIds[i];
-					String chromosome = chromosomes[i];
-					Double position = 0d;
+					String chromosome = StringUtils.isEmpty(chromosomes[i]) ? "NA" : chromosomes[i];
+					double position = 0d;
 					try
 					{
 						position = Double.parseDouble(positions[i]);

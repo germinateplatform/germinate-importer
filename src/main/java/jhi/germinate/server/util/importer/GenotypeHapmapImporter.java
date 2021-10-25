@@ -34,6 +34,9 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 	private       DatasetsRecord dataset;
 	private final int            datasetStateId;
 
+	private int chromosomeValueCount = 0;
+	private int positionValueCount = 0;
+
 	public static void main(String[] args)
 	{
 		if (args.length != 12)
@@ -156,10 +159,13 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 				String position = parts[3];
 
 				markers.add(markerName);
+				chromosomes.add(chromosome);
+				positions.add(position);
+
 				if (!StringUtils.isEmpty(chromosome))
-					chromosomes.add(chromosome);
+					chromosomeValueCount++;
 				if (!StringUtils.isEmpty(position))
-					positions.add(position);
+					positionValueCount++;
 			}
 
 			String markerTypeName = "SNP";
@@ -257,7 +263,7 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 
 			CountDownLatch latch = new CountDownLatch(3);
 
-			if (!CollectionUtils.isEmpty(positions) && !CollectionUtils.isEmpty(chromosomes))
+			if (chromosomeValueCount > 0 && positionValueCount > 0)
 			{
 				// Start the mapdefinition importer
 				new Thread(new MapdefinitionImporterTask(
