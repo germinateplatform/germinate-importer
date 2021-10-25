@@ -9,11 +9,11 @@ import java.util.logging.Logger;
 
 public abstract class HapmapToHdf5Task implements Runnable
 {
-	private final File          hapmap;
+	private final Path          hapmap;
 	private final File          hdf5;
 	private final ErrorCallback callback;
 
-	public HapmapToHdf5Task(File hapmap, File hdf5, ErrorCallback callback)
+	public HapmapToHdf5Task(Path hapmap, File hdf5, ErrorCallback callback)
 	{
 		this.hapmap = hapmap;
 		this.hdf5 = hdf5;
@@ -25,7 +25,7 @@ public abstract class HapmapToHdf5Task implements Runnable
 	{
 		try
 		{
-			File temp = Files.createTempFile(hapmap.getName(), ".temp").toFile();
+			File temp = Files.createTempFile(hapmap.toFile().getName(), ".temp").toFile();
 
 			HapmapTransposeToHdf5Converter converter = new HapmapTransposeToHdf5Converter(hapmap, temp);
 			// Tell it to skip the map definition. It skips the other headers automatically anyway.

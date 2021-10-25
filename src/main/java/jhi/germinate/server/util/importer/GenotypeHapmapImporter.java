@@ -295,7 +295,7 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 			}).start();
 
 			// Convert the Flapjack file to HDF5
-			new Thread(new HapmapToHdf5Task(this.getInputFile(), hdf5, this::addImportResult)
+			new Thread(new HapmapToHdf5Task(this.getInputFile().toPath(), hdf5, this::addImportResult)
 			{
 				@Override
 				protected void onFinished()
