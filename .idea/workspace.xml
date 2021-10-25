@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Added explicit HDF5 output paths to genotypic importers.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.2.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.2.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/HapmapToHdf5Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/HapmapToHdf5Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -305,7 +305,14 @@
       <option name="project" value="LOCAL" />
       <updated>1634750288701</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="- FIX: Fixed dependency inconsistency.">
+      <created>1635148801820</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1635148801820</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -343,7 +350,8 @@
     <MESSAGE value="- CHG: Added explicit HDF5 output paths to genotypic importers." />
     <MESSAGE value="- ADD: Added Hapmap importer.&#10;- CHG: Massively restructured the code to simplify things." />
     <MESSAGE value="- DEL: Removed unnecessary dummy code." />
-    <option name="LAST_COMMIT_MESSAGE" value="- DEL: Removed unnecessary dummy code." />
+    <MESSAGE value="- FIX: Fixed dependency inconsistency." />
+    <option name="LAST_COMMIT_MESSAGE" value="- FIX: Fixed dependency inconsistency." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -395,12 +403,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java</url>
-          <line>162</line>
+          <line>164</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java</url>
-          <line>220</line>
+          <line>222</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">

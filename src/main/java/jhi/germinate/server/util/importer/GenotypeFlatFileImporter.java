@@ -167,9 +167,9 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 		{
 			if (line.startsWith("Linkage Group / Chromosome"))
 				chromosomes = line.replace("Linkage Group / Chromosome\t", "").split("\t", -1);
-			if (line.startsWith("Position"))
+			else if (line.startsWith("Position"))
 				positions = line.replace("Position\t", "").split("\t", -1);
-			if (line.startsWith("Lines/Markers"))
+			else if (line.startsWith("Lines/Markers"))
 			{
 				markers = line.replace("Lines/Markers\t", "").split("\t", -1);
 				markerIds = new int[markers.length];

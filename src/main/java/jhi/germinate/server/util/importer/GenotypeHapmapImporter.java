@@ -156,8 +156,10 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 				String position = parts[3];
 
 				markers.add(markerName);
-				chromosomes.add(chromosome);
-				positions.add(position);
+				if (!StringUtils.isEmpty(chromosome))
+					chromosomes.add(chromosome);
+				if (!StringUtils.isEmpty(position))
+					positions.add(position);
 			}
 
 			String markerTypeName = "SNP";
