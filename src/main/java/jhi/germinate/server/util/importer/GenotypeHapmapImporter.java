@@ -3,7 +3,7 @@ package jhi.germinate.server.util.importer;
 import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
-import jhi.germinate.server.util.*;
+import jhi.germinate.server.util.StringUtils;
 import jhi.germinate.server.util.importer.task.*;
 import org.jooq.DSLContext;
 
@@ -35,7 +35,7 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 	private final int            datasetStateId;
 
 	private int chromosomeValueCount = 0;
-	private int positionValueCount = 0;
+	private int positionValueCount   = 0;
 
 	public static void main(String[] args)
 	{
