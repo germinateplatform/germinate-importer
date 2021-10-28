@@ -132,6 +132,7 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 	{
 		// We need to navigate to the correct location for the resulting hdf5 file
 		File hdf5 = new File(this.hdf5TargetFolder, this.getInputFile().getName() + ".hdf5");
+		File hdf5Transposed = new File(this.hdf5TargetFolder, "transposed-" + this.getInputFile().getName() + ".hdf5");
 		hdf5.getParentFile().mkdirs();
 
 		try (Connection conn = Database.getConnection())
@@ -261,7 +262,7 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 			dataset.setSourceFile(hdf5.getName());
 			dataset.store();
 
-			CountDownLatch latch = new CountDownLatch(3);
+			CountDownLatch latch = new CountDownLatch(4);
 
 			if (chromosomeValueCount > 0 && positionValueCount > 0)
 			{
@@ -303,7 +304,17 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 			}).start();
 
 			// Convert the Flapjack file to HDF5
-			new Thread(new HapmapToHdf5Task(this.getInputFile().toPath(), hdf5, this::addImportResult)
+			new Thread(new HapmapToHdf5Task(this.getInputFile(), hdf5, false, this::addImportResult)
+			{
+				@Override
+				protected void onFinished()
+				{
+					latch.countDown();
+				}
+			}).start();
+
+			// Convert the Flapjack file to HDF5
+			new Thread(new HapmapToHdf5Task(this.getInputFile(), hdf5Transposed, true, this::addImportResult)
 			{
 				@Override
 				protected void onFinished()

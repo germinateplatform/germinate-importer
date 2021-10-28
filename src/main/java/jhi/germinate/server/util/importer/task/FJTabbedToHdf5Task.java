@@ -11,12 +11,14 @@ public abstract class FJTabbedToHdf5Task implements Runnable
 {
 	private final File          input;
 	private final File          hdf5;
+	private final boolean transpose;
 	private final ErrorCallback callback;
 
-	public FJTabbedToHdf5Task(File input, File hdf5, ErrorCallback callback)
+	public FJTabbedToHdf5Task(File input, File hdf5, boolean transpose, ErrorCallback callback)
 	{
 		this.input = input;
 		this.hdf5 = hdf5;
+		this.transpose = transpose;
 		this.callback = callback;
 	}
 
@@ -30,6 +32,7 @@ public abstract class FJTabbedToHdf5Task implements Runnable
 			FJTabbedToHdf5Converter converter = new FJTabbedToHdf5Converter(input, temp);
 			// Tell it to skip the map definition. It skips the other headers automatically anyway.
 			converter.setSkipLines(2);
+			converter.setTranspose(transpose);
 			converter.convertToHdf5();
 
 			Files.move(temp.toPath(), hdf5.toPath(), StandardCopyOption.REPLACE_EXISTING);

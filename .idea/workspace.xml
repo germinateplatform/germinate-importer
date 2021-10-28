@@ -6,7 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Added explicit HDF5 output paths to genotypic importers.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.2.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.2.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/FJTabbedToHdf5Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/FJTabbedToHdf5Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/HapmapToHdf5Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/HapmapToHdf5Task.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,6 +101,7 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\sr41756\workspaces\java\germinate-importer\lib" />
+      <recent name="C:\Users\sr41756\workspaces\java\germinate-importer" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="jhi.germinate.server.util.importer.task" />
@@ -189,9 +194,9 @@
     <list>
       <item itemvalue="Application.TraitDataImporter" />
       <item itemvalue="Application.GenotypeHapmapImporter" />
+      <item itemvalue="Application.GenotypeFlatFileImporter" />
       <item itemvalue="Gradle.germinate-importer [build]" />
       <item itemvalue="Gradle.germinate-importer [clean]" />
-      <item itemvalue="Application.GenotypeFlatFileImporter" />
     </list>
     <recent_temporary>
       <list>
@@ -317,7 +322,14 @@
       <option name="project" value="LOCAL" />
       <updated>1635171935282</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="- ADD: Added missing license file.">
+      <created>1635233469219</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1635233469219</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -358,7 +370,8 @@
     <MESSAGE value="- FIX: Fixed dependency inconsistency." />
     <MESSAGE value="- FIX: Fixed import issues when no map is available." />
     <MESSAGE value="- FIX: Fixed hapmap import with inconsistent map information." />
-    <option name="LAST_COMMIT_MESSAGE" value="- FIX: Fixed hapmap import with inconsistent map information." />
+    <MESSAGE value="- ADD: Added missing license file." />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added missing license file." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -400,22 +413,22 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java</url>
-          <line>149</line>
+          <line>150</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java</url>
-          <line>170</line>
+          <line>171</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java</url>
-          <line>228</line>
+          <line>229</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/HapmapToHdf5Task.java</url>
-          <line>27</line>
+          <line>29</line>
           <option name="timeStamp" value="14" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -452,6 +465,11 @@
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java</url>
           <line>118</line>
           <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>102</line>
+          <option name="timeStamp" value="26" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
