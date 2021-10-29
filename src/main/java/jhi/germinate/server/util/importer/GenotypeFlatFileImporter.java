@@ -305,22 +305,40 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 
 			if (!CollectionUtils.isEmpty(positions) && !CollectionUtils.isEmpty(chromosomes))
 			{
-				// Start the mapdefinition importer
-				new Thread(new MapdefinitionImporterTask(
-					markers,
-					markerIds,
-					map.getId(),
-					mapFeatureType.getId(),
-					chromosomes,
-					positions,
-					this::addImportResult)
+				int chromosomeCount = 0;
+				int positionCount = 0;
+
+				for (int i = 0; i < chromosomes.length; i++)
 				{
-					@Override
-					protected void onFinished()
+					if (!StringUtils.isEmpty(chromosomes[i]))
+						chromosomeCount++;
+					if (!StringUtils.isEmpty(positions[i]))
+						positionCount++;
+				}
+
+				if (chromosomeCount > 0 && positionCount > 0)
+				{
+					// Start the mapdefinition importer
+					new Thread(new MapdefinitionImporterTask(
+						markers,
+						markerIds,
+						map.getId(),
+						mapFeatureType.getId(),
+						chromosomes,
+						positions,
+						this::addImportResult)
 					{
-						latch.countDown();
-					}
-				}).start();
+						@Override
+						protected void onFinished()
+						{
+							latch.countDown();
+						}
+					}).start();
+				}
+				else
+				{
+					latch.countDown();
+				}
 			}
 			else
 			{
