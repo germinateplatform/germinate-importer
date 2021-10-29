@@ -6,7 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Added explicit HDF5 output paths to genotypic importers.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.2.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.2.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.2.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.2.0.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -332,7 +333,14 @@
       <option name="project" value="LOCAL" />
       <updated>1635430088720</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="- CHG: FJ importer: Only import map if there are chromosome and position values on it.">
+      <created>1635504888333</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1635504888333</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -375,7 +383,8 @@
     <MESSAGE value="- FIX: Fixed hapmap import with inconsistent map information." />
     <MESSAGE value="- ADD: Added missing license file." />
     <MESSAGE value="- CHG: Changed the genotypic data importer to also create a transposed HDF5 file for better performance when exporting to Hapmap." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Changed the genotypic data importer to also create a transposed HDF5 file for better performance when exporting to Hapmap." />
+    <MESSAGE value="- CHG: FJ importer: Only import map if there are chromosome and position values on it." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: FJ importer: Only import map if there are chromosome and position values on it." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
