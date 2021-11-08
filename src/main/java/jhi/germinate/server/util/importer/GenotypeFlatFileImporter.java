@@ -242,14 +242,6 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 				mapFeatureType.store();
 			}
 
-			MapsRecord map = context.newRecord(MAPS);
-			map.setName(headerMapping.get("map"));
-			map.setDescription(headerMapping.get("map"));
-			map.setVisibility(true);
-			map.setUserId(userId);
-			map.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-			map.store();
-
 			// Import markers
 			int markerTypeId = markerType.getId();
 			List<String> newMarkers = Arrays.stream(markers).filter(m -> !markerToId.containsKey(m)).collect(Collectors.toList());
@@ -323,6 +315,14 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 
 				if (chromosomeCount > 0 && positionCount > 0)
 				{
+					MapsRecord map = context.newRecord(MAPS);
+					map.setName(headerMapping.get("map"));
+					map.setDescription(headerMapping.get("map"));
+					map.setVisibility(true);
+					map.setUserId(userId);
+					map.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+					map.store();
+
 					// Start the mapdefinition importer
 					new Thread(new MapdefinitionImporterTask(
 						markers,
