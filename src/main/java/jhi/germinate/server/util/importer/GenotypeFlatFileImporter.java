@@ -163,7 +163,7 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 		}
 
 		// Now the map
-		while ((markers == null || chromosomes == null || positions == null) && line != null)
+		while (markers == null && line != null)
 		{
 			if (line.startsWith("Linkage Group / Chromosome"))
 				chromosomes = line.replace("Linkage Group / Chromosome\t", "").split("\t", -1);
@@ -177,6 +177,11 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 
 			line = br.readLine();
 		}
+
+		if (chromosomes == null)
+			chromosomes = new String[0];
+		if (positions == null)
+			positions = new String[0];
 
 		return line;
 	}
