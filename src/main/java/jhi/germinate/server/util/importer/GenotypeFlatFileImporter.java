@@ -365,8 +365,14 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 				}
 			}).start();
 
+			int skipLines = 0;
+			if (chromosomes.length != 0)
+				skipLines++;
+			if (positions.length != 0)
+				skipLines++;
+
 			// Convert the Flapjack file to HDF5
-			new Thread(new FJTabbedToHdf5Task(this.getInputFile(), hdf5, false, this::addImportResult)
+			new Thread(new FJTabbedToHdf5Task(this.getInputFile(), hdf5, false, skipLines, this::addImportResult)
 			{
 				@Override
 				protected void onFinished()
@@ -376,7 +382,7 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 			}).start();
 
 			// Convert the Flapjack file to transposed HDF5
-			new Thread(new FJTabbedToHdf5Task(this.getInputFile(), hdf5Transposed, true, this::addImportResult)
+			new Thread(new FJTabbedToHdf5Task(this.getInputFile(), hdf5Transposed, true, skipLines, this::addImportResult)
 			{
 				@Override
 				protected void onFinished()
