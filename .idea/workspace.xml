@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Added explicit HDF5 output paths to genotypic importers.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updated dependencies.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.2.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.2.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.2.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.2.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/PedigreeImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/PedigreeImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,11 +48,6 @@
                 <item name="germinate-importer" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="germinate-importer" type="f1a62948:ProjectNode" />
-                <item name="Run Configurations" type="7b0102dc:RunConfigurationsNode" />
               </path>
             </expand>
             <select />
@@ -132,10 +128,10 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TraitDataImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.TraitDataImporter" />
+    <configuration name="PedigreeImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.PedigreeImporter" />
       <module name="germinate-importer.main" />
-      <option name="PROGRAM_PARAMETERS" value="localhost germinate_sorghum \&quot;\&quot; root \&quot;\&quot; &quot;$USER_HOME$/Google Drive/Crop Trust CWR Data/Sorghum/2021-05-04/Germinate Kibos Trial data 2018.xlsx&quot; false false CHECK 109" />
+      <option name="PROGRAM_PARAMETERS" value="localhost germinate_demo \&quot;\&quot; root \&quot;\&quot; &quot;$PROJECT_DIR$/../../misc/germinate-data-templates/pedigree-data/example-pedigree-data.xlsx&quot; false false IMPORT 109 1" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
@@ -189,9 +185,9 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Application.TraitDataImporter" />
       <item itemvalue="Application.GenotypeHapmapImporter" />
       <item itemvalue="Application.GenotypeFlatFileImporter" />
+      <item itemvalue="Application.PedigreeImporter" />
       <item itemvalue="Gradle.germinate-importer [build]" />
       <item itemvalue="Gradle.germinate-importer [clean]" />
     </list>
@@ -199,9 +195,9 @@
       <list>
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
+        <item itemvalue="Application.PedigreeImporter" />
         <item itemvalue="Application.GenotypeFlatFileImporter" />
         <item itemvalue="Application.GenotypeHapmapImporter" />
-        <item itemvalue="Application.TraitDataImporter" />
       </list>
     </recent_temporary>
   </component>
@@ -340,7 +336,49 @@
       <option name="project" value="LOCAL" />
       <updated>1635504888333</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="- CHG: Updated dependencies.">
+      <created>1635514934965</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1635514934965</updated>
+    </task>
+    <task id="LOCAL-00020" summary="- FIX: Fixed an issue where importing genotypic data without a map wasn't possible.">
+      <created>1636378919885</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1636378919885</updated>
+    </task>
+    <task id="LOCAL-00021" summary="- FIX: Removed dummy map creation when there are no chromosome and position definitions.">
+      <created>1636383440351</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1636383440351</updated>
+    </task>
+    <task id="LOCAL-00022" summary="- CHG: Updated to latest database scheme.">
+      <created>1636386773412</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1636386773412</updated>
+    </task>
+    <task id="LOCAL-00023" summary="- FIX: Fixed an issue with HDF5 file creation where the source file doesn't contain any map information.">
+      <created>1636450113185</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1636450113185</updated>
+    </task>
+    <task id="LOCAL-00024" summary="- CHG: Updated dependencies.">
+      <created>1638264228624</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1638264228624</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -384,7 +422,12 @@
     <MESSAGE value="- ADD: Added missing license file." />
     <MESSAGE value="- CHG: Changed the genotypic data importer to also create a transposed HDF5 file for better performance when exporting to Hapmap." />
     <MESSAGE value="- CHG: FJ importer: Only import map if there are chromosome and position values on it." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: FJ importer: Only import map if there are chromosome and position values on it." />
+    <MESSAGE value="- FIX: Fixed an issue where importing genotypic data without a map wasn't possible." />
+    <MESSAGE value="- FIX: Removed dummy map creation when there are no chromosome and position definitions." />
+    <MESSAGE value="- CHG: Updated to latest database scheme." />
+    <MESSAGE value="- FIX: Fixed an issue with HDF5 file creation where the source file doesn't contain any map information." />
+    <MESSAGE value="- CHG: Updated dependencies." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updated dependencies." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -468,6 +511,51 @@
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
           <line>102</line>
           <option name="timeStamp" value="26" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java</url>
+          <line>165</line>
+          <option name="timeStamp" value="28" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java</url>
+          <line>219</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java</url>
+          <line>374</line>
+          <option name="timeStamp" value="30" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/FJTabbedToHdf5Task.java</url>
+          <line>31</line>
+          <option name="timeStamp" value="32" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/PedigreeImporter.java</url>
+          <line>43</line>
+          <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/PedigreeImporter.java</url>
+          <line>46</line>
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java</url>
+          <line>372</line>
+          <option name="timeStamp" value="35" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java</url>
+          <line>357</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java</url>
+          <line>578</line>
+          <option name="timeStamp" value="37" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -22,7 +22,7 @@ import static jhi.germinate.server.database.codegen.tables.Pedigrees.*;
 /**
  * @author Sebastian Raubach
  */
-public class PedigreeImporter extends AbstractExcelImporter
+public class PedigreeImporter extends DatasheetImporter
 {
 	public static String FIELD_ACCENUMB              = "ACCENUMB";
 	public static String FIELD_ACCENUMB_PARENT_1     = "Parent 1 ACCENUMB";
@@ -44,19 +44,27 @@ public class PedigreeImporter extends AbstractExcelImporter
 		if (args.length != 11)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		PedigreeImporter importer = new PedigreeImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		PedigreeImporter importer = new PedigreeImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
 		importer.init(args);
 		importer.run(RunType.getType(args[8]));
 	}
 
-	public PedigreeImporter(File input, boolean isUpdate, boolean deleteOnFail, int userId)
+	public PedigreeImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
 	{
-		super(input, isUpdate, deleteOnFail, userId);
+		super(input, isUpdate, datasetStateId, deleteOnFail, userId);
+	}
+
+	@Override
+	protected int getDatasetTypeId()
+	{
+		return 7;
 	}
 
 	@Override
 	protected void prepare()
 	{
+		super.prepare();
+
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
@@ -71,7 +79,8 @@ public class PedigreeImporter extends AbstractExcelImporter
 			context.selectFrom(PEDIGREENOTATIONS)
 				   .forEach(p -> notationToId.put(p.getName(), p.getId()));
 		}
-		catch (SQLException e) {
+		catch (SQLException e)
+		{
 			e.printStackTrace();
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
@@ -80,6 +89,8 @@ public class PedigreeImporter extends AbstractExcelImporter
 	@Override
 	protected void checkFile(ReadableWorkbook wb)
 	{
+		super.checkFile(wb);
+
 		Sheet data = wb.findSheet("DATA").orElse(null);
 		Sheet dataString = wb.findSheet("DATA-STRING").orElse(null);
 
@@ -211,6 +222,8 @@ public class PedigreeImporter extends AbstractExcelImporter
 	@Override
 	protected void importFile(ReadableWorkbook wb)
 	{
+		super.importFile(wb);
+
 		wb.findSheet("DATA")
 		  .ifPresent(s -> {
 			  try (Connection conn = Database.getConnection())
@@ -251,6 +264,7 @@ public class PedigreeImporter extends AbstractExcelImporter
 						   if (parentOneId != null)
 						   {
 							   PedigreesRecord pedigree = context.newRecord(PEDIGREES);
+							   pedigree.setDatasetId(this.dataset.getId());
 							   pedigree.setGerminatebaseId(germplasmId);
 							   pedigree.setParentId(parentOneId);
 							   pedigree.setRelationshipType(PedigreesRelationshipType.OTHER); // TODO: Add to template!
@@ -262,6 +276,7 @@ public class PedigreeImporter extends AbstractExcelImporter
 						   if (parentTwoId != null && !Objects.equals(parentOneId, parentTwoId))
 						   {
 							   PedigreesRecord pedigree = context.newRecord(PEDIGREES);
+							   pedigree.setDatasetId(this.dataset.getId());
 							   pedigree.setGerminatebaseId(germplasmId);
 							   pedigree.setParentId(parentTwoId);
 							   pedigree.setRelationshipType(PedigreesRelationshipType.OTHER); // TODO: Add to template!
@@ -311,6 +326,7 @@ public class PedigreeImporter extends AbstractExcelImporter
 						   }
 
 						   PedigreedefinitionsRecord def = context.newRecord(PEDIGREEDEFINITIONS);
+						   def.setDatasetId(this.dataset.getId());
 						   def.setGerminatebaseId(germplasmId);
 						   def.setPedigreenotationId(notationId);
 						   def.setDefinition(str);
