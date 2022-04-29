@@ -11,6 +11,7 @@ import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
@@ -40,7 +41,7 @@ public class TraitDataImporter extends DatasheetImporter
 
 	private List<String> locationNames;
 
-	private int traitColumnStartIndex = 3;
+	private int traitColumnStartIndex = 8;
 
 	public static void main(String[] args)
 	{
@@ -131,19 +132,30 @@ public class TraitDataImporter extends DatasheetImporter
 	{
 		String line = getCellValue(headers, 0);
 		String rep = getCellValue(headers, 1);
-		String treatment = getCellValue(headers, 2);
-		String location = getCellValue(headers, 3);
+		String block = getCellValue(headers, 2);
+		String treatment = getCellValue(headers, 3);
+		String location = getCellValue(headers, 4);
+		String latitude = getCellValue(headers, 5);
+		String longitude = getCellValue(headers, 6);
+		String elevation = getCellValue(headers, 7);
 
 		// Check the predefined column headers are correct
 		if (!Objects.equals(line, "Line/Phenotype"))
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Line/Phenotype' column not found");
 		if (!Objects.equals(rep, "Rep"))
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Rep' column not found");
+		if (!Objects.equals(block, "Block"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Block' column not found");
 		if (!Objects.equals(treatment, "Treatment"))
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Treatment' column not found");
-		// If location is defined, then this is a new template, so move the trait start index
-		if (Objects.equals(location, "Location"))
-			this.traitColumnStartIndex = 4;
+		if (!Objects.equals(location, "Location"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Location' column not found");
+		if (!Objects.equals(latitude, "Latitude"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Latitude' column not found");
+		if (!Objects.equals(longitude, "Longitude"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Longitude' column not found");
+		if (!Objects.equals(elevation, "Elevation"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Elevation' column not found");
 	}
 
 	private void checkDataAndRecordingDates(Sheet data, Sheet dates)
@@ -172,6 +184,10 @@ public class TraitDataImporter extends DatasheetImporter
 			data.openStream()
 				.skip(1)
 				.forEachOrdered(this::checkLocationName);
+
+			data.openStream()
+				.skip(1)
+				.forEachOrdered(this::checkGpsInformation);
 
 			checkData(data);
 
@@ -246,12 +262,59 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 	}
 
-	private void checkLocationName(Row r)
+	private void checkGpsInformation(Row r)
 	{
-		if (allCellsEmpty(r) || this.traitColumnStartIndex < 4)
+		if (allCellsEmpty(r))
 			return;
 
-		String location = getCellValue(r, 3);
+		String latitude = getCellValue(r, 5);
+		String longitude = getCellValue(r, 6);
+		String elevation = getCellValue(r, 7);
+
+		try
+		{
+			Double.parseDouble(latitude);
+		}
+		catch (NullPointerException e)
+		{
+			// Ignore
+		}
+		catch (NumberFormatException e)
+		{
+			addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "Specified 'Latitude' is not a decimal value: " + latitude);
+		}
+		try
+		{
+			Double.parseDouble(longitude);
+		}
+		catch (NullPointerException e)
+		{
+			// Ignore
+		}
+		catch (NumberFormatException e)
+		{
+			addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "Specified 'Longitude' is not a decimal value: " + longitude);
+		}
+		try
+		{
+			Double.parseDouble(elevation);
+		}
+		catch (NullPointerException e)
+		{
+			// Ignore
+		}
+		catch (NumberFormatException e)
+		{
+			addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "Specified 'Elevation' is not a decimal value: " + elevation);
+		}
+	}
+
+	private void checkLocationName(Row r)
+	{
+		if (allCellsEmpty(r))
+			return;
+
+		String location = getCellValue(r, 4);
 
 		if (!StringUtils.isEmpty(location) && !this.locationNames.contains(location))
 			addImportResult(ImportStatus.CLIMATE_MISSING_LOCATION_DECLARATION, r.getRowNum(), "A location referenced in 'DATA' is not defined in 'LOCATION': " + location);
@@ -599,7 +662,7 @@ public class TraitDataImporter extends DatasheetImporter
 			  });
 
 			wb.findSheet("DATA")
-			  .ifPresent(s -> importGermplasmAndTreatments(context, s));
+			  .ifPresent(s -> importTreatments(context, s));
 
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			Sheet dates = wb.findSheet("RECORDING_DATES").orElse(null);
@@ -612,7 +675,7 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 	}
 
-	private void importGermplasmAndTreatments(DSLContext context, Sheet s)
+	private void importTreatments(DSLContext context, Sheet s)
 	{
 		try
 		{
@@ -622,30 +685,7 @@ public class TraitDataImporter extends DatasheetImporter
 				 if (allCellsEmpty(r))
 					 return;
 
-				 String germplasm = getCellValue(r, 0);
-				 String rep = getCellValue(r, 1);
-				 String treatment = getCellValue(r, 2);
-
-//				 if (!StringUtils.isEmpty(rep))
-//				 {
-//					 String sampleName = germplasm + "-" + dataset.getId() + "-" + rep;
-//
-//					 if (!germplasmToId.containsKey(sampleName))
-//					 {
-//						 Integer germplasmId = germplasmToId.get(germplasm);
-//
-//						 GerminatebaseRecord sample = context.newRecord(GERMINATEBASE);
-//						 sample.setEntityparentId(germplasmId);
-//						 sample.setEntitytypeId(2);
-//						 sample.setName(sampleName);
-//						 sample.setGeneralIdentifier(sampleName);
-//						 sample.setNumber(sampleName);
-//						 sample.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-//						 sample.store();
-//
-//						 germplasmToId.put(sampleName, sample.getId());
-//					 }
-//				 }
+				 String treatment = getCellValue(r, 3);
 
 				 if (!StringUtils.isEmpty(treatment) && !treatmentToId.containsKey(treatment))
 				 {
@@ -833,18 +873,22 @@ public class TraitDataImporter extends DatasheetImporter
 
 				String germplasmName = getCellValue(dataRow, 0);
 				String rep = getCellValue(dataRow, 1);
+				String block = getCellValue(dataRow, 2);
+				BigDecimal latitude = getCellValueBigDecimal(dataRow, 5);
+				BigDecimal longitude = getCellValueBigDecimal(dataRow, 6);
+				BigDecimal elevation = getCellValueBigDecimal(dataRow, 7);
 				if (StringUtils.isEmpty(rep))
 					rep = Integer.toString(r);
-				String locationName = getCellValue(dataRow, 3);
+				String locationName = getCellValue(dataRow, 4);
 				Integer germplasmId;
 
 				// If it's a rep, adjust the name
 //				if (!StringUtils.isEmpty(rep))
 //					germplasmId = germplasmToId.get(germplasmName + "-" + dataset.getId() + "-" + rep);
 //				else
-					germplasmId = germplasmToId.get(germplasmName);
+				germplasmId = germplasmToId.get(germplasmName);
 
-				String treatmentName = getCellValue(dataRow, 2);
+				String treatmentName = getCellValue(dataRow, 3);
 				Integer treatmentId = null;
 
 				if (!StringUtils.isEmpty(treatmentName))
@@ -873,6 +917,10 @@ public class TraitDataImporter extends DatasheetImporter
 					record.setGerminatebaseId(germplasmId);
 					record.setPhenotypeId(traitId);
 					record.setRep(rep);
+					record.setBlock(block);
+					record.setLatitude(latitude);
+					record.setLongitude(longitude);
+					record.setElevation(elevation);
 					record.setTreatmentId(treatmentId);
 					record.setDatasetId(dataset.getId());
 					record.setPhenotypeValue(value);
