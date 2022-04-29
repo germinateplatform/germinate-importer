@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updated dependencies.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Changed pedigree importer to support datasets.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.2.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.2.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/PedigreeImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/PedigreeImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.2.0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.2.0.jar" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -115,19 +115,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="GenotypeHapmapImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.GenotypeHapmapImporter" />
-      <module name="germinate-importer.main" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="PedigreeImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.PedigreeImporter" />
       <module name="germinate-importer.main" />
@@ -163,6 +150,27 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
+    <configuration name="germinate-importer [classes]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="classes" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
     <configuration name="germinate-importer [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -185,19 +193,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Application.GenotypeHapmapImporter" />
       <item itemvalue="Application.GenotypeFlatFileImporter" />
       <item itemvalue="Application.PedigreeImporter" />
       <item itemvalue="Gradle.germinate-importer [build]" />
       <item itemvalue="Gradle.germinate-importer [clean]" />
+      <item itemvalue="Gradle.germinate-importer [classes]" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
+        <item itemvalue="Gradle.germinate-importer [classes]" />
         <item itemvalue="Application.PedigreeImporter" />
         <item itemvalue="Application.GenotypeFlatFileImporter" />
-        <item itemvalue="Application.GenotypeHapmapImporter" />
       </list>
     </recent_temporary>
   </component>
@@ -378,7 +386,14 @@
       <option name="project" value="LOCAL" />
       <updated>1638264228624</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="- CHG: Changed pedigree importer to support datasets.">
+      <created>1646822841624</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1646822841624</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -427,7 +442,8 @@
     <MESSAGE value="- CHG: Updated to latest database scheme." />
     <MESSAGE value="- FIX: Fixed an issue with HDF5 file creation where the source file doesn't contain any map information." />
     <MESSAGE value="- CHG: Updated dependencies." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updated dependencies." />
+    <MESSAGE value="- CHG: Changed pedigree importer to support datasets." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Changed pedigree importer to support datasets." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
