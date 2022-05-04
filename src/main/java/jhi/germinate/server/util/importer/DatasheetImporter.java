@@ -29,13 +29,15 @@ import static jhi.germinate.server.database.codegen.tables.Locations.*;
  */
 public abstract class DatasheetImporter extends AbstractExcelImporter
 {
-	private static final String[] METADATA_LABELS = {"Title", "Description", "Rights", "Date of creation", "Publisher", "Format", "Language", "Source", "Type", "Subject", "Contact"};
+	private static final String[] METADATA_LABELS     = {"Title", "Description", "Rights", "Date of creation", "Publisher", "Format", "Language", "Source", "Type", "Subject", "Contact", "Investigation Title", "Investigation Description", "Investigation unique ID", "Associated data file link", "Associated data file description", "Associated data file version"};
+	private static final String[] COLLABORATOR_LABELS = {"Last Name", "First Name", "Contributor role", "Contributor ID", "Email", "Phone", "Contributor", "Address", "Country"};
 
 	protected DatasetsRecord       dataset;
-	protected int datasetStateId;
+	protected int                  datasetStateId;
 	protected Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private   Map<String, Integer> countryCode2ToId;
 	protected Map<String, Integer> metadataLabelToRowIndex;
+	protected Map<String, Integer> collaboratorLabelToColIndex;
 	private   Map<String, Integer> attributeToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	public DatasheetImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
@@ -144,20 +146,13 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				 if (allCellsEmpty(r))
 					 return;
 
-				 if (!Objects.equals(getCellValue(r, 0), "Last Name"))
-					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Last Name");
-				 if (!Objects.equals(getCellValue(r, 1), "First Name"))
-					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "First Name");
-				 if (!Objects.equals(getCellValue(r, 2), "Email"))
-					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Email");
-				 if (!Objects.equals(getCellValue(r, 3), "Phone"))
-					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Phone");
-				 if (!Objects.equals(getCellValue(r, 4), "Contributor"))
-					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Contributor");
-				 if (!Objects.equals(getCellValue(r, 5), "Address"))
-					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Address");
-				 if (!Objects.equals(getCellValue(r, 6), "Country"))
-					 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "Country");
+				 readCollaboratorLabels(r);
+
+				 for (String label : COLLABORATOR_LABELS)
+				 {
+					 if (!collaboratorLabelToColIndex.containsKey(label))
+						 addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, label);
+				 }
 			 });
 
 			s.openStream()
@@ -166,9 +161,9 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				 if (allCellsEmpty(r))
 					 return;
 
-				 String firstName = getCellValue(r, 0);
-				 String lastName = getCellValue(r, 1);
-				 String country = getCellValue(r, 6);
+				 String firstName = getCellValue(r, collaboratorLabelToColIndex.get("First Name"));
+				 String lastName = getCellValue(r, collaboratorLabelToColIndex.get("Last Name"));
+				 String country = getCellValue(r, collaboratorLabelToColIndex.get("Country"));
 
 				 if (StringUtils.isEmpty(firstName))
 					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "First Name");
@@ -350,6 +345,14 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 		}
 	}
 
+	private void readCollaboratorLabels(Row headers)
+	{
+		collaboratorLabelToColIndex = new HashMap<>();
+
+		for (int i = 0; i < headers.getPhysicalCellCount(); i++)
+			collaboratorLabelToColIndex.put(headers.getCellText(i), i);
+	}
+
 	@Override
 	protected void importFile(ReadableWorkbook wb)
 	{
@@ -366,6 +369,24 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				  catch (IOException e)
 				  {
 					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				  }
+			  });
+			wb.findSheet("COLLABORATORS")
+			  .ifPresent(s -> {
+				  try
+				  {
+					  s.openStream()
+					   .findFirst()
+					   .ifPresent(r -> {
+						   if (allCellsEmpty(r))
+							   return;
+
+						   readCollaboratorLabels(r);
+					   });
+				  }
+				  catch (IOException e)
+				  {
+					  addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "COLLABORATORS sheet missing.");
 				  }
 			  });
 
@@ -450,13 +471,15 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					   if (allCellsEmpty(r))
 						   return;
 
-					   String lastName = getCellValue(r, 0);
-					   String firstName = getCellValue(r, 1);
-					   String email = getCellValue(r, 2);
-					   String phone = getCellValue(r, 3);
-					   String institutionName = getCellValue(r, 4);
-					   String address = getCellValue(r, 5);
-					   String countryCode = getCellValue(r, 6);
+					   String lastName = getCellValue(r, collaboratorLabelToColIndex.get("Last Name"));
+					   String firstName = getCellValue(r, collaboratorLabelToColIndex.get("First Name"));
+					   String email = getCellValue(r, collaboratorLabelToColIndex.get("Email"));
+					   String phone = getCellValue(r, collaboratorLabelToColIndex.get("Phone"));
+					   String institutionName = getCellValue(r, collaboratorLabelToColIndex.get("Contributor"));
+					   String externalId = getCellValue(r, collaboratorLabelToColIndex.get("Contributor ID"));
+					   String roles = getCellValue(r, collaboratorLabelToColIndex.get("Contributor role"));
+					   String address = getCellValue(r, collaboratorLabelToColIndex.get("Address"));
+					   String countryCode = getCellValue(r, collaboratorLabelToColIndex.get("Country"));
 
 					   Integer countryId = countryCode2ToId.get(countryCode);
 
@@ -481,6 +504,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 																 .and(COLLABORATORS.LAST_NAME.isNotDistinctFrom(lastName))
 																 .and(COLLABORATORS.EMAIL.isNotDistinctFrom(email))
 																 .and(COLLABORATORS.PHONE.isNotDistinctFrom(phone))
+																 .and(COLLABORATORS.EXTERNAL_ID.isNotDistinctFrom(externalId))
 																 .and(COLLABORATORS.INSTITUTION_ID.isNotDistinctFrom(institution == null ? null : institution.getId()))
 																 .fetchAny();
 
@@ -491,6 +515,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 						   collaborator.setLastName(lastName);
 						   collaborator.setEmail(email);
 						   collaborator.setPhone(phone);
+						   collaborator.setExternalId(externalId);
 						   collaborator.setInstitutionId(institution == null ? null : institution.getId());
 						   collaborator.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 						   collaborator.store();
@@ -499,6 +524,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					   DatasetcollaboratorsRecord dsCollab = context.selectFrom(DATASETCOLLABORATORS)
 																	.where(DATASETCOLLABORATORS.DATASET_ID.isNotDistinctFrom(dataset.getId()))
 																	.and(DATASETCOLLABORATORS.COLLABORATOR_ID.isNotDistinctFrom(collaborator.getId()))
+																	.and(DATASETCOLLABORATORS.COLLABORATOR_ROLES.isNotDistinctFrom(roles))
 																	.fetchAny();
 
 					   if (dsCollab == null)
@@ -506,6 +532,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 						   dsCollab = context.newRecord(DATASETCOLLABORATORS);
 						   dsCollab.setDatasetId(dataset.getId());
 						   dsCollab.setCollaboratorId(collaborator.getId());
+						   dsCollab.setCollaboratorRoles(roles);
 						   dsCollab.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 						   dsCollab.store();
 					   }
@@ -658,7 +685,15 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					  dataset.setDublinCore(dublinCore);
 					  dataset.store();
 
+					  // Create the new METADATA fields as attributes
+					  getOrCreateAttribute(context, rows, "Investigation Title");
+					  getOrCreateAttribute(context, rows, "Investigation Description");
+					  getOrCreateAttribute(context, rows, "Investigation Unique ID");
+					  getOrCreateAttribute(context, rows, "Associated data file link");
+					  getOrCreateAttribute(context, rows, "Associated data file description");
+					  getOrCreateAttribute(context, rows, "Associated data file version");
 
+					  // Add dataset locations
 					  for (Integer locationId : locationNameToId.values())
 					  {
 						  DatasetlocationsRecord dslr = context.selectFrom(DATASETLOCATIONS)
@@ -681,6 +716,36 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				  throw new RuntimeException(e);
 			  }
 		  });
+	}
+
+	private void getOrCreateAttribute(DSLContext context, List<Row> rows, String field)
+	{
+		Integer index = metadataLabelToRowIndex.get(field);
+		if (index != null)
+		{
+			String value = getCellValue(rows.get(index), 2);
+
+			if (!StringUtils.isEmpty(value))
+			{
+				Integer attributeId = attributeToId.get(field);
+
+				if (attributeId == null)
+				{
+					AttributesRecord attribute = context.newRecord(ATTRIBUTES);
+					attribute.setName(field);
+					attribute.setDescription(field);
+					attribute.setDatatype(AttributesDatatype.text);
+					attribute.setTargetTable("datasets");
+					attribute.store();
+					attributeToId.put(field, attribute.getId());
+					attributeId = attribute.getId();
+				}
+
+				context.insertInto(ATTRIBUTEDATA, ATTRIBUTEDATA.ATTRIBUTE_ID, ATTRIBUTEDATA.FOREIGN_ID, ATTRIBUTEDATA.VALUE)
+					   .values(attributeId, dataset.getId(), value)
+					   .execute();
+			}
+		}
 	}
 
 	protected boolean areEqual(Row one, Row two)

@@ -22,7 +22,9 @@ import static jhi.germinate.server.database.codegen.tables.Attributes.*;
 import static jhi.germinate.server.database.codegen.tables.Biologicalstatus.*;
 import static jhi.germinate.server.database.codegen.tables.Collectingsources.*;
 import static jhi.germinate.server.database.codegen.tables.Countries.*;
+import static jhi.germinate.server.database.codegen.tables.Datasets.*;
 import static jhi.germinate.server.database.codegen.tables.Entitytypes.*;
+import static jhi.germinate.server.database.codegen.tables.Experiments.*;
 import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
 import static jhi.germinate.server.database.codegen.tables.Institutions.*;
 import static jhi.germinate.server.database.codegen.tables.Locations.*;
@@ -793,9 +795,11 @@ public class McpdImporter extends AbstractExcelImporter
 
 		if (!StringUtils.isEmpty(insert.pedigree.getDefinition()))
 		{
+			DatasetsRecord pedigreeDataset = getOrCreatePedigreeDataset(context, "MCPD");
 			PedigreenotationsRecord pedigreeNotation = getOrCreatePedigreeNotation(context, "MCPD");
 			insert.pedigree.setPedigreenotationId(pedigreeNotation.getId());
 			insert.pedigree.setGerminatebaseId(insert.germinatebase.getId());
+			insert.pedigree.setDatasetId(pedigreeDataset.getId());
 			insert.pedigree = getOrCreatePedigree(context, insert.pedigree);
 		}
 
@@ -963,11 +967,43 @@ public class McpdImporter extends AbstractExcelImporter
 		return result;
 	}
 
+	private DatasetsRecord getOrCreatePedigreeDataset(DSLContext context, String name)
+	{
+		DatasetsRecord result = context.selectFrom(DATASETS)
+									   .where(DATASETS.DATASETTYPE_ID.eq(7))
+									   .and(DATASETS.NAME.eq(name))
+									   .fetchAny();
+
+		if (result == null)
+		{
+			ExperimentsRecord exp = context.selectFrom(EXPERIMENTS)
+										   .where(EXPERIMENTS.EXPERIMENT_NAME.eq(name))
+										   .fetchAny();
+
+			if (exp == null)
+			{
+				exp = context.newRecord(EXPERIMENTS);
+				exp.setExperimentName(name);
+				exp.store();
+			}
+
+			result = context.newRecord(DATASETS);
+			result.setName(name);
+			result.setDescription(name);
+			result.setDatasettypeId(7);
+			result.setDatasetStateId(1);
+			result.setExperimentId(exp.getId());
+			result.store();
+		}
+
+		return result;
+	}
+
 	private PedigreenotationsRecord getOrCreatePedigreeNotation(DSLContext context, String notation)
 	{
 		PedigreenotationsRecord result = context.selectFrom(PEDIGREENOTATIONS)
 												.where(PEDIGREENOTATIONS.NAME.eq(notation))
-												.fetchAnyInto(PedigreenotationsRecord.class);
+												.fetchAny();
 
 		if (result == null)
 		{

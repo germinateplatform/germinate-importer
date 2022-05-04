@@ -271,9 +271,12 @@ public class TraitDataImporter extends DatasheetImporter
 		String longitude = getCellValue(r, 6);
 		String elevation = getCellValue(r, 7);
 
+		Double lat = null;
+		Double lng = null;
+
 		try
 		{
-			Double.parseDouble(latitude);
+			lat = Double.parseDouble(latitude);
 		}
 		catch (NullPointerException e)
 		{
@@ -285,7 +288,7 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 		try
 		{
-			Double.parseDouble(longitude);
+			lng = Double.parseDouble(longitude);
 		}
 		catch (NullPointerException e)
 		{
@@ -306,6 +309,11 @@ public class TraitDataImporter extends DatasheetImporter
 		catch (NumberFormatException e)
 		{
 			addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "Specified 'Elevation' is not a decimal value: " + elevation);
+		}
+
+		if ((lat == null && lng != null) || (lat != null && lng == null))
+		{
+			addImportResult(ImportStatus.GENERIC_INVALID_LOCATION, r.getRowNum(), "Either 'Latitude' or 'Longitude' is missing.");
 		}
 	}
 
@@ -879,6 +887,8 @@ public class TraitDataImporter extends DatasheetImporter
 				BigDecimal elevation = getCellValueBigDecimal(dataRow, 7);
 				if (StringUtils.isEmpty(rep))
 					rep = Integer.toString(r);
+				if (StringUtils.isEmpty(block))
+					block = "1";
 				String locationName = getCellValue(dataRow, 4);
 				Integer germplasmId;
 

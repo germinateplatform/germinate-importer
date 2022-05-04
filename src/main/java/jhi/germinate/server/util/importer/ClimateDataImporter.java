@@ -79,10 +79,12 @@ public class ClimateDataImporter extends DatasheetImporter
 
 		try
 		{
-			wb.getSheets()
-			  .filter(s -> Objects.equals(s.getName(), "CLIMATES"))
-			  .findFirst()
-			  .ifPresent(s ->
+			Optional<Sheet> climateSheet = wb.getSheets().filter(s -> Objects.equals(s.getName(), "ENVIRONMENTAL VARIABLES")).findAny();
+
+			if (climateSheet.isEmpty())
+				climateSheet = wb.getSheets().filter(s -> Objects.equals(s.getName(), "CLIMATES")).findAny();
+
+			climateSheet.ifPresent(s ->
 			  {
 				  try
 				  {
@@ -337,8 +339,13 @@ public class ClimateDataImporter extends DatasheetImporter
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			wb.findSheet("CLIMATES")
-			  .ifPresent(s -> {
+
+			Optional<Sheet> climateSheet = wb.getSheets().filter(s -> Objects.equals(s.getName(), "ENVIRONMENTAL VARIABLES")).findAny();
+
+			if (climateSheet.isEmpty())
+				climateSheet = wb.getSheets().filter(s -> Objects.equals(s.getName(), "CLIMATES")).findAny();
+
+			climateSheet.ifPresent(s -> {
 				  try
 				  {
 					  // Map headers to their index
