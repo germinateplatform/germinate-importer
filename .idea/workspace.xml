@@ -4,12 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updated dependencies.&#10;- ADD: Added block, latitude, longitude and elevation columns to trials data importer.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- FIX: Fixed issues with missing trials block info.&#10;- FIX: Fixed issues with germplasm MCPD pedigree importer (missing dataset).&#10;- CHG: Updated METADATA parsing to include new rows.&#10;- CHG: Updated COLLABORATORS parsing to include new columns.&#10;- CHG: Renamed climate template to environmental data template. This required updating sheet names.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.3.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.3.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ClimateDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ClimateDataImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -409,7 +405,14 @@
       <option name="project" value="LOCAL" />
       <updated>1651242905090</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="- FIX: Fixed issues with missing trials block info.&#10;- FIX: Fixed issues with germplasm MCPD pedigree importer (missing dataset).&#10;- CHG: Updated METADATA parsing to include new rows.&#10;- CHG: Updated COLLABORATORS parsing to include new columns.&#10;- CHG: Renamed climate template to environmental data template. This required updating sheet names.">
+      <created>1651686040733</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1651686040733</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -460,7 +463,8 @@
     <MESSAGE value="- CHG: Changed pedigree importer to support datasets." />
     <MESSAGE value="- CHG: Updated dependencies." />
     <MESSAGE value="- CHG: Updated dependencies.&#10;- ADD: Added block, latitude, longitude and elevation columns to trials data importer." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updated dependencies.&#10;- ADD: Added block, latitude, longitude and elevation columns to trials data importer." />
+    <MESSAGE value="- FIX: Fixed issues with missing trials block info.&#10;- FIX: Fixed issues with germplasm MCPD pedigree importer (missing dataset).&#10;- CHG: Updated METADATA parsing to include new rows.&#10;- CHG: Updated COLLABORATORS parsing to include new columns.&#10;- CHG: Renamed climate template to environmental data template. This required updating sheet names." />
+    <option name="LAST_COMMIT_MESSAGE" value="- FIX: Fixed issues with missing trials block info.&#10;- FIX: Fixed issues with germplasm MCPD pedigree importer (missing dataset).&#10;- CHG: Updated METADATA parsing to include new rows.&#10;- CHG: Updated COLLABORATORS parsing to include new columns.&#10;- CHG: Renamed climate template to environmental data template. This required updating sheet names." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

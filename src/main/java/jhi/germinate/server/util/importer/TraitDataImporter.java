@@ -890,14 +890,7 @@ public class TraitDataImporter extends DatasheetImporter
 				if (StringUtils.isEmpty(block))
 					block = "1";
 				String locationName = getCellValue(dataRow, 4);
-				Integer germplasmId;
-
-				// If it's a rep, adjust the name
-//				if (!StringUtils.isEmpty(rep))
-//					germplasmId = germplasmToId.get(germplasmName + "-" + dataset.getId() + "-" + rep);
-//				else
-				germplasmId = germplasmToId.get(germplasmName);
-
+				Integer germplasmId = germplasmToId.get(germplasmName);
 				String treatmentName = getCellValue(dataRow, 3);
 				Integer treatmentId = null;
 
