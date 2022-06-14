@@ -314,6 +314,10 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				if (StringUtils.isEmpty(name))
 					addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, index, "Title");
 			}
+			else
+			{
+				addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, -1, "Missing 'Title' on 'METADATA' sheet.");
+			}
 
 			index = metadataLabelToRowIndex.get("Description");
 			if (index != null)
@@ -321,6 +325,10 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				String description = getCellValue(rows.get(index), 0);
 				if (StringUtils.isEmpty(description))
 					addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, index, "Description");
+			}
+			else
+			{
+				addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, -1, "Missing 'Description' on 'METADATA' sheet.");
 			}
 		}
 		catch (IOException e)

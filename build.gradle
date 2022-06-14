@@ -22,7 +22,7 @@ dependencies {
     compile fileTree(dir: 'lib', include: ['*.jar'])
 
     implementation 'cisd:jhdf5:19.04.0'
-    implementation 'org.jooq:jooq:3.11.10'
+    implementation 'org.jooq:jooq:3.16.6'
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'mysql:mysql-connector-java:8.0.28'
     implementation 'org.dhatim:fastexcel-reader:0.12.14'
