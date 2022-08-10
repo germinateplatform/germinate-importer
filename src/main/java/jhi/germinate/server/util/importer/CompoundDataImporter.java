@@ -35,17 +35,17 @@ public class CompoundDataImporter extends DatasheetImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 11)
+		if (args.length != 12)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		CompoundDataImporter importer = new CompoundDataImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		CompoundDataImporter importer = new CompoundDataImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
 		importer.init(args);
 		importer.run(RunType.getType(args[8]));
 	}
 
-	public CompoundDataImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
+	public CompoundDataImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
 	{
-		super(input, isUpdate, datasetStateId, deleteOnFail, userId);
+		super(input, originalFilename, isUpdate, datasetStateId, deleteOnFail, userId);
 	}
 
 	@Override
@@ -65,7 +65,8 @@ public class CompoundDataImporter extends DatasheetImporter
 			context.selectFrom(GERMINATEBASE)
 				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 		}
-		catch (SQLException e) {
+		catch (SQLException e)
+		{
 			e.printStackTrace();
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
@@ -371,7 +372,8 @@ public class CompoundDataImporter extends DatasheetImporter
 			Sheet dates = wb.findSheet("RECORDING_DATES").orElse(null);
 			importData(context, data, dates);
 		}
-		catch (SQLException e) {
+		catch (SQLException e)
+		{
 			e.printStackTrace();
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}

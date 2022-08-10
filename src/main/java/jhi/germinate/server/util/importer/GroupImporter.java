@@ -37,17 +37,17 @@ public class GroupImporter extends AbstractExcelImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 11)
+		if (args.length != 12)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		GroupImporter importer = new GroupImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		GroupImporter importer = new GroupImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
 		importer.init(args);
 		importer.run(RunType.getType(args[8]));
 	}
 
-	public GroupImporter(File input, boolean isUpdate, boolean deleteOnFail, int userId)
+	public GroupImporter(File input, String originalFilename, boolean isUpdate, boolean deleteOnFail, int userId)
 	{
-		super(input, isUpdate, deleteOnFail, userId);
+		super(input, originalFilename, isUpdate, deleteOnFail, userId);
 	}
 
 	@Override

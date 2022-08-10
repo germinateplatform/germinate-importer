@@ -1,7 +1,7 @@
 package jhi.germinate.server.util.importer.task;
 
 import jhi.germinate.server.database.pojo.ImportStatus;
-import jhi.germinate.server.util.hdf5.*;
+import jhi.germinate.server.util.hdf5.HapmapToHdf5Converter;
 
 import java.io.*;
 import java.nio.file.*;
@@ -11,7 +11,7 @@ public abstract class HapmapToHdf5Task implements Runnable
 {
 	private final File          hapmap;
 	private final File          hdf5;
-	private final boolean transpose;
+	private final boolean       transpose;
 	private final ErrorCallback callback;
 
 	public HapmapToHdf5Task(File hapmap, File hdf5, boolean transpose, ErrorCallback callback)

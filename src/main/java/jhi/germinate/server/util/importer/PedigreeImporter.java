@@ -9,8 +9,8 @@ import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
 
-import java.io.*;
 import java.io.File;
+import java.io.*;
 import java.sql.*;
 import java.util.*;
 
@@ -42,17 +42,17 @@ public class PedigreeImporter extends DatasheetImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 11)
+		if (args.length != 12)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		PedigreeImporter importer = new PedigreeImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		PedigreeImporter importer = new PedigreeImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
 		importer.init(args);
 		importer.run(RunType.getType(args[8]));
 	}
 
-	public PedigreeImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
+	public PedigreeImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
 	{
-		super(input, isUpdate, datasetStateId, deleteOnFail, userId);
+		super(input, originalFilename, isUpdate, datasetStateId, deleteOnFail, userId);
 	}
 
 	@Override

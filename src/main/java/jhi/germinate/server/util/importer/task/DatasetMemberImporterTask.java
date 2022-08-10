@@ -8,14 +8,14 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.*;
-import java.util.*;
+import java.util.Set;
 
 import static jhi.germinate.server.database.codegen.tables.Datasetmembers.*;
 
 public abstract class DatasetMemberImporterTask implements Runnable
 {
-	private final Set<Integer>   markerIdsInFile;
-	private final Set<Integer>   germplasmIdsInFile;
+	private final Set<Integer>  markerIdsInFile;
+	private final Set<Integer>  germplasmIdsInFile;
 	private final int           datasetId;
 	private final ErrorCallback callback;
 

@@ -1,22 +1,30 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.Database;
+import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
 import jhi.germinate.server.util.StringUtils;
 import org.dhatim.fastexcel.reader.*;
+import org.jooq.DSLContext;
 
 import java.io.*;
 import java.math.*;
+import java.nio.file.*;
 import java.sql.Date;
+import java.sql.*;
 import java.util.*;
+
+import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
+import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
 
 /**
  * @author Sebastian Raubach
  */
 public abstract class AbstractExcelImporter extends AbstractImporter
 {
-	public AbstractExcelImporter(File input, boolean isUpdate, boolean deleteOnFail, int userId)
+	public AbstractExcelImporter(File input, String originalFilename, boolean isUpdate, boolean deleteOnFail, int userId)
 	{
-		super(input, isUpdate, deleteOnFail, userId);
+		super(input, originalFilename, isUpdate, deleteOnFail, userId);
 	}
 
 	protected BigDecimal getCellValueBigDecimal(Row r, Map<String, Integer> columnNameToIndex, String column)
@@ -308,4 +316,53 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 	protected abstract void importFile(ReadableWorkbook wb);
 
 	protected abstract void updateFile(ReadableWorkbook wb);
+
+	@Override
+	protected void postImport(File input)
+	{
+		// Create a backup copy of the uploaded file and link it to the newly created dataset.
+		try (Connection conn = Database.getConnection())
+		{
+			DSLContext context = Database.getContext(conn);
+			FileresourcetypesRecord type = context.selectFrom(FILERESOURCETYPES)
+												  .where(FILERESOURCETYPES.NAME.eq("Dataset resource"))
+												  .and(FILERESOURCETYPES.DESCRIPTION.eq("Automatically created linked backups of uploaded data resources."))
+												  .fetchAny();
+
+			if (type == null)
+			{
+				type = context.newRecord(FILERESOURCETYPES);
+				type.setName("Dataset resource");
+				type.setDescription("Automatically created linked backups of uploaded data resources.");
+				type.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+				type.store();
+			}
+
+			File typeFolder = new File(new File(new File(input.getParentFile().getParentFile().getParentFile(), "data"), "download"), Integer.toString(type.getId()));
+			typeFolder.mkdirs();
+			File target = new File(typeFolder, input.getName());
+
+			FileresourcesRecord fileRes = context.newRecord(FILERESOURCES);
+			fileRes.setName(originalFilename);
+			fileRes.setPath(target.getName());
+			fileRes.setFilesize(input.length());
+			fileRes.setDescription("Automatic upload backup.");
+			fileRes.setFileresourcetypeId(type.getId());
+			fileRes.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			fileRes.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+			fileRes.store();
+
+			// Now update the name with the file resource id
+			target = new File(typeFolder, fileRes.getId() + "-" + input.getName());
+			fileRes.setPath(target.getName());
+			fileRes.store();
+
+			// Finally copy the file
+			Files.copy(input.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
+		catch (SQLException | IOException e)
+		{
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, "Failed to create file resource for dataset: " + e.getMessage());
+		}
+	}
 }

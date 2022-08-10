@@ -8,13 +8,17 @@ import jhi.germinate.server.util.importer.task.*;
 import org.jooq.DSLContext;
 
 import java.io.*;
+import java.nio.file.*;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
+import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.*;
 import static jhi.germinate.server.database.codegen.tables.Datasets.*;
 import static jhi.germinate.server.database.codegen.tables.Experiments.*;
+import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
+import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
 import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
 import static jhi.germinate.server.database.codegen.tables.Mapfeaturetypes.*;
 import static jhi.germinate.server.database.codegen.tables.Maps.*;
@@ -39,17 +43,17 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 12)
+		if (args.length != 13)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		GenotypeHapmapImporter importer = new GenotypeHapmapImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[11]));
+		GenotypeHapmapImporter importer = new GenotypeHapmapImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[12]));
 		importer.init(args);
 		importer.run(AbstractExcelImporter.RunType.getType(args[8]));
 	}
 
-	public GenotypeHapmapImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, Integer userId, File hdf5TargetFolder)
+	public GenotypeHapmapImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, Integer userId, File hdf5TargetFolder)
 	{
-		super(input, isUpdate, deleteOnFail, userId);
+		super(input, originalFilename, isUpdate, deleteOnFail, userId);
 
 		this.datasetStateId = datasetStateId;
 		this.hdf5TargetFolder = hdf5TargetFolder;
@@ -70,6 +74,62 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 		{
 			e.printStackTrace();
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+		}
+	}
+
+	@Override
+	protected void postImport(File input)
+	{
+		// Create a backup copy of the uploaded file and link it to the newly created dataset.
+		try (Connection conn = Database.getConnection())
+		{
+			DSLContext context = Database.getContext(conn);
+			FileresourcetypesRecord type = context.selectFrom(FILERESOURCETYPES)
+												  .where(FILERESOURCETYPES.NAME.eq("Dataset resource"))
+												  .and(FILERESOURCETYPES.DESCRIPTION.eq("Automatically created linked backups of uploaded data resources."))
+												  .fetchAny();
+
+			if (type == null)
+			{
+				type = context.newRecord(FILERESOURCETYPES);
+				type.setName("Dataset resource");
+				type.setDescription("Automatically created linked backups of uploaded data resources.");
+				type.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+				type.store();
+			}
+
+			File typeFolder = new File(new File(new File(input.getParentFile().getParentFile().getParentFile(), "data"), "download"), Integer.toString(type.getId()));
+			typeFolder.mkdirs();
+			File target = new File(typeFolder, input.getName());
+
+			FileresourcesRecord fileRes = context.newRecord(FILERESOURCES);
+			fileRes.setName(originalFilename);
+			fileRes.setPath(target.getName());
+			fileRes.setFilesize(input.length());
+			fileRes.setDescription("Automatic upload backup.");
+			fileRes.setFileresourcetypeId(type.getId());
+			fileRes.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			fileRes.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+			fileRes.store();
+
+			// Now update the name with the file resource id
+			target = new File(typeFolder, fileRes.getId() + "-" + input.getName());
+			fileRes.setPath(target.getName());
+			fileRes.store();
+
+			// Finally copy the file
+			Files.copy(input.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+			DatasetfileresourcesRecord link = context.newRecord(DATASETFILERESOURCES);
+			link.setDatasetId(this.dataset.getId());
+			link.setFileresourceId(fileRes.getId());
+			link.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			link.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+			link.store();
+		}
+		catch (SQLException | IOException e)
+		{
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, "Failed to create file resource for dataset: " + e.getMessage());
 		}
 	}
 

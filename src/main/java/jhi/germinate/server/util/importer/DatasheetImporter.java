@@ -10,6 +10,7 @@ import org.jooq.DSLContext;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.nio.file.*;
 import java.sql.*;
 import java.util.*;
 
@@ -18,9 +19,12 @@ import static jhi.germinate.server.database.codegen.tables.Attributes.*;
 import static jhi.germinate.server.database.codegen.tables.Collaborators.*;
 import static jhi.germinate.server.database.codegen.tables.Countries.*;
 import static jhi.germinate.server.database.codegen.tables.Datasetcollaborators.*;
+import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.*;
 import static jhi.germinate.server.database.codegen.tables.Datasetlocations.*;
 import static jhi.germinate.server.database.codegen.tables.Datasets.*;
 import static jhi.germinate.server.database.codegen.tables.Experiments.*;
+import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
+import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
 import static jhi.germinate.server.database.codegen.tables.Institutions.*;
 import static jhi.germinate.server.database.codegen.tables.Locations.*;
 
@@ -40,9 +44,9 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 	protected Map<String, Integer> collaboratorLabelToColIndex;
 	private   Map<String, Integer> attributeToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-	public DatasheetImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
+	public DatasheetImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
 	{
-		super(input, isUpdate, deleteOnFail, userId);
+		super(input, originalFilename, isUpdate, deleteOnFail, userId);
 		this.datasetStateId = datasetStateId;
 	}
 
@@ -775,6 +779,62 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 	{
 		// We don't support updates, simply import
 		importFile(wb);
+	}
+
+	@Override
+	protected void postImport(File input)
+	{
+		// Create a backup copy of the uploaded file and link it to the newly created dataset.
+		try (Connection conn = Database.getConnection())
+		{
+			DSLContext context = Database.getContext(conn);
+			FileresourcetypesRecord type = context.selectFrom(FILERESOURCETYPES)
+												  .where(FILERESOURCETYPES.NAME.eq("Dataset resource"))
+												  .and(FILERESOURCETYPES.DESCRIPTION.eq("Automatically created linked backups of uploaded data resources."))
+												  .fetchAny();
+
+			if (type == null)
+			{
+				type = context.newRecord(FILERESOURCETYPES);
+				type.setName("Dataset resource");
+				type.setDescription("Automatically created linked backups of uploaded data resources.");
+				type.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+				type.store();
+			}
+
+			File typeFolder = new File(new File(new File(input.getParentFile().getParentFile().getParentFile(), "data"), "download"), Integer.toString(type.getId()));
+			typeFolder.mkdirs();
+			File target = new File(typeFolder, input.getName());
+
+			FileresourcesRecord fileRes = context.newRecord(FILERESOURCES);
+			fileRes.setName(originalFilename);
+			fileRes.setPath(target.getName());
+			fileRes.setFilesize(input.length());
+			fileRes.setDescription("Automatic upload backup.");
+			fileRes.setFileresourcetypeId(type.getId());
+			fileRes.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			fileRes.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+			fileRes.store();
+
+			// Now update the name with the file resource id
+			target = new File(typeFolder, fileRes.getId() + "-" + input.getName());
+			fileRes.setPath(target.getName());
+			fileRes.store();
+
+			// Finally copy the file
+			Files.copy(input.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+			DatasetfileresourcesRecord link = context.newRecord(DATASETFILERESOURCES);
+			link.setDatasetId(this.dataset.getId());
+			link.setFileresourceId(fileRes.getId());
+			link.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			link.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+			link.store();
+		}
+		catch (SQLException | IOException e)
+		{
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, "Failed to create file resource for dataset: " + e.getMessage());
+		}
 	}
 
 	protected abstract int getDatasetTypeId();

@@ -11,9 +11,9 @@ public abstract class FJTabbedToHdf5Task implements Runnable
 {
 	private final File          input;
 	private final File          hdf5;
-	private final boolean transpose;
+	private final boolean       transpose;
 	private final ErrorCallback callback;
-	private int skipLines;
+	private       int           skipLines;
 
 	public FJTabbedToHdf5Task(File input, File hdf5, boolean transpose, int skipLines, ErrorCallback callback)
 	{

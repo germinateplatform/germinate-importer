@@ -37,17 +37,17 @@ public class ClimateDataImporter extends DatasheetImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 11)
+		if (args.length != 12)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		ClimateDataImporter importer = new ClimateDataImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		ClimateDataImporter importer = new ClimateDataImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
 		importer.init(args);
 		importer.run(RunType.getType(args[8]));
 	}
 
-	public ClimateDataImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
+	public ClimateDataImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
 	{
-		super(input, isUpdate, datasetStateId, deleteOnFail, userId);
+		super(input, originalFilename, isUpdate, datasetStateId, deleteOnFail, userId);
 	}
 
 	@Override
@@ -85,23 +85,23 @@ public class ClimateDataImporter extends DatasheetImporter
 				climateSheet = wb.getSheets().filter(s -> Objects.equals(s.getName(), "CLIMATES")).findAny();
 
 			climateSheet.ifPresent(s ->
-			  {
-				  try
-				  {
-					  // Map headers to their index
-					  s.openStream()
-					   .findFirst()
-					   .ifPresent(this::getHeaderMapping);
-					  // Check the sheet
-					  s.openStream()
-					   .skip(1)
-					   .forEachOrdered(this::checkClimate);
-				  }
-				  catch (IOException e)
-				  {
-					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-				  }
-			  });
+			{
+				try
+				{
+					// Map headers to their index
+					s.openStream()
+					 .findFirst()
+					 .ifPresent(this::getHeaderMapping);
+					// Check the sheet
+					s.openStream()
+					 .skip(1)
+					 .forEachOrdered(this::checkClimate);
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
+			});
 
 			this.locationNames = checkLocationSheet(wb.findSheet("LOCATION").orElse(null));
 
@@ -346,20 +346,20 @@ public class ClimateDataImporter extends DatasheetImporter
 				climateSheet = wb.getSheets().filter(s -> Objects.equals(s.getName(), "CLIMATES")).findAny();
 
 			climateSheet.ifPresent(s -> {
-				  try
-				  {
-					  // Map headers to their index
-					  s.openStream()
-					   .findFirst()
-					   .ifPresent(this::getHeaderMapping);
-				  }
-				  catch (IOException e)
-				  {
-					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-				  }
+				try
+				{
+					// Map headers to their index
+					s.openStream()
+					 .findFirst()
+					 .ifPresent(this::getHeaderMapping);
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
 
-				  importTraits(context, s);
-			  });
+				importTraits(context, s);
+			});
 
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			importData(context, data);

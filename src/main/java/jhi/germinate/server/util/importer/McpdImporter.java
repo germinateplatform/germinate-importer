@@ -9,8 +9,8 @@ import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
 
-import java.io.*;
 import java.io.File;
+import java.io.*;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.*;
@@ -62,17 +62,17 @@ public class McpdImporter extends AbstractExcelImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 11)
+		if (args.length != 12)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		McpdImporter importer = new McpdImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		McpdImporter importer = new McpdImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
 		importer.init(args);
 		importer.run(RunType.getType(args[8]));
 	}
 
-	public McpdImporter(File input, boolean isUpdate, boolean deleteOnFail, int userId)
+	public McpdImporter(File input, String originalFilename, boolean isUpdate, boolean deleteOnFail, int userId)
 	{
-		super(input, isUpdate, deleteOnFail, userId);
+		super(input, originalFilename, isUpdate, deleteOnFail, userId);
 	}
 
 	@Override

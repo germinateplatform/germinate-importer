@@ -20,21 +20,21 @@ public class GenotypeExcelImporter extends DatasheetImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 12)
+		if (args.length != 13)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		GenotypeExcelImporter importer = new GenotypeExcelImporter(new File(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[11]));
+		GenotypeExcelImporter importer = new GenotypeExcelImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[12]));
 		importer.init(args);
 		importer.run(RunType.getType(args[8]));
 	}
 
-	public GenotypeExcelImporter(File input, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId, File hdf5TargetFolder)
+	public GenotypeExcelImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId, File hdf5TargetFolder)
 	{
-		super(input, isUpdate, datasetStateId, deleteOnFail, userId);
+		super(input, originalFilename, isUpdate, datasetStateId, deleteOnFail, userId);
 
 		this.txtFile = new File(input.getParentFile(), input.getName().replace(".xlsx", ".txt"));
 
-		flatFileImporter = new GenotypeFlatFileImporter(txtFile, isUpdate, datasetStateId, deleteOnFail, userId, hdf5TargetFolder);
+		flatFileImporter = new GenotypeFlatFileImporter(txtFile, originalFilename, isUpdate, datasetStateId, deleteOnFail, userId, hdf5TargetFolder);
 	}
 
 	@Override

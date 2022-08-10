@@ -23,14 +23,16 @@ public abstract class AbstractImporter
 	protected       boolean                         isUpdate;
 	private         boolean                         deleteOnFail;
 	private         File                            input;
+	protected final String                          originalFilename;
 	protected final int                             userId;
 	private         Map<ImportStatus, ImportResult> errorMap = new HashMap<>();
 
 	private Instant start;
 
-	public AbstractImporter(File input, boolean isUpdate, boolean deleteOnFail, int userId)
+	public AbstractImporter(File input, String originalFilename, boolean isUpdate, boolean deleteOnFail, int userId)
 	{
 		this.input = input;
+		this.originalFilename = originalFilename;
 		this.isUpdate = isUpdate;
 		this.deleteOnFail = deleteOnFail;
 		this.userId = userId;
@@ -47,25 +49,24 @@ public abstract class AbstractImporter
 	{
 		prepare();
 
-		if (runtype.includesCheck())
-			checkFile();
-
-		Logger.getLogger("").log(Level.INFO, errorMap.toString());
+		if (runtype.includesCheck()) checkFile();
 
 		if (errorMap.size() < 1)
 		{
 			if (runtype.includesImport())
 			{
-				if (isUpdate)
-					updateFile();
-				else
-					importFile();
+				if (isUpdate) updateFile();
+				else importFile();
+
+				postImport(this.input);
 			}
 		}
 		else if (deleteOnFail)
 		{
 			input.delete();
 		}
+
+		Logger.getLogger("").log(Level.INFO, errorMap.toString());
 
 		List<ImportResult> result = getImportResult();
 
@@ -88,8 +89,7 @@ public abstract class AbstractImporter
 
 	protected void addImportResult(ImportStatus status, int rowIndex, String message)
 	{
-		if (!errorMap.containsKey(status))
-			errorMap.put(status, new ImportResult(status, rowIndex, message));
+		if (!errorMap.containsKey(status)) errorMap.put(status, new ImportResult(status, rowIndex, message));
 	}
 
 	private List<ImportResult> getImportResult()
@@ -102,7 +102,8 @@ public abstract class AbstractImporter
 		return this.input;
 	}
 
-	protected Map<ImportStatus, ImportResult> getErrorMap() {
+	protected Map<ImportStatus, ImportResult> getErrorMap()
+	{
 		return Collections.unmodifiableMap(this.errorMap);
 	}
 
@@ -113,6 +114,8 @@ public abstract class AbstractImporter
 	protected abstract void importFile();
 
 	protected abstract void updateFile();
+
+	protected abstract void postImport(File input);
 
 	public static class ImportConfig
 	{
