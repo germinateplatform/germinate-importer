@@ -37,17 +37,15 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 	private static final String[] COLLABORATOR_LABELS = {"Last Name", "First Name", "Contributor role", "Contributor ID", "Email", "Phone", "Contributor", "Address", "Country"};
 
 	protected DatasetsRecord       dataset;
-	protected int                  datasetStateId;
 	protected Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private   Map<String, Integer> countryCode2ToId;
 	protected Map<String, Integer> metadataLabelToRowIndex;
 	protected Map<String, Integer> collaboratorLabelToColIndex;
 	private   Map<String, Integer> attributeToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-	public DatasheetImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
+	public DatasheetImporter(Integer importJobId)
 	{
-		super(input, originalFilename, isUpdate, deleteOnFail, userId);
-		this.datasetStateId = datasetStateId;
+		super(importJobId);
 	}
 
 	@Override
@@ -687,7 +685,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					  dataset.setExperimentId(experiment.getId());
 					  dataset.setDatasettypeId(getDatasetTypeId());
 					  dataset.setName(name);
-					  dataset.setDatasetStateId(datasetStateId);
+					  dataset.setDatasetStateId(this.jobDetails.getDatasetstateId());
 					  dataset.setDescription(description);
 
 					  index = metadataLabelToRowIndex.get("Contact");
@@ -782,8 +780,9 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 	}
 
 	@Override
-	protected void postImport(File input)
+	protected void postImport()
 	{
+		File input = getInputFile();
 		// Create a backup copy of the uploaded file and link it to the newly created dataset.
 		try (Connection conn = Database.getConnection())
 		{
@@ -802,12 +801,12 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				type.store();
 			}
 
-			File typeFolder = new File(new File(new File(input.getParentFile().getParentFile().getParentFile(), "data"), "download"), Integer.toString(type.getId()));
+			File typeFolder = new File(new File(new File(jobDetails.getJobConfig().getBaseFolder(), "data"), "download"), Integer.toString(type.getId()));
 			typeFolder.mkdirs();
 			File target = new File(typeFolder, input.getName());
 
 			FileresourcesRecord fileRes = context.newRecord(FILERESOURCES);
-			fileRes.setName(originalFilename);
+			fileRes.setName(jobDetails.getOriginalFilename());
 			fileRes.setPath(target.getName());
 			fileRes.setFilesize(input.length());
 			fileRes.setDescription("Automatic upload backup.");

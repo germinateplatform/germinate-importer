@@ -9,8 +9,7 @@ import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
 
-import java.io.File;
-import java.io.*;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.*;
@@ -45,34 +44,33 @@ public class McpdImporter extends AbstractExcelImporter
 	/** Required column headers */
 	private static final String[] COLUMN_HEADERS = {"PUID", "INSTCODE", "ACCENUMB", "COLLNUMB", "COLLCODE", "COLLNAME", "COLLINSTADDRESS", "COLLMISSID", "GENUS", "SPECIES", "SPAUTHOR", "SUBTAXA", "SUBTAUTHOR", "CROPNAME", "ACCENAME", "ACQDATE", "ORIGCTY", "COLLSITE", "DECLATITUDE", "LATITUDE", "DECLONGITUDE", "LONGITUDE", "COORDUNCERT", "COORDDATUM", "GEOREFMETH", "ELEVATION", "COLLDATE", "BREDCODE", "BREDNAME", "SAMPSTAT", "ANCEST", "COLLSRC", "DONORCODE", "DONORNAME", "DONORNUMB", "OTHERNUMB", "DUPLSITE", "DUPLINSTNAME", "STORAGE", "MLSSTAT", "REMARKS"};
 
-	private Map<String, Integer>              columnNameToIndex;
-	private Set<String>                       foundAccenumb   = new HashSet<>();
-	private List<Integer>                     attributeIds    = new ArrayList<>();
-	private Map<String, Integer>              gidToId         = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer>              countryCodeToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer>              attributeToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer>              accenumbToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<Integer, GerminatebaseRecord> germinatebaseRecords;
-	private Map<Integer, LocationsRecord>     locationRecords;
-	private List<Integer>                     validCollsrc;
-	private List<Integer>                     validSampstat;
-	private List<Integer>                     validMlsStatus;
-	private List<Integer>                     validStorage;
-	private Map<String, Integer>              entityTypeToId  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private       Map<String, Integer>              columnNameToIndex;
+	private final Set<String>                       foundAccenumb   = new HashSet<>();
+	private final List<Integer>                     attributeIds    = new ArrayList<>();
+	private final Map<String, Integer>              gidToId         = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>              countryCodeToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>              attributeToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>              accenumbToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>              entityTypeToId  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private       Map<Integer, GerminatebaseRecord> germinatebaseRecords;
+	private       Map<Integer, LocationsRecord>     locationRecords;
+	private       List<Integer>                     validCollsrc;
+	private       List<Integer>                     validSampstat;
+	private       List<Integer>                     validMlsStatus;
+	private       List<Integer>                     validStorage;
 
 	public static void main(String[] args)
 	{
-		if (args.length != 12)
-			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+		if (args.length != 6) throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		McpdImporter importer = new McpdImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		McpdImporter importer = new McpdImporter(Integer.parseInt(args[5]));
 		importer.init(args);
-		importer.run(RunType.getType(args[8]));
+		importer.run();
 	}
 
-	public McpdImporter(File input, String originalFilename, boolean isUpdate, boolean deleteOnFail, int userId)
+	public McpdImporter(Integer importJobId)
 	{
-		super(input, originalFilename, isUpdate, deleteOnFail, userId);
+		super(importJobId);
 	}
 
 	@Override
@@ -81,38 +79,27 @@ public class McpdImporter extends AbstractExcelImporter
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			context.selectFrom(GERMINATEBASE)
-				   .forEach(g -> gidToId.put(g.getGeneralIdentifier(), g.getId()));
+			context.selectFrom(GERMINATEBASE).forEach(g -> gidToId.put(g.getGeneralIdentifier(), g.getId()));
 
-			context.selectFrom(COUNTRIES)
-				   .forEach(c -> countryCodeToId.put(c.getCountryCode3(), c.getId()));
+			context.selectFrom(COUNTRIES).forEach(c -> countryCodeToId.put(c.getCountryCode3(), c.getId()));
 
-			validMlsStatus = context.selectFrom(MLSSTATUS)
-									.fetch(MLSSTATUS.ID);
+			validMlsStatus = context.selectFrom(MLSSTATUS).fetch(MLSSTATUS.ID);
 
-			validCollsrc = context.selectFrom(COLLECTINGSOURCES)
-								  .fetch(COLLECTINGSOURCES.ID);
+			validCollsrc = context.selectFrom(COLLECTINGSOURCES).fetch(COLLECTINGSOURCES.ID);
 
-			validSampstat = context.selectFrom(BIOLOGICALSTATUS)
-								   .fetch(BIOLOGICALSTATUS.ID);
+			validSampstat = context.selectFrom(BIOLOGICALSTATUS).fetch(BIOLOGICALSTATUS.ID);
 
-			validStorage = context.selectFrom(STORAGE)
-								  .fetch(STORAGE.ID);
+			validStorage = context.selectFrom(STORAGE).fetch(STORAGE.ID);
 
-			context.selectFrom(ENTITYTYPES)
-				   .forEach(e -> entityTypeToId.put(e.getName(), e.getId()));
+			context.selectFrom(ENTITYTYPES).forEach(e -> entityTypeToId.put(e.getName(), e.getId()));
 
-			context.selectFrom(ATTRIBUTES)
-				   .forEach(a -> attributeToId.put(a.getName(), a.getId()));
+			context.selectFrom(ATTRIBUTES).forEach(a -> attributeToId.put(a.getName(), a.getId()));
 
-			context.selectFrom(GERMINATEBASE)
-				   .forEach(g -> accenumbToId.put(g.getName(), g.getId()));
+			context.selectFrom(GERMINATEBASE).forEach(g -> accenumbToId.put(g.getName(), g.getId()));
 
-			germinatebaseRecords = context.selectFrom(GERMINATEBASE)
-										  .fetchMap(GERMINATEBASE.ID);
+			germinatebaseRecords = context.selectFrom(GERMINATEBASE).fetchMap(GERMINATEBASE.ID);
 
-			locationRecords = context.selectFrom(LOCATIONS)
-									 .fetchMap(LOCATIONS.ID);
+			locationRecords = context.selectFrom(LOCATIONS).fetchMap(LOCATIONS.ID);
 		}
 		catch (SQLException e)
 		{
@@ -126,30 +113,21 @@ public class McpdImporter extends AbstractExcelImporter
 	{
 		try
 		{
-			wb.getSheets()
-			  .filter(s -> Objects.equals(s.getName(), "DATA"))
-			  .findFirst()
-			  .ifPresent(s -> {
-				  try
-				  {
-					  // Map headers to their index
-					  s.openStream()
-					   .findFirst()
-					   .ifPresent(this::getHeaderMapping);
-					  // Check the sheet
-					  s.openStream()
-					   .skip(1)
-					   .forEachOrdered(this::check);
-					  // Check the entity parent for each row
-					  s.openStream()
-					   .skip(1)
-					   .forEachOrdered(this::checkEntityParent);
-				  }
-				  catch (IOException e)
-				  {
-					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-				  }
-			  });
+			wb.getSheets().filter(s -> Objects.equals(s.getName(), "DATA")).findFirst().ifPresent(s -> {
+				try
+				{
+					// Map headers to their index
+					s.openStream().findFirst().ifPresent(this::getHeaderMapping);
+					// Check the sheet
+					s.openStream().skip(1).forEachOrdered(this::check);
+					// Check the entity parent for each row
+					s.openStream().skip(1).forEachOrdered(this::checkEntityParent);
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
+			});
 		}
 		catch (NullPointerException e)
 		{
@@ -157,21 +135,16 @@ public class McpdImporter extends AbstractExcelImporter
 		}
 		try
 		{
-			wb.getSheets()
-			  .filter(s -> Objects.equals(s.getName(), "ADDITIONAL_ATTRIBUTES"))
-			  .findFirst()
-			  .ifPresent(s -> {
-				  try
-				  {
-					  s.openStream()
-					   .skip(1)
-					   .forEachOrdered(this::checkGermplasm);
-				  }
-				  catch (IOException e)
-				  {
-					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-				  }
-			  });
+			wb.getSheets().filter(s -> Objects.equals(s.getName(), "ADDITIONAL_ATTRIBUTES")).findFirst().ifPresent(s -> {
+				try
+				{
+					s.openStream().skip(1).forEachOrdered(this::checkGermplasm);
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
+			});
 		}
 		catch (NullPointerException e)
 		{
@@ -192,17 +165,12 @@ public class McpdImporter extends AbstractExcelImporter
 		try
 		{
 			// Map column names to their index
-			columnNameToIndex = IntStream.range(0, r.getCellCount())
-										 .filter(i -> !cellEmpty(r, i))
-										 .boxed()
-										 .collect(Collectors.toMap(r::getCellText, Function.identity()));
+			columnNameToIndex = IntStream.range(0, r.getCellCount()).filter(i -> !cellEmpty(r, i)).boxed().collect(Collectors.toMap(r::getCellText, Function.identity()));
 
 			// Check if all columns are there
-			Arrays.stream(COLUMN_HEADERS)
-				  .forEach(c -> {
-					  if (!columnNameToIndex.containsKey(c))
-						  addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, -1, c);
-				  });
+			Arrays.stream(COLUMN_HEADERS).forEach(c -> {
+				if (!columnNameToIndex.containsKey(c)) addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, -1, c);
+			});
 		}
 		catch (IllegalStateException e)
 		{
@@ -229,8 +197,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private void check(Row r)
 	{
-		if (allCellsEmpty(r))
-			return;
+		if (allCellsEmpty(r)) return;
 
 		// Check the accenumb isn't a duplicate
 		boolean alreadyFoundInFile = false;
@@ -246,12 +213,11 @@ public class McpdImporter extends AbstractExcelImporter
 		}
 
 		// If it's not an update, but ACCENUMB found in the database OR it's a duplicate in the file, add error
-		if ((gidToId.containsKey(accenumb) && !isUpdate) || alreadyFoundInFile)
+		if ((gidToId.containsKey(accenumb) && !jobDetails.getIsUpdate()) || alreadyFoundInFile)
 			addImportResult(ImportStatus.MCPD_DUPLICATE_ACCENUMB, r.getRowNum(), accenumb);
-		if (isUpdate && !gidToId.containsKey(accenumb))
-			addImportResult(ImportStatus.GENERIC_MISSING_DB_ITEM_UPDATE, r.getRowNum(), accenumb);
+		if (jobDetails.getIsUpdate() && !gidToId.containsKey(accenumb)) addImportResult(ImportStatus.GENERIC_MISSING_DB_ITEM_UPDATE, r.getRowNum(), accenumb);
 
-		if (!isUpdate)
+		if (!jobDetails.getIsUpdate())
 		{
 			String genus = getCellValue(r, columnNameToIndex, McpdField.GENUS.name());
 			String species = getCellValue(r, columnNameToIndex, McpdField.SPECIES.name());
@@ -279,8 +245,7 @@ public class McpdImporter extends AbstractExcelImporter
 		if (!StringUtils.isEmpty(countryCode))
 		{
 			countryId = countryCodeToId.get(countryCode);
-			if (countryId == null)
-				addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), countryCode);
+			if (countryId == null) addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), countryCode);
 		}
 
 		// Check if the collsite is specified, but the country isn't
@@ -307,8 +272,7 @@ public class McpdImporter extends AbstractExcelImporter
 		{
 			BigDecimal dms = getCellValueDMS(r, columnNameToIndex, McpdField.LATITUDE.name());
 
-			if (dms == null)
-				addImportResult(ImportStatus.MCPD_INVALID_DMS, r.getRowNum(), McpdField.LATITUDE.name() + ": " + latitude);
+			if (dms == null) addImportResult(ImportStatus.MCPD_INVALID_DMS, r.getRowNum(), McpdField.LATITUDE.name() + ": " + latitude);
 		}
 
 		// Check if declongitude is a number
@@ -330,8 +294,7 @@ public class McpdImporter extends AbstractExcelImporter
 		{
 			BigDecimal dms = getCellValueDMS(r, columnNameToIndex, McpdField.LONGITUDE.name());
 
-			if (dms == null)
-				addImportResult(ImportStatus.MCPD_INVALID_DMS, r.getRowNum(), McpdField.LONGITUDE.name() + ": " + longitude);
+			if (dms == null) addImportResult(ImportStatus.MCPD_INVALID_DMS, r.getRowNum(), McpdField.LONGITUDE.name() + ": " + longitude);
 		}
 
 		// Check if elevation is a valid number
@@ -363,8 +326,7 @@ public class McpdImporter extends AbstractExcelImporter
 		{
 			try
 			{
-				if (!validSampstat.contains(Integer.parseInt(sampstat)))
-					addImportResult(ImportStatus.MCPD_INVALID_SAMPSTAT, r.getRowNum(), sampstat);
+				if (!validSampstat.contains(Integer.parseInt(sampstat))) addImportResult(ImportStatus.MCPD_INVALID_SAMPSTAT, r.getRowNum(), sampstat);
 			}
 			catch (NumberFormatException e)
 			{
@@ -393,8 +355,7 @@ public class McpdImporter extends AbstractExcelImporter
 		{
 			try
 			{
-				if (!validCollsrc.contains(Integer.parseInt(collsrc)))
-					addImportResult(ImportStatus.MCPD_INVALID_COLLSRC, r.getRowNum(), collsrc);
+				if (!validCollsrc.contains(Integer.parseInt(collsrc))) addImportResult(ImportStatus.MCPD_INVALID_COLLSRC, r.getRowNum(), collsrc);
 			}
 			catch (NumberFormatException e)
 			{
@@ -428,8 +389,7 @@ public class McpdImporter extends AbstractExcelImporter
 			String entityType = getCellValue(r, columnNameToIndex, "Entity type");
 			if (!StringUtils.isEmpty(entityType))
 			{
-				if (!entityTypeToId.containsKey(entityType))
-					addImportResult(ImportStatus.MCPD_INVALID_ENTITY_TYPE, r.getRowNum(), entityType);
+				if (!entityTypeToId.containsKey(entityType)) addImportResult(ImportStatus.MCPD_INVALID_ENTITY_TYPE, r.getRowNum(), entityType);
 			}
 		}
 		catch (NullPointerException e)
@@ -445,60 +405,43 @@ public class McpdImporter extends AbstractExcelImporter
 		{
 			DSLContext context = Database.getContext(conn);
 			// Import the data
-			wb.getSheets()
-			  .filter(s -> Objects.equals(s.getName(), "DATA"))
-			  .findFirst()
-			  .ifPresent(s -> {
-				  try
-				  {
-					  // Map headers to their index
-					  s.openStream()
-					   .findFirst()
-					   .ifPresent(this::getHeaderMapping);
-					  // Import the sheet
-					  s.openStream()
-					   .skip(1)
-					   .forEachOrdered(r -> insert(context, r, false));
-				  }
-				  catch (IOException e)
-				  {
-					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-				  }
+			wb.getSheets().filter(s -> Objects.equals(s.getName(), "DATA")).findFirst().ifPresent(s -> {
+				try
+				{
+					// Map headers to their index
+					s.openStream().findFirst().ifPresent(this::getHeaderMapping);
+					// Import the sheet
+					s.openStream().skip(1).forEachOrdered(r -> insert(context, r, false));
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
 
-				  // Set entity parents
-				  try
-				  {
-					  // Import the sheet
-					  s.openStream()
-					   .skip(1)
-					   .filter(r -> getCellValue(r, columnNameToIndex, "Entity parent ACCENUMB") != null)
-					   .forEachOrdered(r -> setEntityParent(context, r));
-				  }
-				  catch (IOException e)
-				  {
-					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-				  }
-			  });
+				// Set entity parents
+				try
+				{
+					// Import the sheet
+					s.openStream().skip(1).filter(r -> getCellValue(r, columnNameToIndex, "Entity parent ACCENUMB") != null).forEachOrdered(r -> setEntityParent(context, r));
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
+			});
 
 			// Import the attributes
-			wb.getSheets()
-			  .filter(s -> Objects.equals(s.getName(), "ADDITIONAL_ATTRIBUTES"))
-			  .findFirst()
-			  .ifPresent(s -> {
-				  try
-				  {
-					  s.openStream()
-					   .findFirst()
-					   .ifPresent(r -> getOrCreateAttributes(context, r));
-					  s.openStream()
-					   .skip(1)
-					   .forEachOrdered(r -> insertAttributeData(context, r));
-				  }
-				  catch (IOException e)
-				  {
-					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-				  }
-			  });
+			wb.getSheets().filter(s -> Objects.equals(s.getName(), "ADDITIONAL_ATTRIBUTES")).findFirst().ifPresent(s -> {
+				try
+				{
+					s.openStream().findFirst().ifPresent(r -> getOrCreateAttributes(context, r));
+					s.openStream().skip(1).forEachOrdered(r -> insertAttributeData(context, r));
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
+			});
 		}
 		catch (SQLException e)
 		{
@@ -513,60 +456,43 @@ public class McpdImporter extends AbstractExcelImporter
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			wb.getSheets()
-			  .filter(s -> Objects.equals(s.getName(), "DATA"))
-			  .findFirst()
-			  .ifPresent(s -> {
-				  try
-				  {
-					  // Map headers to their index
-					  s.openStream()
-					   .findFirst()
-					   .ifPresent(this::getHeaderMapping);
-					  // Update the sheet
-					  s.openStream()
-					   .skip(1)
-					   .forEachOrdered(r -> insert(context, r, true));
-				  }
-				  catch (IOException e)
-				  {
-					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-				  }
+			wb.getSheets().filter(s -> Objects.equals(s.getName(), "DATA")).findFirst().ifPresent(s -> {
+				try
+				{
+					// Map headers to their index
+					s.openStream().findFirst().ifPresent(this::getHeaderMapping);
+					// Update the sheet
+					s.openStream().skip(1).forEachOrdered(r -> insert(context, r, true));
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
 
-				  // Set entity parents
-				  try
-				  {
-					  // Import the sheet
-					  s.openStream()
-					   .skip(1)
-					   .filter(r -> getCellValue(r, columnNameToIndex, "Entity parent ACCENUMB") != null)
-					   .forEachOrdered(r -> setEntityParent(context, r));
-				  }
-				  catch (IOException e)
-				  {
-					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-				  }
-			  });
+				// Set entity parents
+				try
+				{
+					// Import the sheet
+					s.openStream().skip(1).filter(r -> getCellValue(r, columnNameToIndex, "Entity parent ACCENUMB") != null).forEachOrdered(r -> setEntityParent(context, r));
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
+			});
 
 			// Import the attributes
-			wb.getSheets()
-			  .filter(s -> Objects.equals(s.getName(), "ADDITIONAL_ATTRIBUTES"))
-			  .findFirst()
-			  .ifPresent(s -> {
-				  try
-				  {
-					  s.openStream()
-					   .findFirst()
-					   .ifPresent(r -> getOrCreateAttributes(context, r));
-					  s.openStream()
-					   .skip(1)
-					   .forEachOrdered(r -> updateAttributeData(context, r));
-				  }
-				  catch (IOException e)
-				  {
-					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-				  }
-			  });
+			wb.getSheets().filter(s -> Objects.equals(s.getName(), "ADDITIONAL_ATTRIBUTES")).findFirst().ifPresent(s -> {
+				try
+				{
+					s.openStream().findFirst().ifPresent(r -> getOrCreateAttributes(context, r));
+					s.openStream().skip(1).forEachOrdered(r -> updateAttributeData(context, r));
+				}
+				catch (IOException e)
+				{
+					addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				}
+			});
 		}
 		catch (SQLException e)
 		{
@@ -577,114 +503,101 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private void updateAttributeData(DSLContext context, Row r)
 	{
-		if (allCellsEmpty(r))
-			return;
+		if (allCellsEmpty(r)) return;
 
 		String accenumb = getCellValue(r.getCell(0));
 		Integer germplasmId = accenumbToId.get(accenumb);
 
-		r.stream()
-		 .skip(1)
-		 .forEachOrdered(c -> {
-			 String value = getCellValue(c);
+		r.stream().skip(1).forEachOrdered(c -> {
+			String value = getCellValue(c);
 
-			 if (!StringUtils.isEmpty(value))
-			 {
-				 Integer attributeId = attributeIds.get(c.getColumnIndex() - 1);
+			if (!StringUtils.isEmpty(value))
+			{
+				Integer attributeId = attributeIds.get(c.getColumnIndex() - 1);
 
-				 AttributedataRecord data = context.selectFrom(ATTRIBUTEDATA)
-												   .where(ATTRIBUTEDATA.ATTRIBUTE_ID.eq(attributeId))
-												   .and(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasmId))
-												   .fetchAny();
+				AttributedataRecord data = context.selectFrom(ATTRIBUTEDATA).where(ATTRIBUTEDATA.ATTRIBUTE_ID.eq(attributeId)).and(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasmId)).fetchAny();
 
-				 if (data != null)
-				 {
-					 // Update it
-					 data.setValue(value);
-					 data.store();
-				 }
-				 else
-				 {
-					 // Insert new entry
-					 data = context.newRecord(ATTRIBUTEDATA);
-					 data.setAttributeId(attributeId);
-					 data.setForeignId(germplasmId);
-					 data.setValue(value);
-					 data.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-					 data.store();
-				 }
-			 }
-		 });
+				if (data != null)
+				{
+					// Update it
+					data.setValue(value);
+					data.store();
+				}
+				else
+				{
+					// Insert new entry
+					data = context.newRecord(ATTRIBUTEDATA);
+					data.setAttributeId(attributeId);
+					data.setForeignId(germplasmId);
+					data.setValue(value);
+					data.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+					data.store();
+				}
+			}
+		});
 	}
 
 	private void insertAttributeData(DSLContext context, Row r)
 	{
-		if (allCellsEmpty(r))
-			return;
+		if (allCellsEmpty(r)) return;
 
 		String accenumb = getCellValue(r.getCell(0));
 		Integer germplasmId = accenumbToId.get(accenumb);
 
 		// Get all the attribute data for this germplasm
 		Set<String> existingData = new HashSet<>();
-		context.selectFrom(ATTRIBUTEDATA).where(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasmId))
-			   .forEach(a -> existingData.add(a.getAttributeId() + "|" + a.getValue()));
+		context.selectFrom(ATTRIBUTEDATA).where(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasmId)).forEach(a -> existingData.add(a.getAttributeId() + "|" + a.getValue()));
 
-		r.stream()
-		 .skip(1)
-		 .forEachOrdered(c -> {
-			 String value = getCellValue(c);
+		r.stream().skip(1).forEachOrdered(c -> {
+			String value = getCellValue(c);
 
-			 // Is there a value?
-			 if (!StringUtils.isEmpty(value))
-			 {
-				 // Get the attribute id
-				 Integer attributeId = attributeIds.get(c.getColumnIndex() - 1);
+			// Is there a value?
+			if (!StringUtils.isEmpty(value))
+			{
+				// Get the attribute id
+				Integer attributeId = attributeIds.get(c.getColumnIndex() - 1);
 
-				 // Check if the data exists
-				 if (!existingData.contains(attributeId + "|" + value))
-				 {
-					 // Insert it if not
-					 AttributedataRecord data = context.newRecord(ATTRIBUTEDATA);
-					 data.setAttributeId(attributeId);
-					 data.setForeignId(germplasmId);
-					 data.setValue(value);
-					 data.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-					 data.store();
+				// Check if the data exists
+				if (!existingData.contains(attributeId + "|" + value))
+				{
+					// Insert it if not
+					AttributedataRecord data = context.newRecord(ATTRIBUTEDATA);
+					data.setAttributeId(attributeId);
+					data.setForeignId(germplasmId);
+					data.setValue(value);
+					data.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+					data.store();
 
-					 // Remember the newly inserted data to prevent duplicates
-					 existingData.add(attributeId + "|" + value);
-				 }
-			 }
-		 });
+					// Remember the newly inserted data to prevent duplicates
+					existingData.add(attributeId + "|" + value);
+				}
+			}
+		});
 
 	}
 
 	private void getOrCreateAttributes(DSLContext context, Row r)
 	{
-		if (allCellsEmpty(r))
-			return;
+		if (allCellsEmpty(r)) return;
 
-		r.stream()
-		 .skip(1)
-		 .forEachOrdered(c -> {
-			 String name = getCellValue(c);
-			 Integer id = attributeToId.get(name);
+		r.stream().skip(1).forEachOrdered(c -> {
+			String name = getCellValue(c);
+			Integer id = attributeToId.get(name);
 
-			 if (id == null)
-			 {
-				 AttributesRecord attribute = context.newRecord(ATTRIBUTES);
-				 attribute.setName(name);
-				 attribute.setDatatype(AttributesDatatype.text);
-				 attribute.setTargetTable("germinatebase");
-				 attribute.store();
+			if (id == null)
+			{
+				AttributesRecord attribute = context.newRecord(ATTRIBUTES);
+				attribute.setName(name);
+				attribute.setDatatype(AttributesDatatype.text);
+				attribute.setTargetTable("germinatebase");
+				attribute.store();
 
-				 attributeToId.put(name, attribute.getId());
-				 id = attribute.getId();
-			 }
+				attributeToId.put(name, attribute.getId());
+				id = attribute.getId();
+			}
 
-			 attributeIds.add(id);
-		 });
+			attributeIds.add(id);
+		});
 	}
 
 	private void setEntityParent(DSLContext context, Row r)
@@ -710,8 +623,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private void insert(DSLContext context, Row r, boolean isUpdate)
 	{
-		if (allCellsEmpty(r))
-			return;
+		if (allCellsEmpty(r)) return;
 
 		Germplasm insert = parseMcpd(r);
 
@@ -741,12 +653,9 @@ public class McpdImporter extends AbstractExcelImporter
 			insert.institution = getOrCreateInstitution(context, insert.institution);
 		}
 
-		if (insert.location != null)
-			insert.germinatebase.setLocationId(insert.location.getId());
-		if (insert.taxonomy != null)
-			insert.germinatebase.setTaxonomyId(insert.taxonomy.getId());
-		if (insert.institution != null)
-			insert.germinatebase.setInstitutionId(insert.institution.getId());
+		if (insert.location != null) insert.germinatebase.setLocationId(insert.location.getId());
+		if (insert.taxonomy != null) insert.germinatebase.setTaxonomyId(insert.taxonomy.getId());
+		if (insert.institution != null) insert.germinatebase.setInstitutionId(insert.institution.getId());
 
 		if (isUpdate)
 		{
@@ -767,14 +676,11 @@ public class McpdImporter extends AbstractExcelImporter
 
 		List<String> synonyms = new ArrayList<>();
 		// Add the ACCENAME as a synonym
-		if (!StringUtils.isEmpty(insert.germinatebase.getNumber()))
-			synonyms.add(insert.germinatebase.getNumber());
+		if (!StringUtils.isEmpty(insert.germinatebase.getNumber())) synonyms.add(insert.germinatebase.getNumber());
 		// Add all OTHERNUMB parts as synonyms
 		if (!StringUtils.isEmpty(insert.germinatebase.getOthernumb()))
 		{
-			Arrays.stream(insert.germinatebase.getOthernumb().split(";"))
-				  .map(String::trim)
-				  .forEach(synonyms::add);
+			Arrays.stream(insert.germinatebase.getOthernumb().split(";")).map(String::trim).forEach(synonyms::add);
 		}
 
 		// Insert/Update the synonyms if there are any.
@@ -832,13 +738,10 @@ public class McpdImporter extends AbstractExcelImporter
 				Object o = existing.get(i);
 
 				boolean u;
-				if (o instanceof String)
-					u = !StringUtils.isEmpty((String) o);
-				else
-					u = o != null;
+				if (o instanceof String) u = !StringUtils.isEmpty((String) o);
+				else u = o != null;
 
-				if (u)
-					toUpdate.add(existing.field(i));
+				if (u) toUpdate.add(existing.field(i));
 			}
 			else
 			{
@@ -873,11 +776,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 		if (!StringUtils.isEmpty(value))
 		{
-			AttributedataRecord data = context.selectFrom(ATTRIBUTEDATA)
-											  .where(ATTRIBUTEDATA.ATTRIBUTE_ID.eq(attributeId))
-											  .and(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasm.germinatebase.getId()))
-											  .and(ATTRIBUTEDATA.VALUE.eq(value))
-											  .fetchAny();
+			AttributedataRecord data = context.selectFrom(ATTRIBUTEDATA).where(ATTRIBUTEDATA.ATTRIBUTE_ID.eq(attributeId)).and(ATTRIBUTEDATA.FOREIGN_ID.eq(germplasm.germinatebase.getId())).and(ATTRIBUTEDATA.VALUE.eq(value)).fetchAny();
 
 			if (data == null)
 			{
@@ -893,10 +792,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private void getOrCreateStorage(DSLContext context, Germplasm germplasm)
 	{
-		germplasm.storage.removeAll(context.selectFrom(STORAGEDATA)
-										   .where(STORAGEDATA.GERMINATEBASE_ID.eq(germplasm.germinatebase.getId()))
-										   .and(STORAGEDATA.STORAGE_ID.in(germplasm.storage))
-										   .fetchSet(STORAGEDATA.STORAGE_ID));
+		germplasm.storage.removeAll(context.selectFrom(STORAGEDATA).where(STORAGEDATA.GERMINATEBASE_ID.eq(germplasm.germinatebase.getId())).and(STORAGEDATA.STORAGE_ID.in(germplasm.storage)).fetchSet(STORAGEDATA.STORAGE_ID));
 
 		for (Integer id : germplasm.storage)
 		{
@@ -910,31 +806,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private GerminatebaseRecord getOrCreateGermplasm(DSLContext context, GerminatebaseRecord germinatebase)
 	{
-		GerminatebaseRecord result = context.selectFrom(GERMINATEBASE)
-											.where(GERMINATEBASE.NUMBER.isNotDistinctFrom(germinatebase.getNumber()))
-											.and(GERMINATEBASE.NAME.isNotDistinctFrom(germinatebase.getName()))
-											.and(GERMINATEBASE.GENERAL_IDENTIFIER.isNotDistinctFrom(germinatebase.getGeneralIdentifier()))
-											.and(GERMINATEBASE.ACQDATE.isNotDistinctFrom(germinatebase.getAcqdate()))
-											.and(GERMINATEBASE.BREEDERS_CODE.isNotDistinctFrom(germinatebase.getBreedersCode()))
-											.and(GERMINATEBASE.BREEDERS_NAME.isNotDistinctFrom(germinatebase.getBreedersName()))
-											.and(GERMINATEBASE.COLLDATE.isNotDistinctFrom(germinatebase.getColldate()))
-											.and(GERMINATEBASE.COLLMISSID.isNotDistinctFrom(germinatebase.getCollmissid()))
-											.and(GERMINATEBASE.COLLNAME.isNotDistinctFrom(germinatebase.getCollname()))
-											.and(GERMINATEBASE.COLLNUMB.isNotDistinctFrom(germinatebase.getCollnumb()))
-											.and(GERMINATEBASE.COLLSRC_ID.isNotDistinctFrom(germinatebase.getCollsrcId()))
-											.and(GERMINATEBASE.DONOR_CODE.isNotDistinctFrom(germinatebase.getDonorCode()))
-											.and(GERMINATEBASE.DONOR_NAME.isNotDistinctFrom(germinatebase.getDonorName()))
-											.and(GERMINATEBASE.DONOR_NUMBER.isNotDistinctFrom(germinatebase.getDonorNumber()))
-											.and(GERMINATEBASE.DUPLINSTNAME.isNotDistinctFrom(germinatebase.getDuplinstname()))
-											.and(GERMINATEBASE.DUPLSITE.isNotDistinctFrom(germinatebase.getDuplsite()))
-											.and(GERMINATEBASE.MLSSTATUS_ID.isNotDistinctFrom(germinatebase.getMlsstatusId()))
-											.and(GERMINATEBASE.OTHERNUMB.isNotDistinctFrom(germinatebase.getOthernumb()))
-											.and(GERMINATEBASE.PUID.isNotDistinctFrom(germinatebase.getPuid()))
-											.and(GERMINATEBASE.BIOLOGICALSTATUS_ID.isNotDistinctFrom(germinatebase.getBiologicalstatusId()))
-											.and(GERMINATEBASE.LOCATION_ID.isNotDistinctFrom(germinatebase.getLocationId()))
-											.and(GERMINATEBASE.TAXONOMY_ID.isNotDistinctFrom(germinatebase.getTaxonomyId()))
-											.and(GERMINATEBASE.INSTITUTION_ID.isNotDistinctFrom(germinatebase.getInstitutionId()))
-											.fetchAnyInto(GerminatebaseRecord.class);
+		GerminatebaseRecord result = context.selectFrom(GERMINATEBASE).where(GERMINATEBASE.NUMBER.isNotDistinctFrom(germinatebase.getNumber())).and(GERMINATEBASE.NAME.isNotDistinctFrom(germinatebase.getName())).and(GERMINATEBASE.GENERAL_IDENTIFIER.isNotDistinctFrom(germinatebase.getGeneralIdentifier())).and(GERMINATEBASE.ACQDATE.isNotDistinctFrom(germinatebase.getAcqdate())).and(GERMINATEBASE.BREEDERS_CODE.isNotDistinctFrom(germinatebase.getBreedersCode())).and(GERMINATEBASE.BREEDERS_NAME.isNotDistinctFrom(germinatebase.getBreedersName())).and(GERMINATEBASE.COLLDATE.isNotDistinctFrom(germinatebase.getColldate())).and(GERMINATEBASE.COLLMISSID.isNotDistinctFrom(germinatebase.getCollmissid())).and(GERMINATEBASE.COLLNAME.isNotDistinctFrom(germinatebase.getCollname())).and(GERMINATEBASE.COLLNUMB.isNotDistinctFrom(germinatebase.getCollnumb())).and(GERMINATEBASE.COLLSRC_ID.isNotDistinctFrom(germinatebase.getCollsrcId())).and(GERMINATEBASE.DONOR_CODE.isNotDistinctFrom(germinatebase.getDonorCode())).and(GERMINATEBASE.DONOR_NAME.isNotDistinctFrom(germinatebase.getDonorName())).and(GERMINATEBASE.DONOR_NUMBER.isNotDistinctFrom(germinatebase.getDonorNumber())).and(GERMINATEBASE.DUPLINSTNAME.isNotDistinctFrom(germinatebase.getDuplinstname())).and(GERMINATEBASE.DUPLSITE.isNotDistinctFrom(germinatebase.getDuplsite())).and(GERMINATEBASE.MLSSTATUS_ID.isNotDistinctFrom(germinatebase.getMlsstatusId())).and(GERMINATEBASE.OTHERNUMB.isNotDistinctFrom(germinatebase.getOthernumb())).and(GERMINATEBASE.PUID.isNotDistinctFrom(germinatebase.getPuid())).and(GERMINATEBASE.BIOLOGICALSTATUS_ID.isNotDistinctFrom(germinatebase.getBiologicalstatusId())).and(GERMINATEBASE.LOCATION_ID.isNotDistinctFrom(germinatebase.getLocationId())).and(GERMINATEBASE.TAXONOMY_ID.isNotDistinctFrom(germinatebase.getTaxonomyId())).and(GERMINATEBASE.INSTITUTION_ID.isNotDistinctFrom(germinatebase.getInstitutionId())).fetchAnyInto(GerminatebaseRecord.class);
 
 		if (result == null)
 		{
@@ -950,13 +822,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private TaxonomiesRecord getOrCreateTaxonomy(DSLContext context, TaxonomiesRecord taxonomy)
 	{
-		TaxonomiesRecord result = context.selectFrom(TAXONOMIES)
-										 .where(TAXONOMIES.GENUS.isNotDistinctFrom(taxonomy.getGenus()))
-										 .and(TAXONOMIES.SPECIES.isNotDistinctFrom(taxonomy.getSpecies()))
-										 .and(TAXONOMIES.SUBTAXA.isNotDistinctFrom(taxonomy.getSubtaxa()))
-										 .and(TAXONOMIES.SPECIES_AUTHOR.isNotDistinctFrom(taxonomy.getSpeciesAuthor()))
-										 .and(TAXONOMIES.SUBTAXA_AUTHOR.isNotDistinctFrom(taxonomy.getSubtaxaAuthor()))
-										 .fetchAnyInto(TaxonomiesRecord.class);
+		TaxonomiesRecord result = context.selectFrom(TAXONOMIES).where(TAXONOMIES.GENUS.isNotDistinctFrom(taxonomy.getGenus())).and(TAXONOMIES.SPECIES.isNotDistinctFrom(taxonomy.getSpecies())).and(TAXONOMIES.SUBTAXA.isNotDistinctFrom(taxonomy.getSubtaxa())).and(TAXONOMIES.SPECIES_AUTHOR.isNotDistinctFrom(taxonomy.getSpeciesAuthor())).and(TAXONOMIES.SUBTAXA_AUTHOR.isNotDistinctFrom(taxonomy.getSubtaxaAuthor())).fetchAnyInto(TaxonomiesRecord.class);
 
 		if (result == null)
 		{
@@ -970,16 +836,11 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private DatasetsRecord getOrCreatePedigreeDataset(DSLContext context, String name)
 	{
-		DatasetsRecord result = context.selectFrom(DATASETS)
-									   .where(DATASETS.DATASETTYPE_ID.eq(7))
-									   .and(DATASETS.NAME.eq(name))
-									   .fetchAny();
+		DatasetsRecord result = context.selectFrom(DATASETS).where(DATASETS.DATASETTYPE_ID.eq(7)).and(DATASETS.NAME.eq(name)).fetchAny();
 
 		if (result == null)
 		{
-			ExperimentsRecord exp = context.selectFrom(EXPERIMENTS)
-										   .where(EXPERIMENTS.EXPERIMENT_NAME.eq(name))
-										   .fetchAny();
+			ExperimentsRecord exp = context.selectFrom(EXPERIMENTS).where(EXPERIMENTS.EXPERIMENT_NAME.eq(name)).fetchAny();
 
 			if (exp == null)
 			{
@@ -1002,9 +863,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private PedigreenotationsRecord getOrCreatePedigreeNotation(DSLContext context, String notation)
 	{
-		PedigreenotationsRecord result = context.selectFrom(PEDIGREENOTATIONS)
-												.where(PEDIGREENOTATIONS.NAME.eq(notation))
-												.fetchAny();
+		PedigreenotationsRecord result = context.selectFrom(PEDIGREENOTATIONS).where(PEDIGREENOTATIONS.NAME.eq(notation)).fetchAny();
 
 		if (result == null)
 		{
@@ -1018,12 +877,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private InstitutionsRecord getOrCreateInstitution(DSLContext context, InstitutionsRecord institution)
 	{
-		InstitutionsRecord result = context.selectFrom(INSTITUTIONS)
-										   .where(INSTITUTIONS.CODE.isNotDistinctFrom(institution.getCode()))
-										   .and(INSTITUTIONS.NAME.isNotDistinctFrom(institution.getName()))
-										   .and(INSTITUTIONS.ADDRESS.isNotDistinctFrom(institution.getAddress()))
-										   .and(INSTITUTIONS.COUNTRY_ID.isNotDistinctFrom(institution.getCountryId()))
-										   .fetchAnyInto(InstitutionsRecord.class);
+		InstitutionsRecord result = context.selectFrom(INSTITUTIONS).where(INSTITUTIONS.CODE.isNotDistinctFrom(institution.getCode())).and(INSTITUTIONS.NAME.isNotDistinctFrom(institution.getName())).and(INSTITUTIONS.ADDRESS.isNotDistinctFrom(institution.getAddress())).and(INSTITUTIONS.COUNTRY_ID.isNotDistinctFrom(institution.getCountryId())).fetchAnyInto(InstitutionsRecord.class);
 
 		if (result == null)
 		{
@@ -1036,13 +890,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private PedigreedefinitionsRecord getOrCreatePedigree(DSLContext context, PedigreedefinitionsRecord pedigree)
 	{
-		PedigreedefinitionsRecord result = context.selectFrom(PEDIGREEDEFINITIONS)
-												  .where(PEDIGREEDEFINITIONS.GERMINATEBASE_ID.isNotDistinctFrom(pedigree.getGerminatebaseId()))
-												  .and(PEDIGREEDEFINITIONS.DEFINITION.isNotDistinctFrom(pedigree.getDefinition()))
-												  .and(PEDIGREEDEFINITIONS.PEDIGREENOTATION_ID.isNotDistinctFrom(pedigree.getPedigreenotationId()))
-												  .and(PEDIGREEDEFINITIONS.PEDIGREEDESCRIPTION_ID.isNotDistinctFrom(pedigree.getPedigreedescriptionId()))
-												  .and(PEDIGREEDEFINITIONS.DEFINITION.isNotDistinctFrom(pedigree.getDefinition()))
-												  .fetchAnyInto(PedigreedefinitionsRecord.class);
+		PedigreedefinitionsRecord result = context.selectFrom(PEDIGREEDEFINITIONS).where(PEDIGREEDEFINITIONS.GERMINATEBASE_ID.isNotDistinctFrom(pedigree.getGerminatebaseId())).and(PEDIGREEDEFINITIONS.DEFINITION.isNotDistinctFrom(pedigree.getDefinition())).and(PEDIGREEDEFINITIONS.PEDIGREENOTATION_ID.isNotDistinctFrom(pedigree.getPedigreenotationId())).and(PEDIGREEDEFINITIONS.PEDIGREEDESCRIPTION_ID.isNotDistinctFrom(pedigree.getPedigreedescriptionId())).and(PEDIGREEDEFINITIONS.DEFINITION.isNotDistinctFrom(pedigree.getDefinition())).fetchAnyInto(PedigreedefinitionsRecord.class);
 
 		if (result == null)
 		{
@@ -1055,18 +903,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private LocationsRecord getOrCreateLocation(DSLContext context, LocationsRecord location)
 	{
-		LocationsRecord result = context.selectFrom(LOCATIONS)
-										.where(LOCATIONS.SITE_NAME.isNotDistinctFrom(location.getSiteName()))
-										.and(LOCATIONS.COUNTRY_ID.isNotDistinctFrom(location.getCountryId()))
-										.and(LOCATIONS.LATITUDE.isNotDistinctFrom(location.getLatitude()))
-										.and(LOCATIONS.LONGITUDE.isNotDistinctFrom(location.getLongitude()))
-										.and(LOCATIONS.ELEVATION.isNotDistinctFrom(location.getElevation()))
-										.and(LOCATIONS.COORDINATE_DATUM.isNotDistinctFrom(location.getCoordinateDatum()))
-										.and(LOCATIONS.COORDINATE_UNCERTAINTY.isNotDistinctFrom(location.getCoordinateUncertainty()))
-										.and(LOCATIONS.SITE_NAME_SHORT.isNotDistinctFrom(location.getSiteNameShort()))
-										.and(LOCATIONS.STATE.isNotDistinctFrom(location.getState()))
-										.and(LOCATIONS.REGION.isNotDistinctFrom(location.getRegion()))
-										.fetchAnyInto(LocationsRecord.class);
+		LocationsRecord result = context.selectFrom(LOCATIONS).where(LOCATIONS.SITE_NAME.isNotDistinctFrom(location.getSiteName())).and(LOCATIONS.COUNTRY_ID.isNotDistinctFrom(location.getCountryId())).and(LOCATIONS.LATITUDE.isNotDistinctFrom(location.getLatitude())).and(LOCATIONS.LONGITUDE.isNotDistinctFrom(location.getLongitude())).and(LOCATIONS.ELEVATION.isNotDistinctFrom(location.getElevation())).and(LOCATIONS.COORDINATE_DATUM.isNotDistinctFrom(location.getCoordinateDatum())).and(LOCATIONS.COORDINATE_UNCERTAINTY.isNotDistinctFrom(location.getCoordinateUncertainty())).and(LOCATIONS.SITE_NAME_SHORT.isNotDistinctFrom(location.getSiteNameShort())).and(LOCATIONS.STATE.isNotDistinctFrom(location.getState())).and(LOCATIONS.REGION.isNotDistinctFrom(location.getRegion())).fetchAnyInto(LocationsRecord.class);
 
 		if (result == null)
 		{
@@ -1081,9 +918,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private CountriesRecord getCountry(DSLContext context, CountriesRecord country)
 	{
-		return context.selectFrom(COUNTRIES)
-					  .where(COUNTRIES.COUNTRY_CODE3.isNotDistinctFrom(country.getCountryCode3()))
-					  .fetchAnyInto(CountriesRecord.class);
+		return context.selectFrom(COUNTRIES).where(COUNTRIES.COUNTRY_CODE3.isNotDistinctFrom(country.getCountryCode3())).fetchAnyInto(CountriesRecord.class);
 	}
 
 	private Germplasm parseMcpd(Row r)
@@ -1130,8 +965,7 @@ public class McpdImporter extends AbstractExcelImporter
 			Integer entityTypeId = 1;
 			String entityType = getCellValue(r, columnNameToIndex, "Entity type");
 
-			if (!StringUtils.isEmpty(entityType))
-				entityTypeId = entityTypeToId.get(entityType);
+			if (!StringUtils.isEmpty(entityType)) entityTypeId = entityTypeToId.get(entityType);
 
 			germplasm.germinatebase.setEntitytypeId(entityTypeId);
 		}
@@ -1149,8 +983,7 @@ public class McpdImporter extends AbstractExcelImporter
 		germplasm.taxonomy.setSubtaxaAuthor(getCellValue(r, columnNameToIndex, McpdField.SUBTAUTHOR.name()));
 		germplasm.taxonomy.setSubtaxa(getCellValue(r, columnNameToIndex, McpdField.SUBTAXA.name()));
 
-		if (germplasm.germinatebase.getEntitytypeId() == null)
-			germplasm.germinatebase.setEntitytypeId(1);
+		if (germplasm.germinatebase.getEntitytypeId() == null) germplasm.germinatebase.setEntitytypeId(1);
 
 		germplasm.location.setLocationtypeId(1);
 

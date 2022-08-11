@@ -10,7 +10,7 @@ import jhi.germinate.server.util.StringUtils;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
-import java.io.*;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.*;
@@ -32,12 +32,12 @@ public class TraitDataImporter extends DatasheetImporter
 	/** Required column headers */
 	private static final String[] COLUMN_HEADERS = {"Name", "Short Name", "Description", "Data Type", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
 
-	private Map<String, Integer>    traitNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer>    germplasmToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer>    treatmentToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>    traitNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>    germplasmToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>    treatmentToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<String, Integer>    columnNameToIndex;
 	/** Used to check trait values against trait definitions during checking stage */
-	private Map<String, Phenotypes> traitDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Phenotypes> traitDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	private List<String> locationNames;
 
@@ -45,17 +45,17 @@ public class TraitDataImporter extends DatasheetImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 12)
+		if (args.length != 6)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		TraitDataImporter importer = new TraitDataImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		TraitDataImporter importer = new TraitDataImporter(Integer.parseInt(args[5]));
 		importer.init(args);
-		importer.run(RunType.getType(args[8]));
+		importer.run();
 	}
 
-	public TraitDataImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
+	public TraitDataImporter(Integer importJobId)
 	{
-		super(input, originalFilename, isUpdate, datasetStateId, deleteOnFail, userId);
+		super(importJobId);
 	}
 
 	@Override

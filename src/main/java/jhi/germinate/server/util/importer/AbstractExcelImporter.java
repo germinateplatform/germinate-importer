@@ -22,9 +22,9 @@ import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
  */
 public abstract class AbstractExcelImporter extends AbstractImporter
 {
-	public AbstractExcelImporter(File input, String originalFilename, boolean isUpdate, boolean deleteOnFail, int userId)
+	public AbstractExcelImporter(Integer importJobId)
 	{
-		super(input, originalFilename, isUpdate, deleteOnFail, userId);
+		super(importJobId);
 	}
 
 	protected BigDecimal getCellValueBigDecimal(Row r, Map<String, Integer> columnNameToIndex, String column)
@@ -318,8 +318,9 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 	protected abstract void updateFile(ReadableWorkbook wb);
 
 	@Override
-	protected void postImport(File input)
+	protected void postImport()
 	{
+		File input = this.getInputFile();
 		// Create a backup copy of the uploaded file and link it to the newly created dataset.
 		try (Connection conn = Database.getConnection())
 		{
@@ -338,12 +339,12 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 				type.store();
 			}
 
-			File typeFolder = new File(new File(new File(input.getParentFile().getParentFile().getParentFile(), "data"), "download"), Integer.toString(type.getId()));
+			File typeFolder = new File(new File(new File(jobDetails.getJobConfig().getBaseFolder(), "data"), "download"), Integer.toString(type.getId()));
 			typeFolder.mkdirs();
 			File target = new File(typeFolder, input.getName());
 
 			FileresourcesRecord fileRes = context.newRecord(FILERESOURCES);
-			fileRes.setName(originalFilename);
+			fileRes.setName(this.jobDetails.getOriginalFilename());
 			fileRes.setPath(target.getName());
 			fileRes.setFilesize(input.length());
 			fileRes.setDescription("Automatic upload backup.");

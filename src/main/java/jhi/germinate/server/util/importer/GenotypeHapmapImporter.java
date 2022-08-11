@@ -33,35 +33,34 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 	private final Set<Integer> markerIdsInFile    = new HashSet<>();
 	private final Set<Integer> germplasmIdsInFile = new HashSet<>();
 
-	private final File hdf5TargetFolder;
+	private File hdf5TargetFolder;
 
-	private       DatasetsRecord dataset;
-	private final int            datasetStateId;
+	private DatasetsRecord dataset;
 
 	private int chromosomeValueCount = 0;
 	private int positionValueCount   = 0;
 
 	public static void main(String[] args)
 	{
-		if (args.length != 13)
+		if (args.length != 6)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		GenotypeHapmapImporter importer = new GenotypeHapmapImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[12]));
+		GenotypeHapmapImporter importer = new GenotypeHapmapImporter(Integer.parseInt(args[5]));
 		importer.init(args);
-		importer.run(AbstractExcelImporter.RunType.getType(args[8]));
+		importer.run();
 	}
 
-	public GenotypeHapmapImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, Integer userId, File hdf5TargetFolder)
+	public GenotypeHapmapImporter(Integer importJobId)
 	{
-		super(input, originalFilename, isUpdate, deleteOnFail, userId);
-
-		this.datasetStateId = datasetStateId;
-		this.hdf5TargetFolder = hdf5TargetFolder;
+		super(importJobId);
 	}
 
 	@Override
 	protected void prepare()
 	{
+		this.hdf5TargetFolder = new File(new File(this.jobDetails.getJobConfig().getBaseFolder(), "data"), "genotypes");
+		this.hdf5TargetFolder.mkdirs();
+
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
@@ -78,8 +77,9 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 	}
 
 	@Override
-	protected void postImport(File input)
+	protected void postImport()
 	{
+		File input = getInputFile();
 		// Create a backup copy of the uploaded file and link it to the newly created dataset.
 		try (Connection conn = Database.getConnection())
 		{
@@ -98,12 +98,12 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 				type.store();
 			}
 
-			File typeFolder = new File(new File(new File(input.getParentFile().getParentFile().getParentFile(), "data"), "download"), Integer.toString(type.getId()));
+			File typeFolder = new File(new File(new File(jobDetails.getJobConfig().getBaseFolder(), "data"), "download"), Integer.toString(type.getId()));
 			typeFolder.mkdirs();
 			File target = new File(typeFolder, input.getName());
 
 			FileresourcesRecord fileRes = context.newRecord(FILERESOURCES);
-			fileRes.setName(originalFilename);
+			fileRes.setName(jobDetails.getOriginalFilename());
 			fileRes.setPath(target.getName());
 			fileRes.setFilesize(input.length());
 			fileRes.setDescription("Automatic upload backup.");
@@ -260,7 +260,7 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 			map.setName(fileName);
 			map.setDescription(fileName);
 			map.setVisibility(true);
-			map.setUserId(userId);
+			map.setUserId(jobDetails.getUserId());
 			map.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 			map.store();
 
@@ -304,7 +304,7 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 				dataset = context.newRecord(DATASETS);
 				dataset.setExperimentId(experiment.getId());
 				dataset.setDatasettypeId(1);
-				dataset.setDatasetStateId(datasetStateId);
+				dataset.setDatasetStateId(jobDetails.getDatasetstateId());
 				// Hide it initially. We don't want people using half-imported data.
 				dataset.setDatasetStateId(3);
 				dataset.setName(fileName);

@@ -2,7 +2,7 @@ package jhi.germinate.server.util.importer;
 
 import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.tables.records.*;
-import jhi.germinate.server.database.pojo.ImportStatus;
+import jhi.germinate.server.database.pojo.*;
 import jhi.germinate.server.util.*;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
@@ -35,17 +35,17 @@ public class CompoundDataImporter extends DatasheetImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 12)
+		if (args.length != 6)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		CompoundDataImporter importer = new CompoundDataImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		CompoundDataImporter importer = new CompoundDataImporter(Integer.parseInt(args[5]));
 		importer.init(args);
-		importer.run(RunType.getType(args[8]));
+		importer.run();
 	}
 
-	public CompoundDataImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
+	public CompoundDataImporter(Integer importJobId)
 	{
-		super(input, originalFilename, isUpdate, datasetStateId, deleteOnFail, userId);
+		super(importJobId);
 	}
 
 	@Override

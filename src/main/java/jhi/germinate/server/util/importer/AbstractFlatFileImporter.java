@@ -8,9 +8,9 @@ import java.nio.file.Files;
 
 public abstract class AbstractFlatFileImporter extends AbstractImporter
 {
-	public AbstractFlatFileImporter(File input, String originalFilename, boolean isUpdate, boolean deleteOnFail, int userId)
+	public AbstractFlatFileImporter(Integer importJobId)
 	{
-		super(input, originalFilename, isUpdate, deleteOnFail, userId);
+		super(importJobId);
 	}
 
 	@Override

@@ -37,17 +37,17 @@ public class ClimateDataImporter extends DatasheetImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 12)
+		if (args.length != 6)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		ClimateDataImporter importer = new ClimateDataImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		ClimateDataImporter importer = new ClimateDataImporter(Integer.parseInt(args[5]));
 		importer.init(args);
-		importer.run(RunType.getType(args[8]));
+		importer.run();
 	}
 
-	public ClimateDataImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, int userId)
+	public ClimateDataImporter(Integer importJobId)
 	{
-		super(input, originalFilename, isUpdate, datasetStateId, deleteOnFail, userId);
+		super(importJobId);
 	}
 
 	@Override

@@ -7,7 +7,7 @@ import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 import org.jooq.tools.StringUtils;
 
-import java.io.*;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,11 +23,11 @@ import static jhi.germinate.server.database.codegen.tables.Markers.*;
  */
 public class GroupImporter extends AbstractExcelImporter
 {
-	private Map<String, Integer> accenumbToId     = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer> markerNameToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer> accenumbToId     = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer> markerNameToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-	private Map<Integer, Map<Integer, Integer>> groupIndexToIdPerType = new HashMap<>();
+	private final Map<Integer, Map<Integer, Integer>> groupIndexToIdPerType = new HashMap<>();
 
 	{
 		groupIndexToIdPerType.put(1, new HashMap<>());
@@ -37,17 +37,17 @@ public class GroupImporter extends AbstractExcelImporter
 
 	public static void main(String[] args)
 	{
-		if (args.length != 12)
+		if (args.length != 6)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		GroupImporter importer = new GroupImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]));
+		GroupImporter importer = new GroupImporter(Integer.parseInt(args[5]));
 		importer.init(args);
-		importer.run(RunType.getType(args[8]));
+		importer.run();
 	}
 
-	public GroupImporter(File input, String originalFilename, boolean isUpdate, boolean deleteOnFail, int userId)
+	public GroupImporter(Integer importJobId)
 	{
-		super(input, originalFilename, isUpdate, deleteOnFail, userId);
+		super(importJobId);
 	}
 
 	@Override
@@ -274,7 +274,7 @@ public class GroupImporter extends AbstractExcelImporter
 			group.setName(name);
 			group.setDescription(descriptions.getCellCount() > i ? getCellValue(descriptions, i) : null);
 			group.setGrouptypeId(groupTypeId);
-			group.setCreatedBy(userId);
+			group.setCreatedBy(jobDetails.getUserId());
 			group.setVisibility(Objects.equals("public", getCellValue(visibility, i)));
 			group.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 			group.store();

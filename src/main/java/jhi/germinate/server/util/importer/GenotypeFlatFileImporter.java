@@ -32,7 +32,7 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 {
 	private final Map<String, Integer> germplasmToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer> markerToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final File                 hdf5TargetFolder;
+	private       File                 hdf5TargetFolder;
 
 	private       String[]            markers       = null;
 	private       int[]               markerIds     = null;
@@ -43,31 +43,31 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 	private final Set<Integer> markerIdsInFile    = new HashSet<>();
 	private final Set<Integer> germplasmIdsInFile = new HashSet<>();
 
-	private       DatasetsRecord dataset;
-	private final int            datasetStateId;
+	private DatasetsRecord dataset;
 
 	private CountDownLatch latch;
 
 	public static void main(String[] args)
 	{
-		if (args.length != 13)
+		if (args.length != 6)
 			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		GenotypeFlatFileImporter importer = new GenotypeFlatFileImporter(new File(args[5]), args[11], Boolean.parseBoolean(args[6]), Integer.parseInt(args[10]), Boolean.parseBoolean(args[7]), Integer.parseInt(args[9]), new File(args[12]));
+		GenotypeFlatFileImporter importer = new GenotypeFlatFileImporter(Integer.parseInt(args[5]));
 		importer.init(args);
-		importer.run(AbstractExcelImporter.RunType.getType(args[8]));
+		importer.run();
 	}
 
-	public GenotypeFlatFileImporter(File input, String originalFilename, boolean isUpdate, int datasetStateId, boolean deleteOnFail, Integer userId, File hdf5TargetFolder)
+	public GenotypeFlatFileImporter(Integer importJobId)
 	{
-		super(input, originalFilename, isUpdate, deleteOnFail, userId);
-		this.datasetStateId = datasetStateId;
-		this.hdf5TargetFolder = hdf5TargetFolder;
+		super(importJobId);
 	}
 
 	@Override
 	protected void prepare()
 	{
+		this.hdf5TargetFolder = new File(new File(this.jobDetails.getJobConfig().getBaseFolder(), "data"), "genotypes");
+		this.hdf5TargetFolder.mkdirs();
+
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
@@ -84,8 +84,9 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 	}
 
 	@Override
-	protected void postImport(File input)
+	protected void postImport()
 	{
+		File input = getInputFile();
 		// Create a backup copy of the uploaded file and link it to the newly created dataset.
 		try (Connection conn = Database.getConnection())
 		{
@@ -104,12 +105,12 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 				type.store();
 			}
 
-			File typeFolder = new File(new File(new File(input.getParentFile().getParentFile().getParentFile(), "data"), "download"), Integer.toString(type.getId()));
+			File typeFolder = new File(new File(new File(jobDetails.getJobConfig().getBaseFolder(), "data"), "download"), Integer.toString(type.getId()));
 			typeFolder.mkdirs();
 			File target = new File(typeFolder, input.getName());
 
 			FileresourcesRecord fileRes = context.newRecord(FILERESOURCES);
-			fileRes.setName(originalFilename);
+			fileRes.setName(this.jobDetails.getOriginalFilename());
 			fileRes.setPath(target.getName());
 			fileRes.setFilesize(input.length());
 			fileRes.setDescription("Automatic upload backup.");
@@ -340,7 +341,7 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 				dataset = context.newRecord(DATASETS);
 				dataset.setExperimentId(experiment.getId());
 				dataset.setDatasettypeId(1);
-				dataset.setDatasetStateId(datasetStateId);
+				dataset.setDatasetStateId(this.jobDetails.getDatasetstateId());
 				// Hide it initially. We don't want people using half-imported data.
 				dataset.setDatasetStateId(3);
 				dataset.setName(headerMapping.get("dataset"));
@@ -379,7 +380,7 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 					map.setName(headerMapping.get("map"));
 					map.setDescription(headerMapping.get("map"));
 					map.setVisibility(true);
-					map.setUserId(userId);
+					map.setUserId(this.jobDetails.getUserId());
 					map.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 					map.store();
 

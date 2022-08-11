@@ -1,16 +1,20 @@
 package jhi.germinate.server.util.importer;
 
-import com.google.gson.Gson;
 import jhi.germinate.server.Database;
+import jhi.germinate.server.database.codegen.enums.DataImportJobsStatus;
+import jhi.germinate.server.database.codegen.tables.pojos.DataImportJobs;
+import jhi.germinate.server.database.codegen.tables.records.DataImportJobsRecord;
 import jhi.germinate.server.database.pojo.*;
+import org.jooq.DSLContext;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.io.File;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.*;
 import java.util.logging.*;
+
+import static jhi.germinate.server.database.codegen.tables.DataImportJobs.*;
 
 public abstract class AbstractImporter
 {
@@ -20,71 +24,94 @@ public abstract class AbstractImporter
 	protected SimpleDateFormat SDF_YEAR_DAY   = new SimpleDateFormat("yyyydd");
 	protected SimpleDateFormat SDF_YEAR       = new SimpleDateFormat("yyyy");
 
-	protected       boolean                         isUpdate;
-	private         boolean                         deleteOnFail;
-	private         File                            input;
-	protected final String                          originalFilename;
-	protected final int                             userId;
+	protected final Integer                         importJobId;
+	protected       DataImportJobs                  jobDetails;
+	private         File                            inputFile;
 	private         Map<ImportStatus, ImportResult> errorMap = new HashMap<>();
 
 	private Instant start;
 
-	public AbstractImporter(File input, String originalFilename, boolean isUpdate, boolean deleteOnFail, int userId)
+	public AbstractImporter(Integer importJobId)
 	{
-		this.input = input;
-		this.originalFilename = originalFilename;
-		this.isUpdate = isUpdate;
-		this.deleteOnFail = deleteOnFail;
-		this.userId = userId;
+		this.importJobId = importJobId;
 	}
 
 	protected void init(String[] args)
 	{
 		Database.init(args[0], args[1], args[2], args[3], args[4], false);
 
+		try (Connection conn = Database.getConnection())
+		{
+			DSLContext context = Database.getContext(conn);
+
+			this.jobDetails = context.selectFrom(DATA_IMPORT_JOBS).where(DATA_IMPORT_JOBS.ID.eq(this.importJobId)).fetchAnyInto(DataImportJobs.class);
+
+			this.inputFile = new File(new File(new File(this.jobDetails.getJobConfig().getBaseFolder(), "async"), this.jobDetails.getUuid()), this.jobDetails.getJobConfig().getDataFilename());
+		}
+		catch (SQLException e)
+		{
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, "Unable to establish database connection: " + e.getMessage());
+		}
+		catch (Exception e)
+		{
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, "Invalid job config or file system setup: " + e.getMessage());
+		}
+
 		start = Instant.now();
 	}
 
-	public void run(RunType runtype)
+	public void run()
 	{
-		prepare();
-
-		if (runtype.includesCheck()) checkFile();
-
-		if (errorMap.size() < 1)
-		{
-			if (runtype.includesImport())
-			{
-				if (isUpdate) updateFile();
-				else importFile();
-
-				postImport(this.input);
-			}
-		}
-		else if (deleteOnFail)
-		{
-			input.delete();
-		}
-
-		Logger.getLogger("").log(Level.INFO, errorMap.toString());
-
-		List<ImportResult> result = getImportResult();
-
-		String jsonFilename = this.input.getName().substring(0, this.input.getName().lastIndexOf("."));
-		File json = new File(input.getParent(), jsonFilename + ".json");
 		try
 		{
-			Files.write(json.toPath(), Collections.singletonList(new Gson().toJson(result)), StandardCharsets.UTF_8);
+			RunType runtype = jobDetails.getJobConfig().getRunType();
+			prepare();
+
+			if (runtype.includesCheck()) checkFile();
+
+			if (errorMap.size() < 1)
+			{
+				if (runtype.includesImport())
+				{
+					if (jobDetails.getIsUpdate()) updateFile();
+					else importFile();
+
+					postImport();
+				}
+			}
+			else if (jobDetails.getJobConfig().getDeleteOnFail())
+			{
+				inputFile.delete();
+			}
+
+			Logger.getLogger("").log(Level.INFO, errorMap.toString());
+
+			List<ImportResult> result = getImportResult();
+
+			// Update the database record to indicate the job has finished running
+			try (Connection conn = Database.getConnection())
+			{
+				DSLContext context = Database.getContext(conn);
+
+				DataImportJobsRecord job = context.selectFrom(DATA_IMPORT_JOBS).where(DATA_IMPORT_JOBS.ID.eq(this.importJobId)).fetchAny();
+				job.setFeedback(result.toArray(new ImportResult[0]));
+				job.setStatus(DataImportJobsStatus.completed);
+				job.store(DATA_IMPORT_JOBS.FEEDBACK, DATA_IMPORT_JOBS.STATUS);
+			}
+			catch (SQLException e)
+			{
+				addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, "Unable to establish database connection: " + e.getMessage());
+			}
+
+			Duration duration = Duration.between(start, Instant.now());
+
+			Logger.getLogger("").info("DURATION: " + duration);
+			System.out.println("DURATION: " + duration);
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
-			e.printStackTrace();
+			reportError(e);
 		}
-
-		Duration duration = Duration.between(start, Instant.now());
-
-		Logger.getLogger("").info("DURATION: " + duration);
-		System.out.println("DURATION: " + duration);
 	}
 
 	protected void addImportResult(ImportStatus status, int rowIndex, String message)
@@ -99,7 +126,7 @@ public abstract class AbstractImporter
 
 	protected File getInputFile()
 	{
-		return this.input;
+		return this.inputFile;
 	}
 
 	protected Map<ImportStatus, ImportResult> getErrorMap()
@@ -115,7 +142,7 @@ public abstract class AbstractImporter
 
 	protected abstract void updateFile();
 
-	protected abstract void postImport(File input);
+	protected abstract void postImport();
 
 	public static class ImportConfig
 	{
@@ -151,32 +178,24 @@ public abstract class AbstractImporter
 		}
 	}
 
-	public enum RunType
+	protected void reportError(Exception ex)
 	{
-		CHECK,
-		IMPORT,
-		CHECK_AND_IMPORT;
-
-		public boolean includesCheck()
+		// Update the database record to indicate the job has finished running
+		try (Connection conn = Database.getConnection())
 		{
-			return this == CHECK || this == CHECK_AND_IMPORT;
+			DSLContext context = Database.getContext(conn);
+
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, ex.getMessage());
+			List<ImportResult> result = getImportResult();
+
+			DataImportJobsRecord job = context.selectFrom(DATA_IMPORT_JOBS).where(DATA_IMPORT_JOBS.ID.eq(this.importJobId)).fetchAny();
+			job.setFeedback(result.toArray(new ImportResult[0]));
+			job.setStatus(DataImportJobsStatus.failed);
+			job.store(DATA_IMPORT_JOBS.FEEDBACK, DATA_IMPORT_JOBS.STATUS);
 		}
-
-		public boolean includesImport()
+		catch (SQLException e)
 		{
-			return this == IMPORT || this == CHECK_AND_IMPORT;
-		}
-
-		public static RunType getType(String input)
-		{
-			try
-			{
-				return RunType.valueOf(input);
-			}
-			catch (Exception e)
-			{
-				return CHECK;
-			}
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, "Unable to establish database connection: " + e.getMessage());
 		}
 	}
 }
