@@ -110,6 +110,7 @@ public abstract class AbstractImporter
 		}
 		catch (Exception e)
 		{
+			e.printStackTrace();
 			reportError(e);
 		}
 	}

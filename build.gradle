@@ -26,4 +26,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'mysql:mysql-connector-java:8.0.28'
     implementation 'org.dhatim:fastexcel-reader:0.12.14'
+
+    // Only needed for local debug
+//    implementation 'org.flywaydb:flyway-core:6.5.7'
 }
