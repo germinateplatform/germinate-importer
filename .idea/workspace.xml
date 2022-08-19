@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updated importers to pull parameters from the database rather than the commandline.&#10;- CHG: Updated importers to write job status back to database.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added bulk image uploader.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.3.5.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.3.5.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
     </list>
@@ -445,7 +444,14 @@
       <option name="project" value="LOCAL" />
       <updated>1660231073840</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="- ADD: Added bulk image uploader.">
+      <created>1660833438985</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1660833438985</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -472,7 +478,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Updated code to reflect changes to database connection code." />
     <MESSAGE value="- ADD: Added new parameter to all CLI tools (dataset state id).&#10;- ADD: Added better time tracking to all tools.&#10;- CHG: Significantly improved genotypic data import speed by using LOAD DATA INFILE instead of bulked queries.&#10;- FIX: MCPD: Fixed an issue where a location could be specified without a country code." />
     <MESSAGE value="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table." />
     <MESSAGE value="- CHG: Improved performance of the attribute data import.&#10;- CHG: Smaller changes to the genotype import." />
@@ -497,7 +502,8 @@
     <MESSAGE value="- CHG: Updated dependencies.&#10;- FIX: Fixed small bug with trials data import." />
     <MESSAGE value="- ADD: Added new parameter to all importers that provides the original filename.&#10;- ADD: Added creation of file resource for original file.&#10;- ADD: Added code that links the new file resource to a potentially created dataset." />
     <MESSAGE value="- CHG: Updated importers to pull parameters from the database rather than the commandline.&#10;- CHG: Updated importers to write job status back to database." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updated importers to pull parameters from the database rather than the commandline.&#10;- CHG: Updated importers to write job status back to database." />
+    <MESSAGE value="- ADD: Added bulk image uploader." />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added bulk image uploader." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -594,32 +600,32 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>83</line>
+          <line>82</line>
           <option name="timeStamp" value="46" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>109</line>
+          <line>108</line>
           <option name="timeStamp" value="47" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>269</line>
+          <line>268</line>
           <option name="timeStamp" value="55" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>311</line>
+          <line>310</line>
           <option name="timeStamp" value="57" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>319</line>
+          <line>318</line>
           <option name="timeStamp" value="58" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>343</line>
+          <line>342</line>
           <option name="timeStamp" value="59" />
         </line-breakpoint>
       </breakpoints>

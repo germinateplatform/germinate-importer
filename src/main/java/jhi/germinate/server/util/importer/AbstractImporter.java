@@ -44,7 +44,11 @@ public abstract class AbstractImporter
 		{
 			DSLContext context = Database.getContext(conn);
 
-			this.jobDetails = context.selectFrom(DATA_IMPORT_JOBS).where(DATA_IMPORT_JOBS.ID.eq(this.importJobId)).fetchAnyInto(DataImportJobs.class);
+			DataImportJobsRecord job = context.selectFrom(DATA_IMPORT_JOBS).where(DATA_IMPORT_JOBS.ID.eq(this.importJobId)).fetchAny();
+			job.setStatus(DataImportJobsStatus.running);
+			job.store(DATA_IMPORT_JOBS.STATUS);
+
+			this.jobDetails = job.into(DataImportJobs.class);
 
 			this.inputFile = new File(new File(new File(this.jobDetails.getJobConfig().getBaseFolder(), "async"), this.jobDetails.getUuid()), this.jobDetails.getJobConfig().getDataFilename());
 		}
