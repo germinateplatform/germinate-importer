@@ -492,14 +492,15 @@ public class ImageImporter extends AbstractImporter
 				type.store();
 			}
 
+			File source = getInputFile();
 			File typeFolder = new File(new File(new File(jobDetails.getJobConfig().getBaseFolder(), "data"), "download"), Integer.toString(type.getId()));
 			typeFolder.mkdirs();
-			File target = new File(typeFolder, templateUnzipped.toFile().getName());
+			File target = new File(typeFolder, source.getName());
 
 			FileresourcesRecord fileRes = context.newRecord(FILERESOURCES);
 			fileRes.setName(this.jobDetails.getOriginalFilename());
 			fileRes.setPath(target.getName());
-			fileRes.setFilesize(templateUnzipped.toFile().length());
+			fileRes.setFilesize(source.length());
 			fileRes.setDescription("Automatic upload backup.");
 			fileRes.setFileresourcetypeId(type.getId());
 			fileRes.setCreatedOn(new Timestamp(System.currentTimeMillis()));
@@ -507,12 +508,12 @@ public class ImageImporter extends AbstractImporter
 			fileRes.store();
 
 			// Now update the name with the file resource id
-			target = new File(typeFolder, fileRes.getId() + "-" + templateUnzipped.toFile().getName());
+			target = new File(typeFolder, fileRes.getId() + "-" + source.getName());
 			fileRes.setPath(target.getName());
 			fileRes.store();
 
 			// Finally copy the file
-			Files.copy(templateUnzipped, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}
 		catch (SQLException | IOException e)
 		{
