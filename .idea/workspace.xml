@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Set job running in the database once the code starts executing.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- FIX: Fixed dataset import backup for images where only the template, not the zip was backed up.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.3.5.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.3.5.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -457,7 +458,14 @@
       <option name="project" value="LOCAL" />
       <updated>1660920404499</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="- FIX: Fixed dataset import backup for images where only the template, not the zip was backed up.">
+      <created>1661184781558</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1661184781559</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -484,7 +492,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table." />
     <MESSAGE value="- CHG: Improved performance of the attribute data import.&#10;- CHG: Smaller changes to the genotype import." />
     <MESSAGE value="- CHG: Added explicit HDF5 output paths to genotypic importers." />
     <MESSAGE value="- ADD: Added Hapmap importer.&#10;- CHG: Massively restructured the code to simplify things." />
@@ -509,7 +516,8 @@
     <MESSAGE value="- CHG: Updated importers to pull parameters from the database rather than the commandline.&#10;- CHG: Updated importers to write job status back to database." />
     <MESSAGE value="- ADD: Added bulk image uploader." />
     <MESSAGE value="- CHG: Set job running in the database once the code starts executing." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Set job running in the database once the code starts executing." />
+    <MESSAGE value="- FIX: Fixed dataset import backup for images where only the template, not the zip was backed up." />
+    <option name="LAST_COMMIT_MESSAGE" value="- FIX: Fixed dataset import backup for images where only the template, not the zip was backed up." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
