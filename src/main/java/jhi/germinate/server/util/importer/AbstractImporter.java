@@ -193,6 +193,7 @@ public abstract class AbstractImporter
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, ex.getMessage());
 			List<ImportResult> result = getImportResult();
 
+			result.add(new ImportResult(ImportStatus.GENERIC_IO_ERROR, -1, ex.getMessage()));
 			DataImportJobsRecord job = context.selectFrom(DATA_IMPORT_JOBS).where(DATA_IMPORT_JOBS.ID.eq(this.importJobId)).fetchAny();
 			job.setFeedback(result.toArray(new ImportResult[0]));
 			job.setStatus(DataImportJobsStatus.failed);

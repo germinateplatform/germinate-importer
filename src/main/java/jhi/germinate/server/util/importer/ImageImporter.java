@@ -222,23 +222,7 @@ public class ImageImporter extends AbstractImporter
 										if (filenameToImage.containsKey(filename))
 											addImportResult(ImportStatus.GENERIC_DUPLICATE_VALUE, i, "An image filename has been specified more than once: " + filename);
 										else
-										{
 											filenameToImage.put(filename, null);
-
-											// TODO: Create this when actually importing
-//											ViewTableImages image = new ViewTableImages();
-//											image.setImageId(intId);
-//											image.setReferenceName(name);
-//											image.setImageRefTable(reference);
-//											image.setImagePath(filename);
-//											image.setImageDescription(description);
-//											if (!StringUtils.isEmpty(tags)) {
-//												String[] parsedTags = Arrays.stream(tags.split(",", -1))
-//													.map(String::trim)
-//													.toArray(String[]::new);
-//												image.setTags(parsedTags);
-//											}
-										}
 									}
 								}
 							}
@@ -351,6 +335,8 @@ public class ImageImporter extends AbstractImporter
 										String reference = getCellValue(current, 2);
 										String filename = getCellValue(current, 3);
 										String description = getCellValue(current, 4);
+										if (StringUtils.isEmpty(description))
+											description = filename;
 										String tags = getCellValue(current, 5);
 
 										Integer intId = null;

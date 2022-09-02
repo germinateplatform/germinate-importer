@@ -940,7 +940,6 @@ public class McpdImporter extends AbstractExcelImporter
 			if (changed) {
 				// If there are changes, store it back
 				result.store();
-				institutionCodes.put(result.getCode(), result);
 			}
 		}
 
@@ -950,7 +949,8 @@ public class McpdImporter extends AbstractExcelImporter
 			result.store();
 		}
 
-		institutionCodes.put(result.getCode(), result);
+		if (!StringUtils.isEmpty(result.getCode()))
+			institutionCodes.put(result.getCode(), result);
 
 		return result;
 	}
@@ -1015,6 +1015,7 @@ public class McpdImporter extends AbstractExcelImporter
 		germplasm.mcpd.setAccenumb(getCellValue(r, columnNameToIndex, McpdField.ACCENUMB.name()));
 		germplasm.mcpd.setAcqdate(getCellValue(r, columnNameToIndex, McpdField.ACQDATE.name()));
 		germplasm.pedigree.setDefinition(getCellValue(r, columnNameToIndex, McpdField.ANCEST.name()));
+		germplasm.mcpd.setAncest(getCellValue(r, columnNameToIndex, McpdField.ANCEST.name()));
 		germplasm.mcpd.setBredcode(getCellValue(r, columnNameToIndex, McpdField.BREDCODE.name()));
 		germplasm.mcpd.setBredname(getCellValue(r, columnNameToIndex, McpdField.BREDNAME.name()));
 		germplasm.mcpd.setCollcode(getCellValue(r, columnNameToIndex, McpdField.COLLCODE.name()));
@@ -1025,14 +1026,22 @@ public class McpdImporter extends AbstractExcelImporter
 		germplasm.mcpd.setCollnumb(getCellValue(r, columnNameToIndex, McpdField.COLLNUMB.name()));
 		germplasm.mcpd.setCollsrc(getCellValueInteger(r, columnNameToIndex, McpdField.COLLSRC.name()));
 		germplasm.location.setCoordinateDatum(getCellValue(r, columnNameToIndex, McpdField.COORDDATUM.name()));
+		germplasm.mcpd.setCoorddatum(getCellValue(r, columnNameToIndex, McpdField.COORDDATUM.name()));
 		germplasm.location.setCoordinateUncertainty(getCellValueInteger(r, columnNameToIndex, McpdField.COORDUNCERT.name()));
+		germplasm.mcpd.setCoorduncert(getCellValueInteger(r, columnNameToIndex, McpdField.COORDUNCERT.name()));
 		germplasm.taxonomy.setCropname(getCellValue(r, columnNameToIndex, McpdField.CROPNAME.name()));
+		germplasm.mcpd.setCropname(getCellValue(r, columnNameToIndex, McpdField.CROPNAME.name()));
 		germplasm.location.setSiteName(getCellValue(r, columnNameToIndex, McpdField.COLLSITE.name()));
+		germplasm.mcpd.setCollsite(getCellValue(r, columnNameToIndex, McpdField.COLLSITE.name()));
 		germplasm.location.setLatitude(getCellValueBigDecimal(r, columnNameToIndex, McpdField.DECLATITUDE.name()));
+		germplasm.mcpd.setDeclatitude(getCellValueBigDecimal(r, columnNameToIndex, McpdField.DECLATITUDE.name()));
+		germplasm.mcpd.setLatitude(getCellValue(r, columnNameToIndex, McpdField.LATITUDE.name()));
 		// If there's no decimal, try and parse the DMS
 		if (germplasm.location.getLatitude() == null && !StringUtils.isEmpty(getCellValue(r, columnNameToIndex, McpdField.LATITUDE.name())))
 			germplasm.location.setLatitude(getCellValueDMS(r, columnNameToIndex, McpdField.LATITUDE.name()));
 		germplasm.location.setLongitude(getCellValueBigDecimal(r, columnNameToIndex, McpdField.DECLONGITUDE.name()));
+		germplasm.mcpd.setDeclongitude(getCellValueBigDecimal(r, columnNameToIndex, McpdField.DECLONGITUDE.name()));
+		germplasm.mcpd.setLongitude(getCellValue(r, columnNameToIndex, McpdField.LONGITUDE.name()));
 		// If there's no decimal, try and parse the DMS
 		if (germplasm.location.getLongitude() == null && !StringUtils.isEmpty(getCellValue(r, columnNameToIndex, McpdField.LONGITUDE.name())))
 			germplasm.location.setLongitude(getCellValueDMS(r, columnNameToIndex, McpdField.LONGITUDE.name()));
@@ -1042,6 +1051,7 @@ public class McpdImporter extends AbstractExcelImporter
 		germplasm.mcpd.setDuplinstname(getCellValue(r, columnNameToIndex, McpdField.DUPLINSTNAME.name()));
 		germplasm.mcpd.setDuplsite(getCellValue(r, columnNameToIndex, McpdField.DUPLSITE.name()));
 		germplasm.location.setElevation(getCellValueBigDecimal(r, columnNameToIndex, McpdField.ELEVATION.name()));
+		germplasm.mcpd.setElevation(getCellValueBigDecimal(r, columnNameToIndex, McpdField.ELEVATION.name()));
 		String parentName = getCellValue(r, columnNameToIndex, "Entity parent ACCENUMB");
 		if (!StringUtils.isEmpty(parentName))
 		{
@@ -1055,23 +1065,31 @@ public class McpdImporter extends AbstractExcelImporter
 			germplasm.germinatebase.setEntitytypeId(entityTypeId);
 		}
 		germplasm.taxonomy.setGenus(getCellValue(r, columnNameToIndex, McpdField.GENUS.name()));
+		germplasm.mcpd.setGenus(getCellValue(r, columnNameToIndex, McpdField.GENUS.name()));
 		germplasm.location.setGeoreferencingMethod(getCellValue(r, columnNameToIndex, McpdField.GEOREFMETH.name()));
+		germplasm.mcpd.setGeorefmeth(getCellValue(r, columnNameToIndex, McpdField.GEOREFMETH.name()));
 		germplasm.mcpd.setInstcode(getCellValue(r, columnNameToIndex, McpdField.INSTCODE.name()));
 		germplasm.mcpd.setMlsstat(getCellValueInteger(r, columnNameToIndex, McpdField.MLSSTAT.name()));
 		germplasm.country.setCountryCode3(getCellValue(r, columnNameToIndex, McpdField.ORIGCTY.name()));
+		germplasm.mcpd.setOrigcty(getCellValue(r, columnNameToIndex, McpdField.ORIGCTY.name()));
 		germplasm.mcpd.setOthernumb(getCellValue(r, columnNameToIndex, McpdField.OTHERNUMB.name()));
 		germplasm.mcpd.setPuid(getCellValue(r, columnNameToIndex, McpdField.PUID.name()));
 		germplasm.mcpd.setSampstat(getCellValueInteger(r, columnNameToIndex, McpdField.SAMPSTAT.name()));
 		germplasm.taxonomy.setSpeciesAuthor(getCellValue(r, columnNameToIndex, McpdField.SPAUTHOR.name()));
+		germplasm.mcpd.setSpauthor(getCellValue(r, columnNameToIndex, McpdField.SPAUTHOR.name()));
 		germplasm.taxonomy.setSpecies(getCellValue(r, columnNameToIndex, McpdField.SPECIES.name()));
+		germplasm.mcpd.setSpecies(getCellValue(r, columnNameToIndex, McpdField.SPECIES.name()));
 		germplasm.taxonomy.setSubtaxaAuthor(getCellValue(r, columnNameToIndex, McpdField.SUBTAUTHOR.name()));
+		germplasm.mcpd.setSubtauthor(getCellValue(r, columnNameToIndex, McpdField.SUBTAUTHOR.name()));
 		germplasm.taxonomy.setSubtaxa(getCellValue(r, columnNameToIndex, McpdField.SUBTAXA.name()));
+		germplasm.mcpd.setSubtaxa(getCellValue(r, columnNameToIndex, McpdField.SUBTAXA.name()));
 
 		if (germplasm.germinatebase.getEntitytypeId() == null) germplasm.germinatebase.setEntitytypeId(1);
 
 		germplasm.location.setLocationtypeId(1);
 
 		germplasm.remarks = getCellValue(r, columnNameToIndex, McpdField.REMARKS.name());
+		germplasm.mcpd.setRemarks(getCellValue(r, columnNameToIndex, McpdField.REMARKS.name()));
 		germplasm.mcpd.setStorage(getCellValue(r, columnNameToIndex, McpdField.STORAGE.name()));
 
 		if (!StringUtils.isEmpty(germplasm.mcpd.getInstcode()))
