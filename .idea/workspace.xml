@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updated MCPD importer to use new MCPD table.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- FIX: Fixed the catch-all exception handling which didn't store feedback to the database.&#10;- FIX: Fixed a bug where institution import from the MCPD would fail if no institution code was available.&#10;- FIX: Added MCPD fields that are also stored elsewhere to the mcpd table.&#10;-">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.3.5.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.3.5.jar" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,23 +104,9 @@
       <recent name="jhi.germinate.server.util.importer.task" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.TestImage">
-    <configuration name="ImageImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.ImageImporter" />
-      <module name="germinate-importer.main" />
-      <option name="PROGRAM_PARAMETERS" value="localhost germinate_demo \&quot;\&quot; root \&quot;\&quot; 1" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestImage" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.TestImage" />
+  <component name="RunManager" selected="Gradle.germinate-importer [build]">
+    <configuration name="TestImg (2)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.TestImg" />
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
@@ -132,8 +118,21 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TestImport" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.TestImport" />
+    <configuration name="TestImg (3)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.TestImg" />
+      <module name="germinate-importer.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestImg (4)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.TestImg" />
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
@@ -188,19 +187,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Application.TestImage" />
-      <item itemvalue="Application.TestImport" />
-      <item itemvalue="Application.ImageImporter" />
+      <item itemvalue="Application.TestImg (2)" />
+      <item itemvalue="Application.TestImg (3)" />
+      <item itemvalue="Application.TestImg (4)" />
       <item itemvalue="Gradle.germinate-importer [build]" />
       <item itemvalue="Gradle.germinate-importer [clean]" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.TestImage" />
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
-        <item itemvalue="Application.TestImport" />
-        <item itemvalue="Application.ImageImporter" />
+        <item itemvalue="Application.TestImg (4)" />
+        <item itemvalue="Application.TestImg (3)" />
+        <item itemvalue="Application.TestImg (2)" />
       </list>
     </recent_temporary>
   </component>
@@ -465,7 +464,14 @@
       <option name="project" value="LOCAL" />
       <updated>1661784267014</updated>
     </task>
-    <option name="localTasksCounter" value="37" />
+    <task id="LOCAL-00037" summary="- FIX: Fixed the catch-all exception handling which didn't store feedback to the database.&#10;- FIX: Fixed a bug where institution import from the MCPD would fail if no institution code was available.&#10;- FIX: Added MCPD fields that are also stored elsewhere to the mcpd table.&#10;-">
+      <created>1662128758434</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1662128758434</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -492,7 +498,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Added explicit HDF5 output paths to genotypic importers." />
     <MESSAGE value="- ADD: Added Hapmap importer.&#10;- CHG: Massively restructured the code to simplify things." />
     <MESSAGE value="- DEL: Removed unnecessary dummy code." />
     <MESSAGE value="- FIX: Fixed dependency inconsistency." />
@@ -517,7 +522,8 @@
     <MESSAGE value="- CHG: Set job running in the database once the code starts executing." />
     <MESSAGE value="- FIX: Fixed dataset import backup for images where only the template, not the zip was backed up." />
     <MESSAGE value="- CHG: Updated MCPD importer to use new MCPD table." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updated MCPD importer to use new MCPD table." />
+    <MESSAGE value="- FIX: Fixed the catch-all exception handling which didn't store feedback to the database.&#10;- FIX: Fixed a bug where institution import from the MCPD would fail if no institution code was available.&#10;- FIX: Added MCPD fields that are also stored elsewhere to the mcpd table.&#10;-" />
+    <option name="LAST_COMMIT_MESSAGE" value="- FIX: Fixed the catch-all exception handling which didn't store feedback to the database.&#10;- FIX: Fixed a bug where institution import from the MCPD would fail if no institution code was available.&#10;- FIX: Added MCPD fields that are also stored elsewhere to the mcpd table.&#10;-" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
