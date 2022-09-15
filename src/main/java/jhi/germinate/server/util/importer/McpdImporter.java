@@ -4,7 +4,7 @@ import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.enums.*;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
-import jhi.germinate.server.util.StringUtils;
+import jhi.germinate.server.util.*;
 import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
@@ -379,6 +379,24 @@ public class McpdImporter extends AbstractExcelImporter
 		{
 			// We get here if the column isn't present. This can be the case in older versions of the template. Let this slide...
 		}
+
+		// Check DUPLINST
+		String duplinst = getCellValue(r, columnNameToIndex, McpdField.DUPLSITE.name());
+		String duplname = getCellValue(r, columnNameToIndex, McpdField.DUPLINSTNAME.name());
+
+		if (!StringUtils.isEmpty(duplinst) || !StringUtils.isEmpty(duplname)) {
+			if (StringUtils.isEmpty(duplinst))
+				duplinst = "";
+			if (StringUtils.isEmpty(duplname))
+				duplname = "";
+
+			String[] codes = duplinst.split(";", -1);
+			String[] names = duplname.split(";", -1);
+
+			if (codes.length != names.length) {
+				addImportResult(ImportStatus.MCPD_INVALID_DUPLINST_NAME_MAPPING, r.getRowNum(), duplinst + " - " + duplname);
+			}
+		}
 	}
 
 	@Override
@@ -723,10 +741,12 @@ public class McpdImporter extends AbstractExcelImporter
 			insert.donoInst = getOrCreateInstitution(context, insert.donoInst);
 			getOrCreateGermplasmInstitution(context, insert.germinatebase, insert.donoInst, GermplasminstitutionsType.donor);
 		}
-		if (insert.dupliInst != null)
+		if (!CollectionUtils.isEmpty(insert.dupliInst))
 		{
-			insert.dupliInst = getOrCreateInstitution(context, insert.dupliInst);
-			getOrCreateGermplasmInstitution(context, insert.germinatebase, insert.dupliInst, GermplasminstitutionsType.duplicate);
+			for (int i = 0; i < insert.dupliInst.size(); i++) {
+				insert.dupliInst.set(i, getOrCreateInstitution(context, insert.dupliInst.get(i)));
+				getOrCreateGermplasmInstitution(context, insert.germinatebase, insert.dupliInst.get(i), GermplasminstitutionsType.duplicate);
+			}
 		}
 	}
 
@@ -910,7 +930,8 @@ public class McpdImporter extends AbstractExcelImporter
 	{
 		InstitutionsRecord result = null;
 
-		if (!StringUtils.isEmpty(institution.getCode())) {
+		if (!StringUtils.isEmpty(institution.getCode()))
+		{
 			result = institutionCodes.get(institution.getCode());
 		}
 
@@ -922,22 +943,27 @@ public class McpdImporter extends AbstractExcelImporter
 							.and(INSTITUTIONS.ADDRESS.isNotDistinctFrom(institution.getAddress()))
 							.and(INSTITUTIONS.COUNTRY_ID.isNotDistinctFrom(institution.getCountryId()))
 							.fetchAnyInto(InstitutionsRecord.class);
-		} else {
+		}
+		else
+		{
 			// We get here if there is an institution with the same code
 			boolean changed = false;
 
 			// If we have a name AND (the DB institution doesn't or it's different) then update it
-			if (!StringUtils.isEmpty(institution.getName()) && !Objects.equals("N/A", institution.getName()) && (StringUtils.isEmpty(result.getName()) || !Objects.equals(result.getName(), institution.getName()))) {
+			if (!StringUtils.isEmpty(institution.getName()) && !Objects.equals("N/A", institution.getName()) && (StringUtils.isEmpty(result.getName()) || !Objects.equals(result.getName(), institution.getName())))
+			{
 				changed = true;
 				result.setName(institution.getName());
 			}
 			// If we have a address AND (the DB institution doesn't or it's different) then update it
-			if (!StringUtils.isEmpty(institution.getAddress()) && !Objects.equals("N/A", institution.getAddress()) && (StringUtils.isEmpty(result.getAddress()) || !Objects.equals(result.getAddress(), institution.getAddress()))) {
+			if (!StringUtils.isEmpty(institution.getAddress()) && !Objects.equals("N/A", institution.getAddress()) && (StringUtils.isEmpty(result.getAddress()) || !Objects.equals(result.getAddress(), institution.getAddress())))
+			{
 				changed = true;
 				result.setAddress(institution.getAddress());
 			}
 
-			if (changed) {
+			if (changed)
+			{
 				// If there are changes, store it back
 				result.store();
 			}
@@ -1125,11 +1151,23 @@ public class McpdImporter extends AbstractExcelImporter
 		}
 		if (!StringUtils.isEmpty(germplasm.mcpd.getDuplsite()) || !StringUtils.isEmpty(germplasm.mcpd.getDuplinstname()))
 		{
-			germplasm.dupliInst = new InstitutionsRecord();
-			germplasm.dupliInst.setCode(germplasm.mcpd.getDuplsite());
-			germplasm.dupliInst.setName(germplasm.mcpd.getDuplinstname());
-			if (StringUtils.isEmpty(germplasm.dupliInst.getName()))
-				germplasm.dupliInst.setName("N/A");
+			if (StringUtils.isEmpty(germplasm.mcpd.getDuplsite()))
+				germplasm.mcpd.setDuplsite("");
+			if (StringUtils.isEmpty(germplasm.mcpd.getDuplinstname()))
+				germplasm.mcpd.setDuplinstname("");
+			List<String> codes = Arrays.stream(germplasm.mcpd.getDuplsite().split(";")).map(String::trim).collect(Collectors.toList());
+			List<String> names = Arrays.stream(germplasm.mcpd.getDuplinstname().split(";")).map(String::trim).collect(Collectors.toList());
+
+			germplasm.dupliInst = new ArrayList<>();
+			for (int i = 0; i < codes.size(); i++)
+			{
+				InstitutionsRecord record = new InstitutionsRecord();
+				record.setCode(codes.get(i));
+				record.setName(names.get(i));
+				if (StringUtils.isEmpty(record.getName()))
+					record.setName("N/A");
+				germplasm.dupliInst.add(record);
+			}
 		}
 
 		return germplasm;
@@ -1144,7 +1182,7 @@ public class McpdImporter extends AbstractExcelImporter
 		private InstitutionsRecord        breedingInst  = null;
 		private InstitutionsRecord        collectInst   = null;
 		private InstitutionsRecord        donoInst      = null;
-		private InstitutionsRecord        dupliInst     = null;
+		private List<InstitutionsRecord>  dupliInst     = new ArrayList<>();
 		private CountriesRecord           country       = new CountriesRecord();
 		private TaxonomiesRecord          taxonomy      = new TaxonomiesRecord();
 		private PedigreedefinitionsRecord pedigree      = new PedigreedefinitionsRecord();

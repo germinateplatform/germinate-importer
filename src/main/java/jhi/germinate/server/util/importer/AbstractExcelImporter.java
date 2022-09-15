@@ -196,9 +196,7 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 		String result = c.getText();
 
 		if (result != null)
-		{
 			result = result.replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
-		}
 
 		if (Objects.equals(result, ""))
 			return null;
