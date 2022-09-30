@@ -156,7 +156,7 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private void checkGermplasm(Row r)
 	{
-		String germplasm = r.getCellText(0);
+		String germplasm = getCellValue(r, 0);
 
 		if (!StringUtils.isEmpty(germplasm) && !foundAccenumb.contains(germplasm))
 			addImportResult(ImportStatus.MCPD_MISSING_ACCENUMB, r.getRowNum(), germplasm);
@@ -384,7 +384,8 @@ public class McpdImporter extends AbstractExcelImporter
 		String duplinst = getCellValue(r, columnNameToIndex, McpdField.DUPLSITE.name());
 		String duplname = getCellValue(r, columnNameToIndex, McpdField.DUPLINSTNAME.name());
 
-		if (!StringUtils.isEmpty(duplinst) || !StringUtils.isEmpty(duplname)) {
+		if (!StringUtils.isEmpty(duplinst) || !StringUtils.isEmpty(duplname))
+		{
 			if (StringUtils.isEmpty(duplinst))
 				duplinst = "";
 			if (StringUtils.isEmpty(duplname))
@@ -393,7 +394,8 @@ public class McpdImporter extends AbstractExcelImporter
 			String[] codes = duplinst.split(";", -1);
 			String[] names = duplname.split(";", -1);
 
-			if (codes.length != names.length) {
+			if (codes.length != names.length)
+			{
 				addImportResult(ImportStatus.MCPD_INVALID_DUPLINST_NAME_MAPPING, r.getRowNum(), duplinst + " - " + duplname);
 			}
 		}
@@ -548,7 +550,7 @@ public class McpdImporter extends AbstractExcelImporter
 	{
 		if (allCellsEmpty(r)) return;
 
-		String accenumb = getCellValue(r.getCell(0));
+		String accenumb = getCellValue(r, 0);
 		Integer germplasmId = accenumbToId.get(accenumb);
 
 		// Get all the attribute data for this germplasm
@@ -743,7 +745,8 @@ public class McpdImporter extends AbstractExcelImporter
 		}
 		if (!CollectionUtils.isEmpty(insert.dupliInst))
 		{
-			for (int i = 0; i < insert.dupliInst.size(); i++) {
+			for (int i = 0; i < insert.dupliInst.size(); i++)
+			{
 				insert.dupliInst.set(i, getOrCreateInstitution(context, insert.dupliInst.get(i)));
 				getOrCreateGermplasmInstitution(context, insert.germinatebase, insert.dupliInst.get(i), GermplasminstitutionsType.duplicate);
 			}

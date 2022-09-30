@@ -4,12 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updated dependencies.&#10;- CHG: Version bump to 4.4.0.">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Fixed issues with MCPD importer only supporting a single duplicate institution.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.4.0.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -216,7 +212,8 @@
       <updated>1614787593620</updated>
       <workItem from="1663072021747" duration="1287000" />
       <workItem from="1663073602844" duration="1496000" />
-      <workItem from="1663247556133" duration="830000" />
+      <workItem from="1663247556133" duration="1476000" />
+      <workItem from="1664449604965" duration="700000" />
     </task>
     <task id="LOCAL-00001" summary="- FIX: Fixed issues with the HDF5 library which bundled Apache IO inside their jar and caused version conflicts when deployed.&#10;- ADD: Added missing check for mls status in MCPD importer.">
       <created>1615919484494</created>
@@ -484,7 +481,14 @@
       <option name="project" value="LOCAL" />
       <updated>1662641952518</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="- CHG: Fixed issues with MCPD importer only supporting a single duplicate institution.">
+      <created>1663250274727</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1663250274727</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -514,7 +518,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- DEL: Removed unnecessary dummy code." />
     <MESSAGE value="- FIX: Fixed dependency inconsistency." />
     <MESSAGE value="- FIX: Fixed import issues when no map is available." />
     <MESSAGE value="- FIX: Fixed hapmap import with inconsistent map information." />
@@ -539,7 +542,8 @@
     <MESSAGE value="- CHG: Updated MCPD importer to use new MCPD table." />
     <MESSAGE value="- FIX: Fixed the catch-all exception handling which didn't store feedback to the database.&#10;- FIX: Fixed a bug where institution import from the MCPD would fail if no institution code was available.&#10;- FIX: Added MCPD fields that are also stored elsewhere to the mcpd table.&#10;-" />
     <MESSAGE value="- CHG: Updated dependencies.&#10;- CHG: Version bump to 4.4.0." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updated dependencies.&#10;- CHG: Version bump to 4.4.0." />
+    <MESSAGE value="- CHG: Fixed issues with MCPD importer only supporting a single duplicate institution." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Fixed issues with MCPD importer only supporting a single duplicate institution." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
