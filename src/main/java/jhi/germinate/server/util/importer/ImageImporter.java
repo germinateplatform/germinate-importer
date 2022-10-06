@@ -18,7 +18,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static jhi.germinate.server.database.codegen.tables.Compounds.*;
 import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
 import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
 import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
@@ -35,12 +34,11 @@ public class ImageImporter extends AbstractImporter
 {
 	private final Map<String, Integer>         accenumbToId     = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer>         traitNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final Map<String, Integer>         compoundNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, ViewTableImages> filenameToImage  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer>         tagToImageTagId  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private       Map<String, Integer>         imageTypeToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-	private List<String> validReferenceTypes = Arrays.asList("germinatebase", "compounds", "phenotypes");
+	private List<String> validReferenceTypes = Arrays.asList("germinatebase", "phenotypes");
 
 	private Path templateUnzipped;
 
@@ -66,7 +64,6 @@ public class ImageImporter extends AbstractImporter
 			DSLContext context = Database.getContext(conn);
 			context.selectFrom(GERMINATEBASE).forEach(g -> accenumbToId.put(g.getName(), g.getId()));
 			context.selectFrom(PHENOTYPES).forEach(g -> traitNameToId.put(g.getName(), g.getId()));
-			context.selectFrom(COMPOUNDS).forEach(g -> compoundNameToId.put(g.getName(), g.getId()));
 			context.selectFrom(IMAGETAGS).forEach(g -> tagToImageTagId.put(g.getTagName(), g.getId()));
 			context.selectFrom(IMAGETYPES).forEach(g -> imageTypeToId.put(g.getReferenceTable(), g.getId()));
 		}
@@ -170,9 +167,6 @@ public class ImageImporter extends AbstractImporter
 															case "phenotypes":
 																contains = traitNameToId.containsValue(intId);
 																break;
-															case "compounds":
-																contains = compoundNameToId.containsValue(intId);
-																break;
 														}
 
 														if (!contains)
@@ -201,9 +195,6 @@ public class ImageImporter extends AbstractImporter
 															break;
 														case "phenotypes":
 															contains = traitNameToId.containsKey(name);
-															break;
-														case "compounds":
-															contains = compoundNameToId.containsKey(name);
 															break;
 													}
 
@@ -356,9 +347,6 @@ public class ImageImporter extends AbstractImporter
 												case "phenotypes":
 													intId = traitNameToId.get(name);
 													break;
-												case "compounds":
-													intId = compoundNameToId.get(name);
-													break;
 											}
 										}
 
@@ -369,9 +357,6 @@ public class ImageImporter extends AbstractImporter
 												break;
 											case "phenotypes":
 												imageTypeId = imageTypeToId.get("phenotypes");
-												break;
-											case "compounds":
-												imageTypeId = imageTypeToId.get("compounds");
 												break;
 										}
 

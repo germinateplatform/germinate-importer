@@ -28,6 +28,7 @@ public abstract class AbstractImporter
 	protected       DataImportJobs                  jobDetails;
 	private         File                            inputFile;
 	private         Map<ImportStatus, ImportResult> errorMap = new HashMap<>();
+	private         String[]                        args;
 
 	private Instant start;
 
@@ -36,8 +37,13 @@ public abstract class AbstractImporter
 		this.importJobId = importJobId;
 	}
 
+	protected String[] getArgs() {
+		return Arrays.copyOf(args, args.length);
+	}
+
 	protected void init(String[] args)
 	{
+		this.args = args;
 		Database.init(args[0], args[1], args[2], args[3], args[4], false);
 
 		try (Connection conn = Database.getConnection())
@@ -132,6 +138,10 @@ public abstract class AbstractImporter
 	protected File getInputFile()
 	{
 		return this.inputFile;
+	}
+
+	protected void setInputFile(File file) {
+		this.inputFile = file;
 	}
 
 	protected Map<ImportStatus, ImportResult> getErrorMap()

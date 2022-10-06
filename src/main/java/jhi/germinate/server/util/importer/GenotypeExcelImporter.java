@@ -42,6 +42,8 @@ public class GenotypeExcelImporter extends DatasheetImporter
 		this.txtFile = new File(input.getParentFile(), input.getName().replace(".xlsx", ".txt"));
 
 		flatFileImporter = new GenotypeFlatFileImporter(this.importJobId);
+		flatFileImporter.init(getArgs());
+		flatFileImporter.setInputFile(this.txtFile);
 		flatFileImporter.prepare();
 	}
 

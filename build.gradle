@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'uk.ac.hutton.germinate-importer'
-version '4.4.1'
+version '4.4.2'
 
 compileJava.options.encoding = 'UTF-8'
 sourceCompatibility = 11
@@ -28,5 +28,5 @@ dependencies {
     implementation 'org.dhatim:fastexcel-reader:0.12.14'
 
     // Only needed for local debug
-//    implementation 'org.flywaydb:flyway-core:6.5.7'
+    implementation 'org.flywaydb:flyway-core:6.5.7'
 }
