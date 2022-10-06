@@ -4,16 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updated dependencies.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.4.1.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.4.1.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/CompoundDataImporter.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" afterDir="false" />
-    </list>
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- FIX: Fixed issues with Excel genotype importer. It wasn't updating the flat file importer internally.&#10;- CHG: Removed compound importer as it has been merged with trials data templates.&#10;- CHG: Version bump to 4.4.2." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -240,7 +231,7 @@
       <workItem from="1665042554416" duration="1056000" />
       <workItem from="1665043705692" duration="296000" />
       <workItem from="1665044007294" duration="1081000" />
-      <workItem from="1665045325013" duration="1838000" />
+      <workItem from="1665045325013" duration="2139000" />
     </task>
     <task id="LOCAL-00001" summary="- FIX: Fixed issues with the HDF5 library which bundled Apache IO inside their jar and caused version conflicts when deployed.&#10;- ADD: Added missing check for mls status in MCPD importer.">
       <created>1615919484494</created>
@@ -536,7 +527,14 @@
       <option name="project" value="LOCAL" />
       <updated>1664523205810</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="- FIX: Fixed issues with Excel genotype importer. It wasn't updating the flat file importer internally.&#10;- CHG: Removed compound importer as it has been merged with trials data templates.&#10;- CHG: Version bump to 4.4.2.">
+      <created>1665048011107</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1665048011107</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -566,7 +564,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- FIX: Fixed import issues when no map is available." />
     <MESSAGE value="- FIX: Fixed hapmap import with inconsistent map information." />
     <MESSAGE value="- ADD: Added missing license file." />
     <MESSAGE value="- CHG: Changed the genotypic data importer to also create a transposed HDF5 file for better performance when exporting to Hapmap." />
@@ -591,7 +588,8 @@
     <MESSAGE value="- CHG: Fixed issues with MCPD importer only supporting a single duplicate institution." />
     <MESSAGE value="- FIX: Fixed potential issues with germplasm name matching." />
     <MESSAGE value="- CHG: Updated dependencies." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updated dependencies." />
+    <MESSAGE value="- FIX: Fixed issues with Excel genotype importer. It wasn't updating the flat file importer internally.&#10;- CHG: Removed compound importer as it has been merged with trials data templates.&#10;- CHG: Version bump to 4.4.2." />
+    <option name="LAST_COMMIT_MESSAGE" value="- FIX: Fixed issues with Excel genotype importer. It wasn't updating the flat file importer internally.&#10;- CHG: Removed compound importer as it has been merged with trials data templates.&#10;- CHG: Version bump to 4.4.2." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
