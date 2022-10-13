@@ -132,6 +132,18 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 		}
 	}
 
+	protected Short getCellValueShort(Row r, Map<String, Integer> columnNameToIndex, String column)
+	{
+		try
+		{
+			return Short.parseShort(getCellValue(r, columnNameToIndex, column));
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
+	}
+
 	protected Date getCellValueDate(Row r, Map<String, Integer> columnNameToIndex, String column)
 	{
 		return getCellValueDate(r, columnNameToIndex.get(column));
