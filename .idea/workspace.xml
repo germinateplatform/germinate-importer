@@ -4,12 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Version bump to 4.4.2.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updates to accommodate row/column index for phenotypic data.">
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.4.2.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.5.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.5.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,8 +112,8 @@
     </key>
   </component>
   <component name="RunManager" selected="Gradle.germinate-importer [build]">
-    <configuration name="GenotypeExcelImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.GenotypeExcelImporter" />
+    <configuration name="ShapefileImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.ShapefileImporter" />
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
@@ -200,8 +200,8 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Application.ShapefileImporter" />
       <item itemvalue="Application.TraitDataImporter" />
-      <item itemvalue="Application.GenotypeExcelImporter" />
       <item itemvalue="Gradle.germinate-importer" />
       <item itemvalue="Gradle.germinate-importer [build]" />
       <item itemvalue="Gradle.germinate-importer [clean]" />
@@ -210,9 +210,9 @@
       <list>
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
+        <item itemvalue="Application.ShapefileImporter" />
         <item itemvalue="Application.TraitDataImporter" />
         <item itemvalue="Gradle.germinate-importer" />
-        <item itemvalue="Application.GenotypeExcelImporter" />
       </list>
     </recent_temporary>
   </component>
@@ -239,7 +239,13 @@
       <workItem from="1665649258406" duration="987000" />
       <workItem from="1665650253833" duration="2450000" />
       <workItem from="1665656083786" duration="622000" />
-      <workItem from="1665656731727" duration="690000" />
+      <workItem from="1665656731727" duration="811000" />
+      <workItem from="1666167536169" duration="2182000" />
+      <workItem from="1666171836950" duration="199000" />
+      <workItem from="1666172042337" duration="708000" />
+      <workItem from="1666172766332" duration="5076000" />
+      <workItem from="1666187172424" duration="191000" />
+      <workItem from="1666187389124" duration="6106000" />
     </task>
     <task id="LOCAL-00001" summary="- FIX: Fixed issues with the HDF5 library which bundled Apache IO inside their jar and caused version conflicts when deployed.&#10;- ADD: Added missing check for mls status in MCPD importer.">
       <created>1615919484494</created>
@@ -549,7 +555,14 @@
       <option name="project" value="LOCAL" />
       <updated>1665048053927</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="- CHG: Updates to accommodate row/column index for phenotypic data.">
+      <created>1665683334816</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1665683334816</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -579,7 +592,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- ADD: Added missing license file." />
     <MESSAGE value="- CHG: Changed the genotypic data importer to also create a transposed HDF5 file for better performance when exporting to Hapmap." />
     <MESSAGE value="- CHG: FJ importer: Only import map if there are chromosome and position values on it." />
     <MESSAGE value="- FIX: Fixed an issue where importing genotypic data without a map wasn't possible." />
@@ -604,7 +616,8 @@
     <MESSAGE value="- CHG: Updated dependencies." />
     <MESSAGE value="- FIX: Fixed issues with Excel genotype importer. It wasn't updating the flat file importer internally.&#10;- CHG: Removed compound importer as it has been merged with trials data templates.&#10;- CHG: Version bump to 4.4.2." />
     <MESSAGE value="- CHG: Version bump to 4.4.2." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Version bump to 4.4.2." />
+    <MESSAGE value="- CHG: Updates to accommodate row/column index for phenotypic data." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updates to accommodate row/column index for phenotypic data." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -733,6 +746,31 @@
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
           <line>412</line>
           <option name="timeStamp" value="76" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java</url>
+          <line>34</line>
+          <option name="timeStamp" value="77" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java</url>
+          <line>107</line>
+          <option name="timeStamp" value="78" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java</url>
+          <line>51</line>
+          <option name="timeStamp" value="80" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java</url>
+          <line>199</line>
+          <option name="timeStamp" value="83" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java</url>
+          <line>207</line>
+          <option name="timeStamp" value="84" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
