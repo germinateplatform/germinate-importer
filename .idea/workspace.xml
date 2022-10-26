@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updates to accommodate row/column index for phenotypic data.">
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added importer for trials data shapefiles.&#10;- ADD: Added WARNING status codes in addition to just ERROR">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.5.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.5.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,8 +109,8 @@
     </key>
   </component>
   <component name="RunManager" selected="Gradle.germinate-importer [build]">
-    <configuration name="ShapefileImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.ShapefileImporter" />
+    <configuration name="GeotiffImporter (1)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.GeotiffImporter" />
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
@@ -125,8 +122,47 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TraitDataImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.TraitDataImporter" />
+    <configuration name="GeotiffImporter (2)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.GeotiffImporter" />
+      <module name="germinate-importer.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GeotiffImporterOld" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.GeotiffImporterOld" />
+      <module name="germinate-importer.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GeotiffImporterOld" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.GeotiffImporterOld" />
+      <module name="germinate-importer.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GeotiffImporterOld" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.GeotiffImporterOld" />
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
@@ -180,29 +216,10 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="germinate-importer" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list />
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <method v="2" />
-    </configuration>
     <list>
-      <item itemvalue="Application.ShapefileImporter" />
-      <item itemvalue="Application.TraitDataImporter" />
-      <item itemvalue="Gradle.germinate-importer" />
+      <item itemvalue="Application.GeotiffImporter (1)" />
+      <item itemvalue="Application.GeotiffImporter (2)" />
+      <item itemvalue="Application.GeotiffImporterOld" />
       <item itemvalue="Gradle.germinate-importer [build]" />
       <item itemvalue="Gradle.germinate-importer [clean]" />
     </list>
@@ -210,9 +227,9 @@
       <list>
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
-        <item itemvalue="Application.ShapefileImporter" />
-        <item itemvalue="Application.TraitDataImporter" />
-        <item itemvalue="Gradle.germinate-importer" />
+        <item itemvalue="Application.GeotiffImporterOld" />
+        <item itemvalue="Application.GeotiffImporterOld" />
+        <item itemvalue="Application.GeotiffImporterOld" />
       </list>
     </recent_temporary>
   </component>
@@ -245,7 +262,16 @@
       <workItem from="1666172042337" duration="708000" />
       <workItem from="1666172766332" duration="5076000" />
       <workItem from="1666187172424" duration="191000" />
-      <workItem from="1666187389124" duration="6106000" />
+      <workItem from="1666187389124" duration="6191000" />
+      <workItem from="1666247716932" duration="1506000" />
+      <workItem from="1666605721554" duration="16000" />
+      <workItem from="1666605742458" duration="6192000" />
+      <workItem from="1666618451803" duration="2067000" />
+      <workItem from="1666685494087" duration="813000" />
+      <workItem from="1666710020081" duration="1775000" />
+      <workItem from="1666772341880" duration="5241000" />
+      <workItem from="1666779165794" duration="1943000" />
+      <workItem from="1666781499391" duration="4826000" />
     </task>
     <task id="LOCAL-00001" summary="- FIX: Fixed issues with the HDF5 library which bundled Apache IO inside their jar and caused version conflicts when deployed.&#10;- ADD: Added missing check for mls status in MCPD importer.">
       <created>1615919484494</created>
@@ -562,7 +588,14 @@
       <option name="project" value="LOCAL" />
       <updated>1665683334816</updated>
     </task>
-    <option name="localTasksCounter" value="46" />
+    <task id="LOCAL-00046" summary="- ADD: Added importer for trials data shapefiles.&#10;- ADD: Added WARNING status codes in addition to just ERROR">
+      <created>1666202483449</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1666202483449</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -592,7 +625,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Changed the genotypic data importer to also create a transposed HDF5 file for better performance when exporting to Hapmap." />
     <MESSAGE value="- CHG: FJ importer: Only import map if there are chromosome and position values on it." />
     <MESSAGE value="- FIX: Fixed an issue where importing genotypic data without a map wasn't possible." />
     <MESSAGE value="- FIX: Removed dummy map creation when there are no chromosome and position definitions." />
@@ -617,7 +649,8 @@
     <MESSAGE value="- FIX: Fixed issues with Excel genotype importer. It wasn't updating the flat file importer internally.&#10;- CHG: Removed compound importer as it has been merged with trials data templates.&#10;- CHG: Version bump to 4.4.2." />
     <MESSAGE value="- CHG: Version bump to 4.4.2." />
     <MESSAGE value="- CHG: Updates to accommodate row/column index for phenotypic data." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updates to accommodate row/column index for phenotypic data." />
+    <MESSAGE value="- ADD: Added importer for trials data shapefiles.&#10;- ADD: Added WARNING status codes in addition to just ERROR" />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added importer for trials data shapefiles.&#10;- ADD: Added WARNING status codes in addition to just ERROR" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -771,6 +804,66 @@
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java</url>
           <line>207</line>
           <option name="timeStamp" value="84" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>61</line>
+          <option name="timeStamp" value="86" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>82</line>
+          <option name="timeStamp" value="87" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>84</line>
+          <option name="timeStamp" value="88" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>102</line>
+          <option name="timeStamp" value="89" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>273</line>
+          <option name="timeStamp" value="90" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>281</line>
+          <option name="timeStamp" value="91" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>299</line>
+          <option name="timeStamp" value="92" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>321</line>
+          <option name="timeStamp" value="93" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>323</line>
+          <option name="timeStamp" value="94" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>347</line>
+          <option name="timeStamp" value="95" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>444</line>
+          <option name="timeStamp" value="97" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java</url>
+          <line>422</line>
+          <option name="timeStamp" value="98" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
