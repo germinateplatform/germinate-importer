@@ -30,18 +30,21 @@ import static jhi.germinate.server.database.codegen.tables.Units.*;
 public class TraitDataImporter extends DatasheetImporter
 {
 	/** Required column headers */
-	private static final String[] COLUMN_HEADERS = {"Name", "Short Name", "Description", "Data Type", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
+	private static final String[] COLUMN_HEADERS_TRAITS = {"Name", "Short Name", "Description", "Data Type", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
+	private static final String[] COLUMN_HEADERS_DATA = {"Line/Phenotype", "Rep", "Block", "Row", "Column", "Treatment", "Location", "Latitude", "Longitude", "Elevation"};
 
 	private final Map<String, Integer>    traitNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer>    germplasmToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer>    treatmentToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, Integer>    columnNameToIndex;
+	private       Map<String, Integer>    traitColumnNameToIndex;
+	private       Map<String, Integer>    dataColumnNameToIndex;
+	private       Map<String, String>     rowColToGermplasm;
 	/** Used to check trait values against trait definitions during checking stage */
 	private final Map<String, Phenotypes> traitDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	private List<String> locationNames;
 
-	private int traitColumnStartIndex = 8;
+	private int traitColumnStartIndex = 10;
 
 	public static void main(String[] args)
 	{
@@ -103,7 +106,7 @@ public class TraitDataImporter extends DatasheetImporter
 					  // Map headers to their index
 					  s.openStream()
 					   .findFirst()
-					   .ifPresent(this::getHeaderMapping);
+					   .ifPresent(this::getTraitHeaderMapping);
 					  // Check the sheet
 					  s.openStream()
 					   .skip(1)
@@ -130,36 +133,29 @@ public class TraitDataImporter extends DatasheetImporter
 
 	private void checkPredefinedHeaders(Row headers)
 	{
-		String line = getCellValue(headers, 0);
-		String rep = getCellValue(headers, 1);
-		String block = getCellValue(headers, 2);
-		String treatment = getCellValue(headers, 3);
-		String location = getCellValue(headers, 4);
-		String latitude = getCellValue(headers, 5);
-		String longitude = getCellValue(headers, 6);
-		String elevation = getCellValue(headers, 7);
-
 		// Check the predefined column headers are correct
-		if (!Objects.equals(line, "Line/Phenotype"))
+		if (!dataColumnNameToIndex.containsKey("Line/Phenotype"))
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Line/Phenotype' column not found");
-		if (!Objects.equals(rep, "Rep"))
+		if (!dataColumnNameToIndex.containsKey("Rep"))
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Rep' column not found");
-		if (!Objects.equals(block, "Block"))
-			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Block' column not found");
-		if (!Objects.equals(treatment, "Treatment"))
+//		if (!dataColumnNameToIndex.containsKey("Block"))
+//			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Block' column not found");
+		if (!dataColumnNameToIndex.containsKey("Treatment"))
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Treatment' column not found");
-		if (!Objects.equals(location, "Location"))
-			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Location' column not found");
-		if (!Objects.equals(latitude, "Latitude"))
-			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Latitude' column not found");
-		if (!Objects.equals(longitude, "Longitude"))
-			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Longitude' column not found");
-		if (!Objects.equals(elevation, "Elevation"))
-			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Elevation' column not found");
+//		if (!dataColumnNameToIndex.containsKey("Location"))
+//			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Location' column not found");
+//		if (!dataColumnNameToIndex.containsKey("Latitude"))
+//			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Latitude' column not found");
+//		if (!dataColumnNameToIndex.containsKey("Longitude"))
+//			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Longitude' column not found");
+//		if (!dataColumnNameToIndex.containsKey("Elevation"))
+//			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "'Elevation' column not found");
 	}
 
 	private void checkDataAndRecordingDates(Sheet data, Sheet dates)
 	{
+		rowColToGermplasm = new HashMap<>();
+
 		try
 		{
 			if (data == null)
@@ -167,6 +163,10 @@ public class TraitDataImporter extends DatasheetImporter
 				addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "DATA");
 				return;
 			}
+
+			data.openStream()
+				.findFirst()
+				.ifPresent(this::getDataHeaderMapping);
 
 			data.openStream()
 				.findFirst()
@@ -188,6 +188,10 @@ public class TraitDataImporter extends DatasheetImporter
 			data.openStream()
 				.skip(1)
 				.forEachOrdered(this::checkGpsInformation);
+
+			data.openStream()
+				.skip(1)
+				.forEachOrdered(this::checkRowColumn);
 
 			checkData(data);
 
@@ -262,14 +266,59 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 	}
 
+	private void checkRowColumn(Row r)
+	{
+		if (allCellsEmpty(r))
+			return;
+
+		String germplasm = getCellValue(r, dataColumnNameToIndex, "Line/Phenotype");
+		String row = getCellValue(r, dataColumnNameToIndex, "Row");
+		String column = getCellValue(r, dataColumnNameToIndex, "Column");
+
+		try
+		{
+			Short.parseShort(row);
+		}
+		catch (NullPointerException e)
+		{
+		}
+		catch (NumberFormatException e)
+		{
+			addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "'Row' has invalid numeric value: " + row);
+		}
+
+		try
+		{
+			Short.parseShort(column);
+		}
+		catch (NullPointerException e)
+		{
+		}
+		catch (NumberFormatException e)
+		{
+			addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "'Column' has invalid numeric value: " + column);
+		}
+
+		if (!StringUtils.isEmpty(row) || !StringUtils.isEmpty(column))
+		{
+			String key = row + "|" + column;
+			String value = rowColToGermplasm.get(key);
+
+			if (!StringUtils.isEmpty(value) && !Objects.equals(germplasm, value))
+				addImportResult(ImportStatus.TRIALS_ROW_COL_MISMATCH, r.getRowNum(), "A 'Row' and 'Column' combination appears more than once with a different germplasm. Please only specify one 'Row', 'Column', germplasm combination.");
+			else
+				rowColToGermplasm.put(key, germplasm);
+		}
+	}
+
 	private void checkGpsInformation(Row r)
 	{
 		if (allCellsEmpty(r))
 			return;
 
-		String latitude = getCellValue(r, 5);
-		String longitude = getCellValue(r, 6);
-		String elevation = getCellValue(r, 7);
+		String latitude = getCellValue(r, dataColumnNameToIndex, "Latitude");
+		String longitude = getCellValue(r, dataColumnNameToIndex, "Longitude");
+		String elevation = getCellValue(r, dataColumnNameToIndex, "Elevation");
 
 		Double lat = null;
 		Double lng = null;
@@ -322,7 +371,7 @@ public class TraitDataImporter extends DatasheetImporter
 		if (allCellsEmpty(r))
 			return;
 
-		String location = getCellValue(r, 4);
+		String location = getCellValue(r, dataColumnNameToIndex, "Location");
 
 		if (!StringUtils.isEmpty(location) && !this.locationNames.contains(location))
 			addImportResult(ImportStatus.CLIMATE_MISSING_LOCATION_DECLARATION, r.getRowNum(), "A location referenced in 'DATA' is not defined in 'LOCATION': " + location);
@@ -353,21 +402,34 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 	}
 
-	private void getHeaderMapping(Row r)
+	private void getDataHeaderMapping(Row r)
 	{
-		try
-		{
-			// Map column names to their index
-			columnNameToIndex = IntStream.range(0, r.getCellCount())
+		// Map column names to their index
+		dataColumnNameToIndex = IntStream.range(0, r.getCellCount())
 										 .filter(i -> !cellEmpty(r, i))
 										 .boxed()
 										 .collect(Collectors.toMap(r::getCellText, Function.identity()));
 
+		traitColumnStartIndex = (int) Arrays.stream(COLUMN_HEADERS_DATA)
+			.filter(h -> dataColumnNameToIndex.containsKey(h))
+			.count();
+	}
+
+	private void getTraitHeaderMapping(Row r)
+	{
+		try
+		{
+			// Map column names to their index
+			traitColumnNameToIndex = IntStream.range(0, r.getCellCount())
+											  .filter(i -> !cellEmpty(r, i))
+											  .boxed()
+											  .collect(Collectors.toMap(r::getCellText, Function.identity()));
+
 			// Check if all columns are there
-			Arrays.stream(COLUMN_HEADERS)
+			Arrays.stream(COLUMN_HEADERS_TRAITS)
 				  .forEach(c ->
 				  {
-					  if (!columnNameToIndex.containsKey(c))
+					  if (!traitColumnNameToIndex.containsKey(c))
 						  addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, -1, c);
 				  });
 		}
@@ -382,19 +444,19 @@ public class TraitDataImporter extends DatasheetImporter
 		if (allCellsEmpty(r))
 			return;
 
-		String name = getCellValue(r, columnNameToIndex.get("Name"));
+		String name = getCellValue(r, traitColumnNameToIndex.get("Name"));
 
 		if (StringUtils.isEmpty(name))
 			return;
 
-		String description = getCellValue(r, columnNameToIndex.get("Description"));
-		String shortName = getCellValue(r, columnNameToIndex.get("Short Name"));
-		String dataType = getCellValue(r, columnNameToIndex.get("Data Type"));
-		String unitAbbr = getCellValue(r, columnNameToIndex.get("Unit Abbreviation"));
-		String unitName = getCellValue(r, columnNameToIndex.get("Unit Name"));
-		String categories = getCellValue(r, columnNameToIndex.get("Trait categories (comma separated)"));
-		String minimum = getCellValue(r, columnNameToIndex.get("Min (only for numeric traits)"));
-		String maximum = getCellValue(r, columnNameToIndex.get("Max (only for numeric traits)"));
+		String description = getCellValue(r, traitColumnNameToIndex.get("Description"));
+		String shortName = getCellValue(r, traitColumnNameToIndex.get("Short Name"));
+		String dataType = getCellValue(r, traitColumnNameToIndex.get("Data Type"));
+		String unitAbbr = getCellValue(r, traitColumnNameToIndex.get("Unit Abbreviation"));
+		String unitName = getCellValue(r, traitColumnNameToIndex.get("Unit Name"));
+		String categories = getCellValue(r, traitColumnNameToIndex.get("Trait categories (comma separated)"));
+		String minimum = getCellValue(r, traitColumnNameToIndex.get("Min (only for numeric traits)"));
+		String maximum = getCellValue(r, traitColumnNameToIndex.get("Max (only for numeric traits)"));
 		TraitRestrictions restrictions = null;
 
 		if (StringUtils.isEmpty(name))
@@ -659,7 +721,7 @@ public class TraitDataImporter extends DatasheetImporter
 					  // Map headers to their index
 					  s.openStream()
 					   .findFirst()
-					   .ifPresent(this::getHeaderMapping);
+					   .ifPresent(this::getTraitHeaderMapping);
 				  }
 				  catch (IOException e)
 				  {
@@ -670,7 +732,20 @@ public class TraitDataImporter extends DatasheetImporter
 			  });
 
 			wb.findSheet("DATA")
-			  .ifPresent(s -> importTreatments(context, s));
+			  .ifPresent(s -> {
+				  try
+				  {
+					  s.openStream()
+					   .findFirst()
+					   .ifPresent(this::getDataHeaderMapping);
+				  }
+				  catch (IOException e)
+				  {
+					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				  }
+
+				  importTreatments(context, s);
+			  });
 
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			Sheet dates = wb.findSheet("RECORDING_DATES").orElse(null);
@@ -693,7 +768,7 @@ public class TraitDataImporter extends DatasheetImporter
 				 if (allCellsEmpty(r))
 					 return;
 
-				 String treatment = getCellValue(r, 3);
+				 String treatment = getCellValue(r, dataColumnNameToIndex, "Treatment");
 
 				 if (!StringUtils.isEmpty(treatment) && !treatmentToId.containsKey(treatment))
 				 {
@@ -726,14 +801,14 @@ public class TraitDataImporter extends DatasheetImporter
 				 if (allCellsEmpty(r))
 					 return;
 
-				 String name = getCellValue(r, columnNameToIndex.get("Name"));
+				 String name = getCellValue(r, traitColumnNameToIndex.get("Name"));
 
 				 if (StringUtils.isEmpty(name))
 					 return;
 
-				 String shortName = getCellValue(r, columnNameToIndex.get("Short Name"));
-				 String description = getCellValue(r, columnNameToIndex.get("Description"));
-				 String dataTypeString = getCellValue(r, columnNameToIndex.get("Data Type"));
+				 String shortName = getCellValue(r, traitColumnNameToIndex.get("Short Name"));
+				 String description = getCellValue(r, traitColumnNameToIndex.get("Description"));
+				 String dataTypeString = getCellValue(r, traitColumnNameToIndex.get("Data Type"));
 				 PhenotypesDatatype dataType = PhenotypesDatatype.text;
 				 if (!StringUtils.isEmpty(dataTypeString))
 				 {
@@ -746,9 +821,9 @@ public class TraitDataImporter extends DatasheetImporter
 					 }
 				 }
 
-				 String unitName = getCellValue(r, columnNameToIndex.get("Unit Name"));
-				 String unitAbbr = getCellValue(r, columnNameToIndex.get("Unit Abbreviation"));
-				 String unitDescription = getCellValue(r, columnNameToIndex.get("Unit Descriptions"));
+				 String unitName = getCellValue(r, traitColumnNameToIndex.get("Unit Name"));
+				 String unitAbbr = getCellValue(r, traitColumnNameToIndex.get("Unit Abbreviation"));
+				 String unitDescription = getCellValue(r, traitColumnNameToIndex.get("Unit Descriptions"));
 
 				 UnitsRecord unit = context.selectFrom(UNITS)
 										   .where(UNITS.UNIT_NAME.isNotDistinctFrom(unitName))
@@ -766,9 +841,9 @@ public class TraitDataImporter extends DatasheetImporter
 				 }
 
 				 TraitRestrictions restrictions = null;
-				 String categories = getCellValue(r, columnNameToIndex.get("Trait categories (comma separated)"));
-				 String minimum = getCellValue(r, columnNameToIndex.get("Min (only for numeric traits)"));
-				 String maximum = getCellValue(r, columnNameToIndex.get("Max (only for numeric traits)"));
+				 String categories = getCellValue(r, traitColumnNameToIndex.get("Trait categories (comma separated)"));
+				 String minimum = getCellValue(r, traitColumnNameToIndex.get("Min (only for numeric traits)"));
+				 String maximum = getCellValue(r, traitColumnNameToIndex.get("Max (only for numeric traits)"));
 
 				 if (!StringUtils.isEmpty(categories))
 				 {
@@ -879,19 +954,21 @@ public class TraitDataImporter extends DatasheetImporter
 				if (allCellsEmpty(dataRow))
 					continue;
 
-				String germplasmName = getCellValue(dataRow, 0);
-				String rep = getCellValue(dataRow, 1);
-				String block = getCellValue(dataRow, 2);
-				BigDecimal latitude = getCellValueBigDecimal(dataRow, 5);
-				BigDecimal longitude = getCellValueBigDecimal(dataRow, 6);
-				BigDecimal elevation = getCellValueBigDecimal(dataRow, 7);
+				String germplasmName = getCellValue(dataRow, dataColumnNameToIndex, "Line/Phenotype");
+				String rep = getCellValue(dataRow, dataColumnNameToIndex, "Rep");
+				String block = getCellValue(dataRow, dataColumnNameToIndex, "Block");
+				Short row = getCellValueShort(dataRow, dataColumnNameToIndex, "Row");
+				Short column = getCellValueShort(dataRow, dataColumnNameToIndex, "Column");
+				BigDecimal latitude = getCellValueBigDecimal(dataRow, dataColumnNameToIndex, "Latitude");
+				BigDecimal longitude = getCellValueBigDecimal(dataRow, dataColumnNameToIndex, "Longitude");
+				BigDecimal elevation = getCellValueBigDecimal(dataRow, dataColumnNameToIndex, "Elevation");
 				if (StringUtils.isEmpty(rep))
 					rep = Integer.toString(r);
 				if (StringUtils.isEmpty(block))
 					block = "1";
-				String locationName = getCellValue(dataRow, 4);
+				String locationName = getCellValue(dataRow, dataColumnNameToIndex, "Location");
 				Integer germplasmId = germplasmToId.get(germplasmName);
-				String treatmentName = getCellValue(dataRow, 3);
+				String treatmentName = getCellValue(dataRow, dataColumnNameToIndex, "Treatment");
 				Integer treatmentId = null;
 
 				if (!StringUtils.isEmpty(treatmentName))
@@ -921,6 +998,8 @@ public class TraitDataImporter extends DatasheetImporter
 					record.setPhenotypeId(traitId);
 					record.setRep(rep);
 					record.setBlock(block);
+					record.setTrialRow(row);
+					record.setTrialColumn(column);
 					record.setLatitude(latitude);
 					record.setLongitude(longitude);
 					record.setElevation(elevation);

@@ -37,7 +37,8 @@ public abstract class AbstractImporter
 		this.importJobId = importJobId;
 	}
 
-	protected String[] getArgs() {
+	protected String[] getArgs()
+	{
 		return Arrays.copyOf(args, args.length);
 	}
 
@@ -79,12 +80,14 @@ public abstract class AbstractImporter
 
 			if (runtype.includesCheck()) checkFile();
 
-			if (errorMap.size() < 1)
+			if (!hasImportError())
 			{
 				if (runtype.includesImport())
 				{
-					if (jobDetails.getIsUpdate()) updateFile();
-					else importFile();
+					if (jobDetails.getIsUpdate())
+						updateFile();
+					else
+						importFile();
 
 					postImport();
 				}
@@ -125,9 +128,19 @@ public abstract class AbstractImporter
 		}
 	}
 
+	protected boolean hasImportError()
+	{
+		return errorMap.values().stream().anyMatch(r -> r.getType() == ImportResult.StatusType.ERROR);
+	}
+
 	protected void addImportResult(ImportStatus status, int rowIndex, String message)
 	{
 		if (!errorMap.containsKey(status)) errorMap.put(status, new ImportResult(status, rowIndex, message));
+	}
+
+	protected void addImportResult(ImportStatus status, int rowIndex, String message, ImportResult.StatusType type)
+	{
+		if (!errorMap.containsKey(status)) errorMap.put(status, new ImportResult(status, rowIndex, message, type));
 	}
 
 	private List<ImportResult> getImportResult()
@@ -140,7 +153,8 @@ public abstract class AbstractImporter
 		return this.inputFile;
 	}
 
-	protected void setInputFile(File file) {
+	protected void setInputFile(File file)
+	{
 		this.inputFile = file;
 	}
 
