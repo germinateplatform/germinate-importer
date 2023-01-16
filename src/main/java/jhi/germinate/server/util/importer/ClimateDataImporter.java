@@ -35,6 +35,9 @@ public class ClimateDataImporter extends DatasheetImporter
 	/** Used to check climate values against climate definitions during checking stage */
 	private Map<String, Climates> climateDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
+	private final Set<Integer> locationIds = new HashSet<>();
+	private final Set<Integer> climateIds = new HashSet<>();
+
 	public static void main(String[] args)
 	{
 		if (args.length != 6)
@@ -493,6 +496,8 @@ public class ClimateDataImporter extends DatasheetImporter
 					 climate.store();
 				 }
 
+				 climateIds.add(climate.getId());
+
 				 climateNameToId.put(climate.getName(), climate.getId());
 			 });
 		}
@@ -522,6 +527,8 @@ public class ClimateDataImporter extends DatasheetImporter
 				String locationName = getCellValue(dataRow, 0);
 				Date date = getCellValueDate(dataRow, 1);
 				Integer locationId = locationNameToId.get(locationName);
+
+				locationIds.add(locationId);
 
 				for (int c = 2; c < dataRow.getCellCount(); c++)
 				{
@@ -580,6 +587,16 @@ public class ClimateDataImporter extends DatasheetImporter
 	protected int getDatasetTypeId()
 	{
 		return 5;
+	}
+
+	@Override
+	protected void postImport()
+	{
+		super.postImport();
+
+		importJobStats.setDatasetId(dataset.getId());
+		importJobStats.setClimates(climateIds.size());
+		importJobStats.setLocations(locationIds.size());
 	}
 
 	private ClimatesDatatype getDataType(String dt)

@@ -38,6 +38,7 @@ public class PedigreeImporter extends DatasheetImporter
 	private final Map<String, Integer> germplasmToId           = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer> notationToId            = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private       Map<String, Integer> pedigreeDescriptionToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Set<Integer> germplasmIds = new HashSet<>();
 
 	public static void main(String[] args)
 	{
@@ -230,6 +231,8 @@ public class PedigreeImporter extends DatasheetImporter
 
 					if (germplasmId != null)
 					{
+						germplasmIds.add(germplasmId);
+
 						if (descriptionId == null)
 						{
 							PedigreedescriptionsRecord pdr = context.newRecord(PEDIGREEDESCRIPTIONS);
@@ -317,6 +320,15 @@ public class PedigreeImporter extends DatasheetImporter
 				addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 			}
 		});
+	}
+
+	@Override
+	protected void postImport()
+	{
+		super.postImport();
+
+		importJobStats.setDatasetId(dataset.getId());
+		importJobStats.setGermplasm(germplasmIds.size());
 	}
 
 	@Override

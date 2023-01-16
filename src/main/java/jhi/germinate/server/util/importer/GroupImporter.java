@@ -27,6 +27,11 @@ public class GroupImporter extends AbstractExcelImporter
 	private final Map<String, Integer> markerNameToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
+	private final Set<Integer> germplasmIds = new HashSet<>();
+	private final Set<Integer> markerIds = new HashSet<>();
+	private final Set<Integer> locationIds = new HashSet<>();
+	private final Set<Integer> groupIds = new HashSet<>();
+
 	private final Map<Integer, Map<Integer, Integer>> groupIndexToIdPerType = new HashMap<>();
 
 	{
@@ -279,6 +284,8 @@ public class GroupImporter extends AbstractExcelImporter
 			group.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 			group.store();
 
+			groupIds.add(group.getId());
+
 			// Store for this type the id of the group in this column
 			groupIndexToIdPerType.get(groupTypeId).put(i, group.getId());
 		}
@@ -313,12 +320,15 @@ public class GroupImporter extends AbstractExcelImporter
 					 {
 						 case 1:
 							 groupMember.setForeignId(locationNameToId.get(identifier));
+							 locationIds.add(groupMember.getForeignId());
 							 break;
 						 case 2:
 							 groupMember.setForeignId(markerNameToId.get(identifier));
+							 markerIds.add(groupMember.getForeignId());
 							 break;
 						 case 3:
 							 groupMember.setForeignId(accenumbToId.get(identifier));
+							 germplasmIds.add(groupMember.getForeignId());
 							 break;
 					 }
 					 newGroupMembers.add(groupMember);
@@ -433,6 +443,17 @@ public class GroupImporter extends AbstractExcelImporter
 			e.printStackTrace();
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
+	}
+
+	@Override
+	protected void postImport()
+	{
+		super.postImport();
+
+		importJobStats.setMarkers(markerIds.size());
+		importJobStats.setGermplasm(germplasmIds.size());
+		importJobStats.setGroups(groupIds.size());
+		importJobStats.setLocations(locationIds.size());
 	}
 
 	@Override

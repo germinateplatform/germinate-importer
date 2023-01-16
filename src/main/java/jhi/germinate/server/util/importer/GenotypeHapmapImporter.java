@@ -79,6 +79,10 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 	@Override
 	protected void postImport()
 	{
+		importJobStats.setDatasetId(dataset.getId());
+		importJobStats.setGermplasm(germplasmIdsInFile.size());
+		importJobStats.setMarkers(markerIdsInFile.size());
+
 		File input = getInputFile();
 		// Create a backup copy of the uploaded file and link it to the newly created dataset.
 		try (Connection conn = Database.getConnection())

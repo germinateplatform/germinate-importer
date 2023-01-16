@@ -439,6 +439,10 @@ public class GeotiffImporter extends AbstractImporter
 											// Copy the file
 											File imageTarget = new File(imageFolder, record.getId() + ".png");
 											Files.copy(png.toPath(), imageTarget.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+											// Overwrite the name
+											record.setName(imageTarget.getName());
+											record.store(MAPOVERLAYS.NAME);
 										}
 										catch (InterruptedException e)
 										{

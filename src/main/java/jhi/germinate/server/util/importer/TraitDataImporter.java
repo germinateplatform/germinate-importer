@@ -31,7 +31,7 @@ public class TraitDataImporter extends DatasheetImporter
 {
 	/** Required column headers */
 	private static final String[] COLUMN_HEADERS_TRAITS = {"Name", "Short Name", "Description", "Data Type", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
-	private static final String[] COLUMN_HEADERS_DATA = {"Line/Phenotype", "Rep", "Block", "Row", "Column", "Treatment", "Location", "Latitude", "Longitude", "Elevation"};
+	private static final String[] COLUMN_HEADERS_DATA   = {"Line/Phenotype", "Rep", "Block", "Row", "Column", "Treatment", "Location", "Latitude", "Longitude", "Elevation"};
 
 	private final Map<String, Integer>    traitNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer>    germplasmToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -41,6 +41,9 @@ public class TraitDataImporter extends DatasheetImporter
 	private       Map<String, String>     rowColToGermplasm;
 	/** Used to check trait values against trait definitions during checking stage */
 	private final Map<String, Phenotypes> traitDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+	private final Set<Integer> traitIds     = new HashSet<>();
+	private final Set<Integer> germplasmIds = new HashSet<>();
 
 	private List<String> locationNames;
 
@@ -275,28 +278,28 @@ public class TraitDataImporter extends DatasheetImporter
 		String row = getCellValue(r, dataColumnNameToIndex, "Row");
 		String column = getCellValue(r, dataColumnNameToIndex, "Column");
 
-		try
+		if (row != null)
 		{
-			Short.parseShort(row);
-		}
-		catch (NullPointerException e)
-		{
-		}
-		catch (NumberFormatException e)
-		{
-			addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "'Row' has invalid numeric value: " + row);
+			try
+			{
+				Short.parseShort(row);
+			}
+			catch (NumberFormatException e)
+			{
+				addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "'Row' has invalid numeric value: " + row);
+			}
 		}
 
-		try
+		if (column != null)
 		{
-			Short.parseShort(column);
-		}
-		catch (NullPointerException e)
-		{
-		}
-		catch (NumberFormatException e)
-		{
-			addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "'Column' has invalid numeric value: " + column);
+			try
+			{
+				Short.parseShort(column);
+			}
+			catch (NumberFormatException e)
+			{
+				addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "'Column' has invalid numeric value: " + column);
+			}
 		}
 
 		if (!StringUtils.isEmpty(row) || !StringUtils.isEmpty(column))
@@ -411,8 +414,8 @@ public class TraitDataImporter extends DatasheetImporter
 										 .collect(Collectors.toMap(r::getCellText, Function.identity()));
 
 		traitColumnStartIndex = (int) Arrays.stream(COLUMN_HEADERS_DATA)
-			.filter(h -> dataColumnNameToIndex.containsKey(h))
-			.count();
+											.filter(h -> dataColumnNameToIndex.containsKey(h))
+											.count();
 	}
 
 	private void getTraitHeaderMapping(Row r)
@@ -915,6 +918,7 @@ public class TraitDataImporter extends DatasheetImporter
 					 trait.store();
 				 }
 
+				 traitIds.add(trait.getId());
 				 traitNameToId.put(trait.getName(), trait.getId());
 			 });
 		}
@@ -970,6 +974,8 @@ public class TraitDataImporter extends DatasheetImporter
 				Integer germplasmId = germplasmToId.get(germplasmName);
 				String treatmentName = getCellValue(dataRow, dataColumnNameToIndex, "Treatment");
 				Integer treatmentId = null;
+
+				germplasmIds.add(germplasmId);
 
 				if (!StringUtils.isEmpty(treatmentName))
 					treatmentId = treatmentToId.get(treatmentName);
@@ -1046,6 +1052,16 @@ public class TraitDataImporter extends DatasheetImporter
 	protected int getDatasetTypeId()
 	{
 		return 3;
+	}
+
+	@Override
+	protected void postImport()
+	{
+		super.postImport();
+
+		importJobStats.setDatasetId(dataset.getId());
+		importJobStats.setTraits(traitIds.size());
+		importJobStats.setGermplasm(germplasmIds.size());
 	}
 
 	private PhenotypesDatatype getDataType(String dt)

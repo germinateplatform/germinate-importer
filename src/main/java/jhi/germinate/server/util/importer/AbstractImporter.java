@@ -29,6 +29,7 @@ public abstract class AbstractImporter
 	private         File                            inputFile;
 	private         Map<ImportStatus, ImportResult> errorMap = new HashMap<>();
 	private         String[]                        args;
+	protected       ImportJobStats                  importJobStats = new ImportJobStats();
 
 	private Instant start;
 
@@ -109,7 +110,8 @@ public abstract class AbstractImporter
 				DataImportJobsRecord job = context.selectFrom(DATA_IMPORT_JOBS).where(DATA_IMPORT_JOBS.ID.eq(this.importJobId)).fetchAny();
 				job.setFeedback(result.toArray(new ImportResult[0]));
 				job.setStatus(DataImportJobsStatus.completed);
-				job.store(DATA_IMPORT_JOBS.FEEDBACK, DATA_IMPORT_JOBS.STATUS);
+				job.setStats(importJobStats);
+				job.store(DATA_IMPORT_JOBS.FEEDBACK, DATA_IMPORT_JOBS.STATUS, DATA_IMPORT_JOBS.STATS);
 			}
 			catch (SQLException e)
 			{

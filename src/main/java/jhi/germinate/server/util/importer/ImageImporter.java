@@ -36,7 +36,10 @@ public class ImageImporter extends AbstractImporter
 	private final Map<String, Integer>         traitNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, ViewTableImages> filenameToImage  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer>         tagToImageTagId  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private       Map<String, Integer>         imageTypeToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>         imageTypeToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+	private final Set<Integer> germplasmIds = new HashSet<>();
+	private final Set<Integer> traitIds = new HashSet<>();
 
 	private List<String> validReferenceTypes = Arrays.asList("germinatebase", "phenotypes");
 
@@ -343,9 +346,11 @@ public class ImageImporter extends AbstractImporter
 											{
 												case "germinatebase":
 													intId = accenumbToId.get(name);
+													germplasmIds.add(intId);
 													break;
 												case "phenotypes":
 													intId = traitNameToId.get(name);
+													traitIds.add(intId);
 													break;
 											}
 										}
@@ -354,9 +359,11 @@ public class ImageImporter extends AbstractImporter
 										{
 											case "germinatebase":
 												imageTypeId = imageTypeToId.get("germinatebase");
+												germplasmIds.add(intId);
 												break;
 											case "phenotypes":
 												imageTypeId = imageTypeToId.get("phenotypes");
+												traitIds.add(intId);
 												break;
 										}
 
@@ -448,6 +455,10 @@ public class ImageImporter extends AbstractImporter
 	@Override
 	protected void postImport()
 	{
+		importJobStats.setGermplasm(germplasmIds.size());
+		importJobStats.setTraits(traitIds.size());
+		importJobStats.setImages(filenameToImage.size());
+
 		// Create a backup copy of the uploaded file and link it to the newly created dataset.
 		try (Connection conn = Database.getConnection())
 		{

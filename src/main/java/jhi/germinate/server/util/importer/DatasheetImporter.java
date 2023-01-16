@@ -667,16 +667,16 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				  {
 					  // If it doesn't, check if the experiment exists
 					  ExperimentsRecord experiment = context.selectFrom(EXPERIMENTS)
-															.where(EXPERIMENTS.EXPERIMENT_NAME.isNotDistinctFrom(name))
-															.and(EXPERIMENTS.DESCRIPTION.isNotDistinctFrom(description))
+															.where(EXPERIMENTS.EXPERIMENT_NAME.isNotDistinctFrom("Generic Experiment"))
+															.and(EXPERIMENTS.DESCRIPTION.isNotDistinctFrom("A generic experiment to which every uploaded dataset will be assigned initially."))
 															.fetchAny();
 
 					  if (experiment == null)
 					  {
 						  // If it doesn't, create it
 						  experiment = context.newRecord(EXPERIMENTS);
-						  experiment.setExperimentName(name);
-						  experiment.setDescription(description);
+						  experiment.setExperimentName("Generic Experiment");
+						  experiment.setDescription("A generic experiment to which every uploaded dataset will be assigned initially.");
 						  experiment.store();
 					  }
 
