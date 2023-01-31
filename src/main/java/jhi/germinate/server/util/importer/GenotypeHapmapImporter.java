@@ -41,11 +41,23 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 	private int positionValueCount   = 0;
 
 	public static void main(String[] args)
+		throws SQLException, IOException
 	{
-		if (args.length != 6)
-			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+		GenotypeHapmapImporter importer;
 
-		GenotypeHapmapImporter importer = new GenotypeHapmapImporter(Integer.parseInt(args[5]));
+		if (args.length == 6)
+		{
+			importer = new GenotypeHapmapImporter(Integer.parseInt(args[5]));
+		}
+		else if (args.length == 9)
+		{
+			importer = new GenotypeHapmapImporter(createImportJobFromCommandline(args));
+		}
+		else
+		{
+			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+		}
+
 		importer.init(args);
 		importer.run();
 	}

@@ -6,6 +6,7 @@ import org.dhatim.fastexcel.reader.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,14 +20,26 @@ public class GenotypeExcelImporter extends DatasheetImporter
 	private              GenotypeFlatFileImporter flatFileImporter;
 
 	private final Set<Integer> germplasmIds = new HashSet<>();
-	private final Set<Integer> markerIds = new HashSet<>();
+	private final Set<Integer> markerIds    = new HashSet<>();
 
 	public static void main(String[] args)
+		throws SQLException, IOException
 	{
-		if (args.length != 6)
-			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+		GenotypeExcelImporter importer;
 
-		GenotypeExcelImporter importer = new GenotypeExcelImporter(Integer.parseInt(args[5]));
+		if (args.length == 6)
+		{
+			importer = new GenotypeExcelImporter(Integer.parseInt(args[5]));
+		}
+		else if (args.length == 9)
+		{
+			importer = new GenotypeExcelImporter(createImportJobFromCommandline(args));
+		}
+		else
+		{
+			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+		}
+
 		importer.init(args);
 		importer.run();
 	}

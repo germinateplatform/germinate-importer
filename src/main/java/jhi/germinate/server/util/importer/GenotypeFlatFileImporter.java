@@ -47,12 +47,23 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 
 	private CountDownLatch latch;
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws SQLException, IOException
 	{
-		if (args.length != 6)
-			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+		GenotypeFlatFileImporter importer;
 
-		GenotypeFlatFileImporter importer = new GenotypeFlatFileImporter(Integer.parseInt(args[5]));
+		if (args.length == 6)
+		{
+			importer = new GenotypeFlatFileImporter(Integer.parseInt(args[5]));
+		}
+		else if (args.length == 9)
+		{
+			importer = new GenotypeFlatFileImporter(createImportJobFromCommandline(args));
+		}
+		else
+		{
+			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+		}
+
 		importer.init(args);
 		importer.run();
 	}

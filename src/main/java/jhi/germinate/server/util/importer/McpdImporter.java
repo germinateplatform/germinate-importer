@@ -373,7 +373,8 @@ public class McpdImporter extends AbstractExcelImporter
 			String entityType = getCellValue(r, columnNameToIndex, "Entity type");
 			if (!StringUtils.isEmpty(entityType))
 			{
-				if (!entityTypeToId.containsKey(entityType)) addImportResult(ImportStatus.MCPD_INVALID_ENTITY_TYPE, r.getRowNum(), entityType);
+				if (!entityTypeToId.containsKey(entityType))
+					addImportResult(ImportStatus.MCPD_INVALID_ENTITY_TYPE, r.getRowNum(), entityType);
 			}
 		}
 		catch (NullPointerException e)
@@ -1055,7 +1056,8 @@ public class McpdImporter extends AbstractExcelImporter
 			Integer entityTypeId = 1;
 			String entityType = getCellValue(r, columnNameToIndex, "Entity type");
 
-			if (!StringUtils.isEmpty(entityType)) entityTypeId = entityTypeToId.get(entityType);
+			if (!StringUtils.isEmpty(entityType))
+				entityTypeId = entityTypeToId.get(entityType);
 
 			germplasm.germinatebase.setEntitytypeId(entityTypeId);
 		}
