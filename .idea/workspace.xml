@@ -4,14 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added import job stat counts.&#10;- CHG: Changed the experiment that will be created by dataset imports to use a generic experiment. Can be re-assigned in the UI later.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added a way to support import of genotypic data straight from the command line without going through the Germinate API.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ClimateDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ClimateDataImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.4.2.jar" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,7 +108,7 @@
       <recent name="jhi.germinate.server.util.importer.task" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.GenotypeExcelImporter">
+  <component name="RunManager" selected="Gradle.germinate-importer [build]">
     <configuration name="ClimateDataImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.ClimateDataImporter" />
       <module name="germinate-importer.main" />
@@ -230,10 +225,10 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.GenotypeExcelImporter" />
-        <item itemvalue="Application.ClimateDataImporter" />
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
+        <item itemvalue="Application.GenotypeExcelImporter" />
+        <item itemvalue="Application.ClimateDataImporter" />
         <item itemvalue="Application.GeotiffImporterOld" />
       </list>
     </recent_temporary>
@@ -295,7 +290,8 @@
       <workItem from="1674117679632" duration="1211000" />
       <workItem from="1674148432747" duration="74000" />
       <workItem from="1674473250585" duration="2527000" />
-      <workItem from="1675157529084" duration="3655000" />
+      <workItem from="1675157529084" duration="3778000" />
+      <workItem from="1675165464065" duration="734000" />
     </task>
     <task id="LOCAL-00001" summary="- FIX: Fixed issues with the HDF5 library which bundled Apache IO inside their jar and caused version conflicts when deployed.&#10;- ADD: Added missing check for mls status in MCPD importer.">
       <created>1615919484494</created>
@@ -626,7 +622,14 @@
       <option name="project" value="LOCAL" />
       <updated>1673885372924</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="- ADD: Added a way to support import of genotypic data straight from the command line without going through the Germinate API.">
+      <created>1675165358138</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1675165358138</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -656,7 +659,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- FIX: Fixed an issue where importing genotypic data without a map wasn't possible." />
     <MESSAGE value="- FIX: Removed dummy map creation when there are no chromosome and position definitions." />
     <MESSAGE value="- CHG: Updated to latest database scheme." />
     <MESSAGE value="- FIX: Fixed an issue with HDF5 file creation where the source file doesn't contain any map information." />
@@ -681,7 +683,8 @@
     <MESSAGE value="- CHG: Updates to accommodate row/column index for phenotypic data." />
     <MESSAGE value="- ADD: Added importer for trials data shapefiles.&#10;- ADD: Added WARNING status codes in addition to just ERROR" />
     <MESSAGE value="- ADD: Added import job stat counts.&#10;- CHG: Changed the experiment that will be created by dataset imports to use a generic experiment. Can be re-assigned in the UI later." />
-    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added import job stat counts.&#10;- CHG: Changed the experiment that will be created by dataset imports to use a generic experiment. Can be re-assigned in the UI later." />
+    <MESSAGE value="- ADD: Added a way to support import of genotypic data straight from the command line without going through the Germinate API." />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added a way to support import of genotypic data straight from the command line without going through the Germinate API." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
