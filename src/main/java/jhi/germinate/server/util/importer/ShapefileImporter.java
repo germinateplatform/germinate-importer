@@ -223,7 +223,6 @@ public class ShapefileImporter extends AbstractImporter
 			FileresourcetypesRecord type = context.selectFrom(FILERESOURCETYPES)
 												  .where(FILERESOURCETYPES.NAME.eq("Trials Shapefile"))
 												  .and(FILERESOURCETYPES.DESCRIPTION.eq("Shape file associated with a phenotypic trial. Fields within the shape file have to match the database entries."))
-												  .and(FILERESOURCETYPES.PUBLIC_VISIBILITY.eq(false))
 												  .fetchAny();
 
 			if (type == null)
@@ -231,7 +230,6 @@ public class ShapefileImporter extends AbstractImporter
 				type = context.newRecord(FILERESOURCETYPES);
 				type.setName("Trials Shapefile");
 				type.setDescription("Shape file associated with a phenotypic trial. Fields within the shape file have to match the database entries.");
-				type.setPublicVisibility(false);
 				type.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 				type.store();
 			}
@@ -255,6 +253,8 @@ public class ShapefileImporter extends AbstractImporter
 			target = new File(typeFolder, fileRes.getId() + "-" + source.getName());
 			fileRes.setPath(target.getName());
 			fileRes.store();
+
+			importJobStats.setFileResourceId(fileRes.getId());
 
 			// Finally copy the file
 			Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);

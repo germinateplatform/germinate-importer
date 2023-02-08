@@ -97,10 +97,6 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 	@Override
 	protected void postImport()
 	{
-		importJobStats.setDatasetId(dataset.getId());
-		importJobStats.setGermplasm(germplasmIdsInFile.size());
-		importJobStats.setMarkers(markerIdsInFile.size());
-
 		File input = getInputFile();
 		// Create a backup copy of the uploaded file and link it to the newly created dataset.
 		try (Connection conn = Database.getConnection())
@@ -139,6 +135,8 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 			fileRes.setPath(target.getName());
 			fileRes.store();
 
+			importJobStats.setFileResourceId(fileRes.getId());
+
 			// Finally copy the file
 			Files.copy(input.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
@@ -153,6 +151,10 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 		{
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, "Failed to create file resource for dataset: " + e.getMessage());
 		}
+
+		importJobStats.setDatasetId(dataset.getId());
+		importJobStats.setGermplasm(germplasmIdsInFile.size());
+		importJobStats.setMarkers(markerIdsInFile.size());
 	}
 
 	@Override

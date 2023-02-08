@@ -805,27 +805,29 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 			typeFolder.mkdirs();
 			File target = new File(typeFolder, input.getName());
 
-			FileresourcesRecord fileRes = context.newRecord(FILERESOURCES);
-			fileRes.setName(jobDetails.getOriginalFilename());
-			fileRes.setPath(target.getName());
-			fileRes.setFilesize(input.length());
-			fileRes.setDescription("Automatic upload backup.");
-			fileRes.setFileresourcetypeId(type.getId());
-			fileRes.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-			fileRes.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
-			fileRes.store();
+			FileresourcesRecord fileResource = context.newRecord(FILERESOURCES);
+			fileResource.setName(jobDetails.getOriginalFilename());
+			fileResource.setPath(target.getName());
+			fileResource.setFilesize(input.length());
+			fileResource.setDescription("Automatic upload backup.");
+			fileResource.setFileresourcetypeId(type.getId());
+			fileResource.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+			fileResource.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+			fileResource.store();
 
 			// Now update the name with the file resource id
-			target = new File(typeFolder, fileRes.getId() + "-" + input.getName());
-			fileRes.setPath(target.getName());
-			fileRes.store();
+			target = new File(typeFolder, fileResource.getId() + "-" + input.getName());
+			fileResource.setPath(target.getName());
+			fileResource.store();
+
+			importJobStats.setFileResourceId(fileResource.getId());
 
 			// Finally copy the file
 			Files.copy(input.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
 			DatasetfileresourcesRecord link = context.newRecord(DATASETFILERESOURCES);
 			link.setDatasetId(this.dataset.getId());
-			link.setFileresourceId(fileRes.getId());
+			link.setFileresourceId(fileResource.getId());
 			link.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 			link.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
 			link.store();

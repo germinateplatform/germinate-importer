@@ -368,6 +368,8 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 			fileRes.setPath(target.getName());
 			fileRes.store();
 
+			importJobStats.setFileResourceId(fileRes.getId());
+
 			// Finally copy the file
 			Files.copy(input.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}

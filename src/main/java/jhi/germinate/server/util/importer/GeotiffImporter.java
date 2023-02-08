@@ -522,6 +522,8 @@ public class GeotiffImporter extends AbstractImporter
 			fileRes.setPath(target.getName());
 			fileRes.store();
 
+			importJobStats.setFileResourceId(fileRes.getId());
+
 			for (Integer dsId : referencedDsIds)
 			{
 				DatasetfileresourcesRecord link = context.newRecord(DATASETFILERESOURCES);
