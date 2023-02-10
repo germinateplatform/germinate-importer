@@ -4,16 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Dependency update.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Set fileResourceId in data import job stats.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.5.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.5.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -305,14 +299,9 @@
       <workItem from="1675866795671" duration="392000" />
       <workItem from="1675867204843" duration="1677000" />
       <workItem from="1675870608112" duration="51000" />
-      <workItem from="1675871022452" duration="598000" />
-    </task>
-    <task id="LOCAL-00002" summary="- ADD: Added support for dataset attributes to data templates.&#10;- ADD: Added support for multiple locations within a single trials dataset.&#10;- ADD: Added climate data template.">
-      <created>1622047139269</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1622047139269</updated>
+      <workItem from="1675871022452" duration="649000" />
+      <workItem from="1676023473308" duration="216000" />
+      <workItem from="1676023732518" duration="250000" />
     </task>
     <task id="LOCAL-00003" summary="- CHG: Improved genotypic data import by removing the step where the data is exported from the Excel file in the import step if a check has been performed previously.">
       <created>1622049240754</created>
@@ -650,7 +639,14 @@
       <option name="project" value="LOCAL" />
       <updated>1675762378742</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="- ADD: Set fileResourceId in data import job stats.">
+      <created>1675872400310</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1675872400311</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -680,7 +676,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Updated to latest database scheme." />
     <MESSAGE value="- FIX: Fixed an issue with HDF5 file creation where the source file doesn't contain any map information." />
     <MESSAGE value="- CHG: Changed pedigree importer to support datasets." />
     <MESSAGE value="- CHG: Updated dependencies.&#10;- ADD: Added block, latitude, longitude and elevation columns to trials data importer." />
@@ -705,7 +700,8 @@
     <MESSAGE value="- ADD: Added import job stat counts.&#10;- CHG: Changed the experiment that will be created by dataset imports to use a generic experiment. Can be re-assigned in the UI later." />
     <MESSAGE value="- ADD: Added a way to support import of genotypic data straight from the command line without going through the Germinate API." />
     <MESSAGE value="- CHG: Dependency update." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Dependency update." />
+    <MESSAGE value="- ADD: Set fileResourceId in data import job stats." />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Set fileResourceId in data import job stats." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -762,7 +758,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>714</line>
+          <line>718</line>
           <option name="timeStamp" value="38" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -807,27 +803,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>718</line>
+          <line>722</line>
           <option name="timeStamp" value="70" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>740</line>
+          <line>744</line>
           <option name="timeStamp" value="72" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>749</line>
+          <line>753</line>
           <option name="timeStamp" value="74" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>754</line>
+          <line>758</line>
           <option name="timeStamp" value="75" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>415</line>
+          <line>419</line>
           <option name="timeStamp" value="76" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">

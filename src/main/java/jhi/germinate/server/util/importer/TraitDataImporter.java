@@ -182,7 +182,7 @@ public class TraitDataImporter extends DatasheetImporter
 			// Check germplasm names in data sheet against the database
 			data.openStream()
 				.skip(1)
-				.forEachOrdered(this::checkGermplasmName);
+				.forEachOrdered(this::checkGermplasmNameAndRep);
 
 			data.openStream()
 				.skip(1)
@@ -212,7 +212,7 @@ public class TraitDataImporter extends DatasheetImporter
 				// Check germplasm names in dates sheet against the database
 				dates.openStream()
 					 .skip(1)
-					 .forEachOrdered(this::checkGermplasmName);
+					 .forEachOrdered(this::checkGermplasmNameAndRep);
 
 				List<Row> dataRows = data.read();
 				List<Row> datesRows = dates.read();
@@ -380,17 +380,21 @@ public class TraitDataImporter extends DatasheetImporter
 			addImportResult(ImportStatus.CLIMATE_MISSING_LOCATION_DECLARATION, r.getRowNum(), "A location referenced in 'DATA' is not defined in 'LOCATION': " + location);
 	}
 
-	private void checkGermplasmName(Row r)
+	private void checkGermplasmNameAndRep(Row r)
 	{
 		if (allCellsEmpty(r))
 			return;
 
 		String germplasmName = getCellValue(r, 0);
+		String rep = getCellValue(r, 1);
 
 		if (StringUtils.isEmpty(germplasmName))
 			addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "ACCENUMB missing");
 		else if (!germplasmToId.containsKey(germplasmName))
 			addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, r.getRowNum(), germplasmName);
+
+		if (StringUtils.isEmpty(rep))
+			addImportResult(ImportStatus.TRIALS_DATA_REP_MISSING, r.getRowNum(), "Rep missing");
 	}
 
 	private void checkTraitNames(Row r)
@@ -967,7 +971,7 @@ public class TraitDataImporter extends DatasheetImporter
 				BigDecimal longitude = getCellValueBigDecimal(dataRow, dataColumnNameToIndex, "Longitude");
 				BigDecimal elevation = getCellValueBigDecimal(dataRow, dataColumnNameToIndex, "Elevation");
 				if (StringUtils.isEmpty(rep))
-					rep = Integer.toString(r);
+					rep = "1";
 				if (StringUtils.isEmpty(block))
 					block = "1";
 				String locationName = getCellValue(dataRow, dataColumnNameToIndex, "Location");
