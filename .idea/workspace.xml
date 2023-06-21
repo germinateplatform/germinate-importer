@@ -4,10 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Set fileResourceId in data import job stats.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added trials data check for Rep column values. They are now required.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.5.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.5.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.5.0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.5.0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,12 +43,6 @@
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="germinate-importer" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="germinate-importer" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -93,12 +89,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/sr41756/workspaces/java/germinate-importer/lib&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/sr41756/workspaces/java/germinate-importer/lib",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "project.structure.last.edited": "SDKs",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.2",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\sr41756\workspaces\java\germinate-importer\lib" />
@@ -136,8 +141,8 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="GeotiffImporterOld" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.GeotiffImporterOld" />
+    <configuration name="GenotypeExcelTransposedImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.GenotypeExcelTransposedImporter" />
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
@@ -194,6 +199,7 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <ForceTestExec>false</ForceTestExec>
       <method v="2" />
     </configuration>
     <configuration name="germinate-importer [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
@@ -215,12 +221,14 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <ForceTestExec>false</ForceTestExec>
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Application.GeotiffImporterOld" />
+      <item itemvalue="Application.GenotypeExcelTransposedImporter" />
       <item itemvalue="Application.GenotypeExcelImporter" />
       <item itemvalue="Application.ClimateDataImporter" />
-      <item itemvalue="Application.GeotiffImporterOld" />
       <item itemvalue="Gradle.germinate-importer [build]" />
       <item itemvalue="Gradle.germinate-importer [clean]" />
     </list>
@@ -228,9 +236,9 @@
       <list>
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
+        <item itemvalue="Application.GenotypeExcelTransposedImporter" />
         <item itemvalue="Application.GenotypeExcelImporter" />
         <item itemvalue="Application.ClimateDataImporter" />
-        <item itemvalue="Application.GeotiffImporterOld" />
       </list>
     </recent_temporary>
   </component>
@@ -301,14 +309,13 @@
       <workItem from="1675870608112" duration="51000" />
       <workItem from="1675871022452" duration="649000" />
       <workItem from="1676023473308" duration="216000" />
-      <workItem from="1676023732518" duration="250000" />
-    </task>
-    <task id="LOCAL-00003" summary="- CHG: Improved genotypic data import by removing the step where the data is exported from the Excel file in the import step if a check has been performed previously.">
-      <created>1622049240754</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1622049240754</updated>
+      <workItem from="1676023732518" duration="994000" />
+      <workItem from="1678358337985" duration="5547000" />
+      <workItem from="1678376575862" duration="592000" />
+      <workItem from="1679577812066" duration="2007000" />
+      <workItem from="1679643227540" duration="618000" />
+      <workItem from="1680594972612" duration="657000" />
+      <workItem from="1687336589418" duration="696000" />
     </task>
     <task id="LOCAL-00004" summary="- CHG: Updated code to reflect changes to database connection code.">
       <created>1624034124406</created>
@@ -646,7 +653,14 @@
       <option name="project" value="LOCAL" />
       <updated>1675872400311</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="- ADD: Added trials data check for Rep column values. They are now required.">
+      <created>1676024130355</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1676024130355</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -676,7 +690,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- FIX: Fixed an issue with HDF5 file creation where the source file doesn't contain any map information." />
     <MESSAGE value="- CHG: Changed pedigree importer to support datasets." />
     <MESSAGE value="- CHG: Updated dependencies.&#10;- ADD: Added block, latitude, longitude and elevation columns to trials data importer." />
     <MESSAGE value="- FIX: Fixed issues with missing trials block info.&#10;- FIX: Fixed issues with germplasm MCPD pedigree importer (missing dataset).&#10;- CHG: Updated METADATA parsing to include new rows.&#10;- CHG: Updated COLLABORATORS parsing to include new columns.&#10;- CHG: Renamed climate template to environmental data template. This required updating sheet names." />
@@ -701,7 +714,8 @@
     <MESSAGE value="- ADD: Added a way to support import of genotypic data straight from the command line without going through the Germinate API." />
     <MESSAGE value="- CHG: Dependency update." />
     <MESSAGE value="- ADD: Set fileResourceId in data import job stats." />
-    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Set fileResourceId in data import job stats." />
+    <MESSAGE value="- ADD: Added trials data check for Rep column values. They are now required." />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added trials data check for Rep column values. They are now required." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -745,11 +759,6 @@
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java</url>
           <line>452</line>
           <option name="timeStamp" value="30" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/FJTabbedToHdf5Task.java</url>
-          <line>31</line>
-          <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java</url>
@@ -935,6 +944,41 @@
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java</url>
           <line>54</line>
           <option name="timeStamp" value="113" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelTransposedImporter.java</url>
+          <line>56</line>
+          <option name="timeStamp" value="115" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelTransposedImporter.java</url>
+          <line>83</line>
+          <option name="timeStamp" value="116" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelTransposedImporter.java</url>
+          <line>116</line>
+          <option name="timeStamp" value="117" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelTransposedImporter.java</url>
+          <line>158</line>
+          <option name="timeStamp" value="118" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelTransposedImporter.java</url>
+          <line>87</line>
+          <option name="timeStamp" value="119" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java</url>
+          <line>196</line>
+          <option name="timeStamp" value="120" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java</url>
+          <line>218</line>
+          <option name="timeStamp" value="121" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

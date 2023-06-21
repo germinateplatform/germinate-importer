@@ -216,7 +216,7 @@ public class ImageImporter extends AbstractImporter
 										if (filenameToImage.containsKey(filename))
 											addImportResult(ImportStatus.GENERIC_DUPLICATE_VALUE, i, "An image filename has been specified more than once: " + filename);
 										else
-											filenameToImage.put(filename, null);
+											filenameToImage.put(filename, new ViewTableImages().setImagePath(filename).setImageForeignId(intId).setReferenceName(name));
 									}
 								}
 							}
