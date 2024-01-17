@@ -128,8 +128,8 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					 addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, r.getRowNum(), "Data Type: " + dataType);
 				 if (StringUtils.isEmpty(attribute))
 					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Attribute");
-				 if (StringUtils.isEmpty(value))
-					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Value");
+//				 if (StringUtils.isEmpty(value))
+//					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Value");
 			 });
 		}
 		catch (IOException e)
@@ -436,7 +436,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					   }
 					   String value = getCellValue(r, 2);
 
-					   if (dt == null && StringUtils.isEmpty(attribute) && StringUtils.isEmpty(value))
+					   if (dt == null || StringUtils.isEmpty(attribute) || StringUtils.isEmpty(value))
 						   return;
 
 					   Integer attributeId = attributeToId.get(attribute);

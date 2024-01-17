@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'uk.ac.hutton.germinate-importer'
-version '4.7.0'
+version '4.7.1'
 
 compileJava.options.encoding = 'UTF-8'
 sourceCompatibility = 11
