@@ -394,7 +394,7 @@ public class McpdImporter extends AbstractExcelImporter
 			String[] codes = duplinst.split(";", -1);
 			String[] names = duplname.split(";", -1);
 
-			if (codes.length != names.length)
+			if (!StringUtils.isEmpty(duplname) && codes.length != names.length)
 			{
 				addImportResult(ImportStatus.MCPD_INVALID_DUPLINST_NAME_MAPPING, r.getRowNum(), duplinst + " - " + duplname);
 			}
@@ -1129,7 +1129,7 @@ public class McpdImporter extends AbstractExcelImporter
 			{
 				InstitutionsRecord record = new InstitutionsRecord();
 				record.setCode(codes.get(i));
-				record.setName(names.get(i));
+				record.setName(i < names.size() ? names.get(i) : null);
 				if (StringUtils.isEmpty(record.getName())) record.setName("N/A");
 				germplasm.dupliInst.add(record);
 			}

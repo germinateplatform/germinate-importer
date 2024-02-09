@@ -23,6 +23,7 @@ import static jhi.germinate.server.database.codegen.tables.Germinatebase.GERMINA
 import static jhi.germinate.server.database.codegen.tables.Phenotypedata.PHENOTYPEDATA;
 import static jhi.germinate.server.database.codegen.tables.Phenotypes.PHENOTYPES;
 import static jhi.germinate.server.database.codegen.tables.Treatments.TREATMENTS;
+import static jhi.germinate.server.database.codegen.tables.Trialsetup.TRIALSETUP;
 import static jhi.germinate.server.database.codegen.tables.Units.UNITS;
 
 /**
@@ -931,14 +932,13 @@ public class TraitDataImporter extends DatasheetImporter
 			if (datesRows != null && (datesRows.size() < 2 || datesRows.get(0).getCellCount() < 4))
 				datesRows = null;
 
-			List<PhenotypedataRecord> newData = new ArrayList<>();
-
 			Row headerRow = dataRows.get(0);
+
+			Map<Integer, Integer> rowToTrialsetupId = new HashMap<>();
 
 			for (int r = 1; r < dataRows.size(); r++)
 			{
 				Row dataRow = dataRows.get(r);
-				Row datesRow = (datesRows == null || r > datesRows.size() - 1) ? null : datesRows.get(r);
 
 				if (allCellsEmpty(dataRow))
 					continue;
@@ -965,6 +965,35 @@ public class TraitDataImporter extends DatasheetImporter
 				if (!StringUtils.isEmpty(treatmentName))
 					treatmentId = treatmentToId.get(treatmentName);
 
+				TrialsetupRecord ts = context.newRecord(TRIALSETUP);
+				ts.setGerminatebaseId(germplasmId);
+				ts.setRep(rep);
+				ts.setBlock(block);
+				ts.setTrialRow(row);
+				ts.setTrialColumn(column);
+				ts.setLatitude(latitude);
+				ts.setLongitude(longitude);
+				ts.setElevation(elevation);
+				ts.setTreatmentId(treatmentId);
+				ts.setDatasetId(dataset.getId());
+				if (!StringUtils.isEmpty(locationName))
+					ts.setLocationId(this.locationNameToId.get(locationName));
+
+				ts.store();
+
+				rowToTrialsetupId.put(r, ts.getId());
+			}
+
+			List<PhenotypedataRecord> newData = new ArrayList<>();
+
+			for (int r = 1; r < dataRows.size(); r++)
+			{
+				Row dataRow = dataRows.get(r);
+				Row datesRow = (datesRows == null || r > datesRows.size() - 1) ? null : datesRows.get(r);
+
+				if (allCellsEmpty(dataRow))
+					continue;
+
 				for (int c = this.traitColumnStartIndex; c < dataRow.getCellCount(); c++)
 				{
 					String name = getCellValue(headerRow, c);
@@ -985,22 +1014,11 @@ public class TraitDataImporter extends DatasheetImporter
 						date = getCellValueDate(datesRow, c);
 
 					PhenotypedataRecord record = context.newRecord(PHENOTYPEDATA);
-					record.setGerminatebaseId(germplasmId);
+					record.setTrialsetupId(rowToTrialsetupId.get(r));
 					record.setPhenotypeId(traitId);
-					record.setRep(rep);
-					record.setBlock(block);
-					record.setTrialRow(row);
-					record.setTrialColumn(column);
-					record.setLatitude(latitude);
-					record.setLongitude(longitude);
-					record.setElevation(elevation);
-					record.setTreatmentId(treatmentId);
-					record.setDatasetId(dataset.getId());
 					record.setPhenotypeValue(value);
 					if (date != null)
 						record.setRecordingDate(new Timestamp(date.getTime()));
-					if (!StringUtils.isEmpty(locationName))
-						record.setLocationId(this.locationNameToId.get(locationName));
 
 					newData.add(record);
 
@@ -1012,7 +1030,7 @@ public class TraitDataImporter extends DatasheetImporter
 					}
 				}
 
-				if (newData.size() > 0)
+				if (!newData.isEmpty())
 				{
 					context.batchStore(newData)
 						   .execute();

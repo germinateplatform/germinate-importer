@@ -17,11 +17,11 @@ import java.sql.*;
 import java.util.*;
 import java.util.zip.*;
 
-import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
-import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
-import static jhi.germinate.server.database.codegen.tables.Phenotypedata.*;
+import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.DATASETFILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Fileresources.FILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.FILERESOURCETYPES;
+import static jhi.germinate.server.database.codegen.tables.Germinatebase.GERMINATEBASE;
+import static jhi.germinate.server.database.codegen.tables.Trialsetup.TRIALSETUP;
 
 /**
  * @author Sebastian Raubach
@@ -51,11 +51,11 @@ public class ShapefileImporter extends AbstractImporter
 		{
 			DSLContext context = Database.getContext(conn);
 
-			context.select(GERMINATEBASE.NAME, GERMINATEBASE.ID, PHENOTYPEDATA.TRIAL_ROW, PHENOTYPEDATA.TRIAL_COLUMN)
-				   .from(PHENOTYPEDATA)
-				   .leftJoin(GERMINATEBASE).on(GERMINATEBASE.ID.eq(PHENOTYPEDATA.GERMINATEBASE_ID))
-				   .where(PHENOTYPEDATA.DATASET_ID.eq(jobDetails.getJobConfig().getTargetDatasetId()))
-				   .forEach(g -> accenumbs.add(g.get(PHENOTYPEDATA.TRIAL_ROW) + "|" + g.get(PHENOTYPEDATA.TRIAL_COLUMN) + "|" + g.get(GERMINATEBASE.NAME)));
+			context.select(GERMINATEBASE.NAME, GERMINATEBASE.ID, TRIALSETUP.TRIAL_ROW, TRIALSETUP.TRIAL_COLUMN)
+				   .from(TRIALSETUP)
+				   .leftJoin(GERMINATEBASE).on(GERMINATEBASE.ID.eq(TRIALSETUP.GERMINATEBASE_ID))
+				   .where(TRIALSETUP.DATASET_ID.eq(jobDetails.getJobConfig().getTargetDatasetId()))
+				   .forEach(g -> accenumbs.add(g.get(TRIALSETUP.TRIAL_ROW) + "|" + g.get(TRIALSETUP.TRIAL_COLUMN) + "|" + g.get(GERMINATEBASE.NAME)));
 		}
 		catch (SQLException e)
 		{
