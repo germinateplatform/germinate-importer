@@ -14,19 +14,19 @@ import java.nio.file.*;
 import java.sql.*;
 import java.util.*;
 
-import static jhi.germinate.server.database.codegen.tables.Attributedata.*;
-import static jhi.germinate.server.database.codegen.tables.Attributes.*;
-import static jhi.germinate.server.database.codegen.tables.Collaborators.*;
-import static jhi.germinate.server.database.codegen.tables.Countries.*;
-import static jhi.germinate.server.database.codegen.tables.Datasetcollaborators.*;
-import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Datasetlocations.*;
-import static jhi.germinate.server.database.codegen.tables.Datasets.*;
-import static jhi.germinate.server.database.codegen.tables.Experiments.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
-import static jhi.germinate.server.database.codegen.tables.Institutions.*;
-import static jhi.germinate.server.database.codegen.tables.Locations.*;
+import static jhi.germinate.server.database.codegen.tables.Attributedata.ATTRIBUTEDATA;
+import static jhi.germinate.server.database.codegen.tables.Attributes.ATTRIBUTES;
+import static jhi.germinate.server.database.codegen.tables.Collaborators.COLLABORATORS;
+import static jhi.germinate.server.database.codegen.tables.Countries.COUNTRIES;
+import static jhi.germinate.server.database.codegen.tables.Datasetcollaborators.DATASETCOLLABORATORS;
+import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.DATASETFILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Datasetlocations.DATASETLOCATIONS;
+import static jhi.germinate.server.database.codegen.tables.Datasets.DATASETS;
+import static jhi.germinate.server.database.codegen.tables.Experiments.EXPERIMENTS;
+import static jhi.germinate.server.database.codegen.tables.Fileresources.FILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.FILERESOURCETYPES;
+import static jhi.germinate.server.database.codegen.tables.Institutions.INSTITUTIONS;
+import static jhi.germinate.server.database.codegen.tables.Locations.LOCATIONS;
 
 /**
  * @author Sebastian Raubach
@@ -37,6 +37,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 	private static final String[] COLLABORATOR_LABELS = {"Last Name", "First Name", "Contributor role", "Contributor ID", "Email", "Phone", "Contributor", "Address", "Country"};
 
 	protected DatasetsRecord       dataset;
+	protected Integer              datasetId;
 	protected Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private   Map<String, Integer> countryCode2ToId;
 	protected Map<String, Integer> metadataLabelToRowIndex;
@@ -401,6 +402,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 			  });
 
 			getOrCreateLocations(context, wb);
+			checkBrapiStudyId(wb);
 			getOrCreateDataset(context, wb);
 			getOrCreateAttributes(context, wb);
 			getOrCreateCollaborators(context, wb);
@@ -410,6 +412,53 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 			e.printStackTrace();
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
 		}
+	}
+
+	private void checkBrapiStudyId(ReadableWorkbook wb)
+	{
+		wb.findSheet("ATTRIBUTES")
+		  .ifPresent(s -> {
+			  try
+			  {
+				  s.openStream()
+				   .skip(1)
+				   .forEachOrdered(r -> {
+					   if (allCellsEmpty(r))
+						   return;
+
+					   String attribute = getCellValue(r, 0);
+					   String dataType = getCellValue(r, 1);
+					   AttributesDatatype dt = null;
+					   try
+					   {
+						   dt = AttributesDatatype.valueOf(dataType);
+					   }
+					   catch (Exception e)
+					   {
+					   }
+					   String value = getCellValue(r, 2);
+
+					   if (dt == null || StringUtils.isEmpty(attribute) || StringUtils.isEmpty(value))
+						   return;
+
+					   if (Objects.equals(attribute, "BrAPI Study DB ID"))
+					   {
+						   try
+						   {
+							   this.datasetId = Integer.parseInt(value);
+						   }
+						   catch (Exception e)
+						   {
+							   // IGNORE
+						   }
+					   }
+				   });
+			  }
+			  catch (IOException e)
+			  {
+				  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+			  }
+		  });
 	}
 
 	private void getOrCreateAttributes(DSLContext context, ReadableWorkbook wb)
@@ -437,6 +486,9 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					   String value = getCellValue(r, 2);
 
 					   if (dt == null || StringUtils.isEmpty(attribute) || StringUtils.isEmpty(value))
+						   return;
+
+					   if (Objects.equals(attribute, "BrAPI Study DB ID"))
 						   return;
 
 					   Integer attributeId = attributeToId.get(attribute);
@@ -656,12 +708,22 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				  if (index != null)
 					  dublinCore.setSubject(new String[]{getCellValue(rows.get(index), 2)});
 
-				  // Check if the dataset exists (assuming name+description are unique
-				  dataset = context.selectFrom(DATASETS)
-								   .where(DATASETS.NAME.isNotDistinctFrom(name))
-								   .and(DATASETS.DESCRIPTION.isNotDistinctFrom(description))
-								   .and(DATASETS.DATASETTYPE_ID.eq(datasetType))
-								   .fetchAny();
+				  if (datasetId != null) {
+					  // Check if the dataset exists with the specified BrAPI studyDbId
+					  dataset = context.selectFrom(DATASETS)
+									   .where(DATASETS.ID.eq(datasetId))
+									   .fetchAny();
+				  }
+
+				  if (dataset == null)
+				  {
+					  // If it doesn't, then check if the dataset exists (assuming name+description are unique)
+					  dataset = context.selectFrom(DATASETS)
+									   .where(DATASETS.NAME.isNotDistinctFrom(name))
+									   .and(DATASETS.DESCRIPTION.isNotDistinctFrom(description))
+									   .and(DATASETS.DATASETTYPE_ID.eq(datasetType))
+									   .fetchAny();
+				  }
 
 				  if (dataset == null)
 				  {
