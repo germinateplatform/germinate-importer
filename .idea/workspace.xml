@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Adjusted code to work with newer codegen version.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added support for importing into an existing trial based on the BrAPI id.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.7.1.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.7.2.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.7.1.jar" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -354,7 +356,9 @@
       <workItem from="1707490225887" duration="1604000" />
       <workItem from="1707754549697" duration="848000" />
       <workItem from="1707814406675" duration="1329000" />
-      <workItem from="1707903627217" duration="2914000" />
+      <workItem from="1707903627217" duration="3560000" />
+      <workItem from="1710243442831" duration="51000" />
+      <workItem from="1710243507773" duration="362000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -699,7 +703,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="58" />
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -730,7 +734,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Updated dependencies.&#10;- FIX: Fixed small bug with trials data import." />
     <MESSAGE value="- ADD: Added new parameter to all importers that provides the original filename.&#10;- ADD: Added creation of file resource for original file.&#10;- ADD: Added code that links the new file resource to a potentially created dataset." />
     <MESSAGE value="- CHG: Updated importers to pull parameters from the database rather than the commandline.&#10;- CHG: Updated importers to write job status back to database." />
     <MESSAGE value="- ADD: Added bulk image uploader." />
@@ -755,7 +758,8 @@
     <MESSAGE value="- CHG: Slightly changed how trait definitions are matched against the database by restricting the fields that are checked to a minimum." />
     <MESSAGE value="- CHG: Updated dependencies.&#10;- CHG: Version bump." />
     <MESSAGE value="- CHG: Adjusted code to work with newer codegen version." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Adjusted code to work with newer codegen version." />
+    <MESSAGE value="- ADD: Added support for importing into an existing trial based on the BrAPI id." />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added support for importing into an existing trial based on the BrAPI id." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
