@@ -8,6 +8,7 @@ import jhi.germinate.server.util.*;
 import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
+import org.jooq.impl.DSL;
 
 import java.io.IOException;
 import java.sql.*;
@@ -70,7 +71,7 @@ public class PedigreeImporter extends DatasheetImporter
 			DSLContext context = Database.getContext(conn);
 			context.selectFrom(GERMINATEBASE).forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 
-			Field<String> concat = PEDIGREEDESCRIPTIONS.NAME.concat("|").concat(PEDIGREEDESCRIPTIONS.AUTHOR);
+			Field<String> concat = PEDIGREEDESCRIPTIONS.NAME.concat("|").concat(DSL.coalesce(PEDIGREEDESCRIPTIONS.AUTHOR, "null"));
 			pedigreeDescriptionToId = context.select(concat, PEDIGREEDESCRIPTIONS.ID).from(PEDIGREEDESCRIPTIONS).fetchMap(concat, PEDIGREEDESCRIPTIONS.ID);
 
 			context.selectFrom(PEDIGREENOTATIONS).forEach(p -> notationToId.put(p.getName(), p.getId()));
@@ -226,7 +227,7 @@ public class PedigreeImporter extends DatasheetImporter
 
 					Integer germplasmId = germplasmToId.get(accenumb);
 					Integer parentOneId = germplasmToId.get(parentOne);
-					Integer parentTwoId = germplasmToId.get(parentTwo);
+					Integer parentTwoId = StringUtils.isEmpty(parentTwo) ? null : germplasmToId.get(parentTwo);
 					Integer descriptionId = pedigreeDescriptionToId.get(description + "|" + author);
 
 					if (germplasmId != null)
