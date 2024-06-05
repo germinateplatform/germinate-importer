@@ -273,7 +273,7 @@ public class ImageImporter extends AbstractImporter
 			for (Map.Entry<String, ViewTableImages> entry : filenameToImage.entrySet())
 			{
 				if (!filenames.contains(entry.getKey()))
-					addImportResult(ImportStatus.IMAGE_IMAGE_MISSING, -1, "Image not found for template definition: '" + entry.getValue().getImageForeignId() + "-" + entry.getValue().getReferenceName());
+					addImportResult(ImportStatus.IMAGE_IMAGE_MISSING, -1, "Image not found for template definition: '" + entry.getKey() + "(foreign id: + " + entry.getValue().getImageForeignId() + ", reference name: " + entry.getValue().getReferenceName() + ")");
 			}
 		}
 		catch (IOException e)

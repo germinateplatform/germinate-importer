@@ -4,9 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Version bump for bugfix release.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- FIX: Fixed an issue with duplication detection during trait definition import.&#10;-">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/PedigreeImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/PedigreeImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.7.2.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -70,12 +73,12 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "sebastian-raubach"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;sebastian-raubach&quot;
   }
-}]]></component>
+}</component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>
       <filtered-out-file-type name="LOCAL_BRANCH" />
@@ -84,12 +87,12 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/germinateplatform/germinate-importer.git",
-    "accountId": "76cf7299-8b19-4b2e-9a25-42c55741e657"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/germinateplatform/germinate-importer.git&quot;,
+    &quot;accountId&quot;: &quot;76cf7299-8b19-4b2e-9a25-42c55741e657&quot;
   }
-}]]></component>
+}</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -135,7 +138,7 @@
       <recent name="jhi.germinate.server.util.importer.task" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.TraitDataImporter">
+  <component name="RunManager" selected="Gradle.germinate-importer [clean]">
     <configuration name="GenotypeExcelImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.GenotypeExcelImporter" />
       <module name="germinate-importer.main" />
@@ -242,9 +245,9 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.TraitDataImporter" />
-        <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
+        <item itemvalue="Gradle.germinate-importer [build]" />
+        <item itemvalue="Application.TraitDataImporter" />
         <item itemvalue="Application.GenotypeExcelTransposedImporter" />
         <item itemvalue="Application.GenotypeExcelImporter" />
       </list>
@@ -370,7 +373,21 @@
       <workItem from="1713186632836" duration="2804000" />
       <workItem from="1713251673923" duration="620000" />
       <workItem from="1713866790237" duration="3932000" />
-      <workItem from="1713879411655" duration="223000" />
+      <workItem from="1713879411655" duration="1697000" />
+      <workItem from="1713951317192" duration="1625000" />
+      <workItem from="1714026703250" duration="599000" />
+      <workItem from="1714120803708" duration="2381000" />
+      <workItem from="1714379125437" duration="608000" />
+      <workItem from="1714462420632" duration="1224000" />
+      <workItem from="1714550910468" duration="609000" />
+      <workItem from="1714631512002" duration="1925000" />
+      <workItem from="1714647486282" duration="609000" />
+      <workItem from="1715332289771" duration="1844000" />
+      <workItem from="1715589683105" duration="722000" />
+      <workItem from="1715672636002" duration="2136000" />
+      <workItem from="1716975816318" duration="2286000" />
+      <workItem from="1717404853442" duration="1802000" />
+      <workItem from="1717599329562" duration="242000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -715,7 +732,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="60" />
+    <option name="localTasksCounter" value="61" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -746,7 +763,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Updated importers to pull parameters from the database rather than the commandline.&#10;- CHG: Updated importers to write job status back to database." />
     <MESSAGE value="- ADD: Added bulk image uploader." />
     <MESSAGE value="- CHG: Set job running in the database once the code starts executing." />
     <MESSAGE value="- FIX: Fixed dataset import backup for images where only the template, not the zip was backed up." />
@@ -771,7 +787,8 @@
     <MESSAGE value="- CHG: Adjusted code to work with newer codegen version." />
     <MESSAGE value="- ADD: Added support for importing into an existing trial based on the BrAPI id." />
     <MESSAGE value="- CHG: Version bump for bugfix release." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Version bump for bugfix release." />
+    <MESSAGE value="- FIX: Fixed an issue with duplication detection during trait definition import.&#10;-" />
+    <option name="LAST_COMMIT_MESSAGE" value="- FIX: Fixed an issue with duplication detection during trait definition import.&#10;-" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -823,7 +840,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>724</line>
+          <line>725</line>
           <option name="timeStamp" value="38" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -868,27 +885,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>728</line>
+          <line>729</line>
           <option name="timeStamp" value="70" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>750</line>
+          <line>751</line>
           <option name="timeStamp" value="72" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>759</line>
+          <line>760</line>
           <option name="timeStamp" value="74" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>764</line>
+          <line>765</line>
           <option name="timeStamp" value="75" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>425</line>
+          <line>426</line>
           <option name="timeStamp" value="76" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">

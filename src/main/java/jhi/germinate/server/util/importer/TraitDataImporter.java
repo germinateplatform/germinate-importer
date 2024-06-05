@@ -283,6 +283,7 @@ public class TraitDataImporter extends DatasheetImporter
 		String germplasm = getCellValue(r, dataColumnNameToIndex, "Line/Phenotype");
 		String row = getCellValue(r, dataColumnNameToIndex, "Row");
 		String column = getCellValue(r, dataColumnNameToIndex, "Column");
+		String location = getCellValue(r, dataColumnNameToIndex, "Location");
 
 		if (row != null)
 		{
@@ -310,11 +311,11 @@ public class TraitDataImporter extends DatasheetImporter
 
 		if (!StringUtils.isEmpty(row) || !StringUtils.isEmpty(column))
 		{
-			String key = row + "|" + column;
+			String key = row + "|" + column + "|" + location;
 			String value = rowColToGermplasm.get(key);
 
 			if (!StringUtils.isEmpty(value) && !Objects.equals(germplasm, value))
-				addImportResult(ImportStatus.TRIALS_ROW_COL_MISMATCH, r.getRowNum(), "Row: " + row + ", Column: " + column);
+				addImportResult(ImportStatus.TRIALS_ROW_COL_MISMATCH, r.getRowNum(), "Row: " + row + ", Column: " + column + ", Location: " + location);
 			else
 				rowColToGermplasm.put(key, germplasm);
 		}

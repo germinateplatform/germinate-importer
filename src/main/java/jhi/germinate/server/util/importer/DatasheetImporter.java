@@ -172,8 +172,8 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "First Name");
 				 if (StringUtils.isEmpty(lastName))
 					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Last Name");
-				 if (!StringUtils.isEmpty(country) && !countryCode2ToId.containsKey(country))
-					 addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), country);
+//				 if (!StringUtils.isEmpty(country) && !countryCode2ToId.containsKey(country))
+//					 addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), country);
 			 });
 		}
 		catch (IOException e)
@@ -543,22 +543,27 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					   String address = getCellValue(r, collaboratorLabelToColIndex.get("Address"));
 					   String countryCode = getCellValue(r, collaboratorLabelToColIndex.get("Country"));
 
-					   Integer countryId = countryCode2ToId.get(countryCode);
+					   InstitutionsRecord institution = null;
 
-					   InstitutionsRecord institution = context.selectFrom(INSTITUTIONS)
-															   .where(INSTITUTIONS.NAME.isNotDistinctFrom(institutionName))
-															   .and(INSTITUTIONS.ADDRESS.isNotDistinctFrom(address))
-															   .and(INSTITUTIONS.COUNTRY_ID.isNotDistinctFrom(countryId))
-															   .fetchAny();
-
-					   if (!StringUtils.isEmpty(institutionName) && institution == null)
+					   if (!StringUtils.isEmpty(institutionName))
 					   {
-						   institution = context.newRecord(INSTITUTIONS);
-						   institution.setName(institutionName);
-						   institution.setAddress(address);
-						   institution.setCountryId(countryId);
-						   institution.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-						   institution.store();
+						   Integer countryId = countryCode2ToId.get(countryCode);
+
+						   institution = context.selectFrom(INSTITUTIONS)
+																   .where(INSTITUTIONS.NAME.isNotDistinctFrom(institutionName))
+																   .and(INSTITUTIONS.ADDRESS.isNotDistinctFrom(address))
+																   .and(INSTITUTIONS.COUNTRY_ID.isNotDistinctFrom(countryId))
+																   .fetchAny();
+
+						   if (institution == null)
+						   {
+							   institution = context.newRecord(INSTITUTIONS);
+							   institution.setName(institutionName);
+							   institution.setAddress(address);
+							   institution.setCountryId(countryId);
+							   institution.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+							   institution.store();
+						   }
 					   }
 
 					   CollaboratorsRecord collaborator = context.selectFrom(COLLABORATORS)
