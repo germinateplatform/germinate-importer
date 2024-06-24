@@ -6,7 +6,7 @@ import jhi.germinate.server.database.codegen.enums.PhenotypesDatatype;
 import jhi.germinate.server.database.codegen.tables.pojos.Phenotypes;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.*;
-import jhi.germinate.server.util.StringUtils;
+import jhi.germinate.server.util.*;
 import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.*;
@@ -924,7 +924,10 @@ public class TraitDataImporter extends DatasheetImporter
 
 				 List<Phenotypes> potentialMatches = query.fetchInto(Phenotypes.class);
 
-				 Phenotypes match = findMatch(restrictions, potentialMatches);
+				 Phenotypes match = null;
+
+				 if (!CollectionUtils.isEmpty(potentialMatches))
+					 match = findMatch(restrictions, potentialMatches);
 
 				 if (match != null) {
 					 traitIds.add(match.getId());
@@ -1008,7 +1011,10 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 		else
 		{
-			return potentialMatches.get(0);
+			if (!potentialMatches.isEmpty())
+				return potentialMatches.get(0);
+			else
+				return null;
 		}
 
 		return null;
