@@ -769,10 +769,13 @@ public class McpdImporter extends AbstractExcelImporter
 				Object o = existing.get(i);
 
 				boolean u;
-				if (o instanceof String) u = !StringUtils.isEmpty((String) o);
-				else u = o != null;
+				if (o instanceof String)
+					u = !StringUtils.isEmpty((String) o);
+				else
+					u = o != null;
 
-				if (u) toUpdate.add(existing.field(i));
+				if (u)
+					toUpdate.add(existing.field(i));
 			}
 			else
 			{
@@ -1004,10 +1007,15 @@ public class McpdImporter extends AbstractExcelImporter
 	{
 		Germplasm germplasm = new Germplasm();
 
+		String displayName = getCellValue(r, columnNameToIndex, McpdField.ACCENAME.name());
+		if (StringUtils.isEmpty(displayName))
+			displayName = getCellValue(r, columnNameToIndex, McpdField.ACCENUMB.name());
+
 		germplasm.germinatebase.setNumber(getCellValue(r, columnNameToIndex, McpdField.ACCENAME.name()));
 		germplasm.mcpd.setAccename(getCellValue(r, columnNameToIndex, McpdField.ACCENAME.name()));
 		germplasm.germinatebase.setName(getCellValue(r, columnNameToIndex, McpdField.ACCENUMB.name()));
 		germplasm.germinatebase.setGeneralIdentifier(getCellValue(r, columnNameToIndex, McpdField.ACCENUMB.name()));
+		germplasm.germinatebase.setDisplayName(displayName);
 		germplasm.mcpd.setAccenumb(getCellValue(r, columnNameToIndex, McpdField.ACCENUMB.name()));
 		germplasm.mcpd.setAcqdate(getCellValue(r, columnNameToIndex, McpdField.ACQDATE.name()));
 		germplasm.pedigree.setDefinition(getCellValue(r, columnNameToIndex, McpdField.ANCEST.name()));

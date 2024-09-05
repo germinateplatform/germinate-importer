@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import duplicate plot detection.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import trait match check.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.7.3.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.7.3.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.7.4.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.7.4.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,6 +41,12 @@
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="germinate-importer" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="germinate-importer" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -387,7 +391,17 @@
       <workItem from="1717404853442" duration="1802000" />
       <workItem from="1717599329562" duration="242000" />
       <workItem from="1717599677001" duration="991000" />
-      <workItem from="1719215831367" duration="1053000" />
+      <workItem from="1719215831367" duration="1277000" />
+      <workItem from="1721048592423" duration="595000" />
+      <workItem from="1722507189829" duration="599000" />
+      <workItem from="1722508489731" duration="517000" />
+      <workItem from="1722509578333" duration="40000" />
+      <workItem from="1722858225998" duration="623000" />
+      <workItem from="1722925292840" duration="587000" />
+      <workItem from="1722931763856" duration="120000" />
+      <workItem from="1725455821105" duration="1283000" />
+      <workItem from="1725521001618" duration="442000" />
+      <workItem from="1725521468600" duration="363000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -732,7 +746,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="62" />
+    <option name="localTasksCounter" value="63" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -763,7 +777,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Set job running in the database once the code starts executing." />
     <MESSAGE value="- FIX: Fixed dataset import backup for images where only the template, not the zip was backed up." />
     <MESSAGE value="- CHG: Updated MCPD importer to use new MCPD table." />
     <MESSAGE value="- FIX: Fixed the catch-all exception handling which didn't store feedback to the database.&#10;- FIX: Fixed a bug where institution import from the MCPD would fail if no institution code was available.&#10;- FIX: Added MCPD fields that are also stored elsewhere to the mcpd table.&#10;-" />
@@ -788,7 +801,8 @@
     <MESSAGE value="- CHG: Version bump for bugfix release." />
     <MESSAGE value="- FIX: Fixed an issue with duplication detection during trait definition import.&#10;-" />
     <MESSAGE value="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import duplicate plot detection." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import duplicate plot detection." />
+    <MESSAGE value="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import trait match check." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import trait match check." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
