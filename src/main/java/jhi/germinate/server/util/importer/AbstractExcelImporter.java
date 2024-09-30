@@ -222,7 +222,7 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 		{
 			String value = r.getCellText(columnNameToIndex.get(column)).replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
 
-			if (Objects.equals(value, ""))
+			if (Objects.equals(value.trim(), ""))
 				return null;
 			else
 				return value.trim();

@@ -44,7 +44,7 @@ public abstract class AbstractImporter
 		return Arrays.copyOf(args, args.length);
 	}
 
-	protected static Integer createImportJobFromCommandline(String[] args) throws IOException, SQLException {
+	protected static Integer createImportJobFromCommandline(String[] args, DataImportJobsDatatype type) throws IOException, SQLException {
 		Database.init(args[0], args[1], args[2], args[3], args[4], false);
 
 		File germinateFolder = new File(args[5]);
@@ -99,7 +99,7 @@ public abstract class AbstractImporter
 			details.setRunType(runType);
 
 			DataImportJobsRecord job = context.newRecord(DATA_IMPORT_JOBS);
-			job.setDatatype(DataImportJobsDatatype.genotype);
+			job.setDatatype(type);
 			job.setDatasetstateId(1);
 			job.setUuid(uuid);
 			job.setStatus(DataImportJobsStatus.waiting);

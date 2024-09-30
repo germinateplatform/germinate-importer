@@ -1,5 +1,6 @@
 package jhi.germinate.server.util.importer;
 
+import jhi.germinate.server.database.codegen.enums.DataImportJobsDatatype;
 import jhi.germinate.server.database.pojo.*;
 import jhi.germinate.server.util.importer.task.FlatFileTransposeTask;
 import org.dhatim.fastexcel.reader.*;
@@ -35,7 +36,7 @@ public class GenotypeExcelTransposedImporter extends DatasheetImporter
 		}
 		else if (args.length == 9)
 		{
-			importer = new GenotypeExcelTransposedImporter(createImportJobFromCommandline(args));
+			importer = new GenotypeExcelTransposedImporter(createImportJobFromCommandline(args, DataImportJobsDatatype.genotype));
 		}
 		else
 		{

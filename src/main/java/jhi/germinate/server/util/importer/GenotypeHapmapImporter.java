@@ -1,6 +1,7 @@
 package jhi.germinate.server.util.importer;
 
 import jhi.germinate.server.Database;
+import jhi.germinate.server.database.codegen.enums.DataImportJobsDatatype;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
 import jhi.germinate.server.util.StringUtils;
@@ -51,7 +52,7 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 		}
 		else if (args.length == 9)
 		{
-			importer = new GenotypeHapmapImporter(createImportJobFromCommandline(args));
+			importer = new GenotypeHapmapImporter(createImportJobFromCommandline(args, DataImportJobsDatatype.genotype));
 		}
 		else
 		{

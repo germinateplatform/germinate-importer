@@ -17,31 +17,33 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
 
-import static jhi.germinate.server.database.codegen.tables.Attributedata.*;
-import static jhi.germinate.server.database.codegen.tables.Attributes.*;
-import static jhi.germinate.server.database.codegen.tables.Biologicalstatus.*;
-import static jhi.germinate.server.database.codegen.tables.Collectingsources.*;
-import static jhi.germinate.server.database.codegen.tables.Countries.*;
-import static jhi.germinate.server.database.codegen.tables.Datasets.*;
-import static jhi.germinate.server.database.codegen.tables.Entitytypes.*;
-import static jhi.germinate.server.database.codegen.tables.Experiments.*;
-import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
-import static jhi.germinate.server.database.codegen.tables.Germplasminstitutions.*;
-import static jhi.germinate.server.database.codegen.tables.Institutions.*;
-import static jhi.germinate.server.database.codegen.tables.Locations.*;
-import static jhi.germinate.server.database.codegen.tables.Mcpd.*;
-import static jhi.germinate.server.database.codegen.tables.Mlsstatus.*;
-import static jhi.germinate.server.database.codegen.tables.Pedigreedefinitions.*;
-import static jhi.germinate.server.database.codegen.tables.Pedigreenotations.*;
-import static jhi.germinate.server.database.codegen.tables.Synonyms.*;
-import static jhi.germinate.server.database.codegen.tables.Taxonomies.*;
+import static jhi.germinate.server.database.codegen.tables.Attributedata.ATTRIBUTEDATA;
+import static jhi.germinate.server.database.codegen.tables.Attributes.ATTRIBUTES;
+import static jhi.germinate.server.database.codegen.tables.Biologicalstatus.BIOLOGICALSTATUS;
+import static jhi.germinate.server.database.codegen.tables.Collectingsources.COLLECTINGSOURCES;
+import static jhi.germinate.server.database.codegen.tables.Countries.COUNTRIES;
+import static jhi.germinate.server.database.codegen.tables.Datasets.DATASETS;
+import static jhi.germinate.server.database.codegen.tables.Entitytypes.ENTITYTYPES;
+import static jhi.germinate.server.database.codegen.tables.Experiments.EXPERIMENTS;
+import static jhi.germinate.server.database.codegen.tables.Germinatebase.GERMINATEBASE;
+import static jhi.germinate.server.database.codegen.tables.Germplasminstitutions.GERMPLASMINSTITUTIONS;
+import static jhi.germinate.server.database.codegen.tables.Institutions.INSTITUTIONS;
+import static jhi.germinate.server.database.codegen.tables.Locations.LOCATIONS;
+import static jhi.germinate.server.database.codegen.tables.Mcpd.MCPD;
+import static jhi.germinate.server.database.codegen.tables.Mlsstatus.MLSSTATUS;
+import static jhi.germinate.server.database.codegen.tables.Pedigreedefinitions.PEDIGREEDEFINITIONS;
+import static jhi.germinate.server.database.codegen.tables.Pedigreenotations.PEDIGREENOTATIONS;
+import static jhi.germinate.server.database.codegen.tables.Synonyms.SYNONYMS;
+import static jhi.germinate.server.database.codegen.tables.Taxonomies.TAXONOMIES;
 
 /**
  * @author Sebastian Raubach
  */
 public class McpdImporter extends AbstractExcelImporter
 {
-	/** Required column headers */
+	/**
+	 * Required column headers
+	 */
 	private static final String[] COLUMN_HEADERS = {"PUID", "INSTCODE", "ACCENUMB", "COLLNUMB", "COLLCODE", "COLLNAME", "COLLINSTADDRESS", "COLLMISSID", "GENUS", "SPECIES", "SPAUTHOR", "SUBTAXA", "SUBTAUTHOR", "CROPNAME", "ACCENAME", "ACQDATE", "ORIGCTY", "COLLSITE", "DECLATITUDE", "LATITUDE", "DECLONGITUDE", "LONGITUDE", "COORDUNCERT", "COORDDATUM", "GEOREFMETH", "ELEVATION", "COLLDATE", "BREDCODE", "BREDNAME", "SAMPSTAT", "ANCEST", "COLLSRC", "DONORCODE", "DONORNAME", "DONORNUMB", "OTHERNUMB", "DUPLSITE", "DUPLINSTNAME", "STORAGE", "MLSSTAT", "REMARKS"};
 
 	private       Map<String, Integer>              columnNameToIndex;
@@ -63,10 +65,25 @@ public class McpdImporter extends AbstractExcelImporter
 	private Map<String, InstitutionsRecord> institutionCodes = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	public static void main(String[] args)
+			throws SQLException, IOException
 	{
+		McpdImporter importer;
+		if (args.length == 6)
+		{
+			importer = new McpdImporter(Integer.parseInt(args[5]));
+		}
+		else if (args.length == 9)
+		{
+			importer = new McpdImporter(createImportJobFromCommandline(args, DataImportJobsDatatype.mcpd));
+		}
+		else
+		{
+			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+		}
+
 		if (args.length != 6) throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		McpdImporter importer = new McpdImporter(Integer.parseInt(args[5]));
+
 		importer.init(args);
 		importer.run();
 	}
@@ -249,7 +266,8 @@ public class McpdImporter extends AbstractExcelImporter
 		if (!StringUtils.isEmpty(countryCode))
 		{
 			countryId = countryCodeToId.get(countryCode);
-			if (countryId == null) addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), countryCode);
+			if (countryId == null)
+				addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), countryCode);
 		}
 
 		// Check if the collsite is specified, but the country isn't
@@ -276,7 +294,8 @@ public class McpdImporter extends AbstractExcelImporter
 		{
 			BigDecimal dms = getCellValueDMS(r, columnNameToIndex, McpdField.LATITUDE.name());
 
-			if (dms == null) addImportResult(ImportStatus.MCPD_INVALID_DMS, r.getRowNum(), McpdField.LATITUDE.name() + ": " + latitude);
+			if (dms == null)
+				addImportResult(ImportStatus.MCPD_INVALID_DMS, r.getRowNum(), McpdField.LATITUDE.name() + ": " + latitude);
 		}
 
 		// Check if declongitude is a number
@@ -298,7 +317,8 @@ public class McpdImporter extends AbstractExcelImporter
 		{
 			BigDecimal dms = getCellValueDMS(r, columnNameToIndex, McpdField.LONGITUDE.name());
 
-			if (dms == null) addImportResult(ImportStatus.MCPD_INVALID_DMS, r.getRowNum(), McpdField.LONGITUDE.name() + ": " + longitude);
+			if (dms == null)
+				addImportResult(ImportStatus.MCPD_INVALID_DMS, r.getRowNum(), McpdField.LONGITUDE.name() + ": " + longitude);
 		}
 
 		// Check if elevation is a valid number
@@ -330,7 +350,8 @@ public class McpdImporter extends AbstractExcelImporter
 		{
 			try
 			{
-				if (!validSampstat.contains(Integer.parseInt(sampstat))) addImportResult(ImportStatus.MCPD_INVALID_SAMPSTAT, r.getRowNum(), sampstat);
+				if (!validSampstat.contains(Integer.parseInt(sampstat)))
+					addImportResult(ImportStatus.MCPD_INVALID_SAMPSTAT, r.getRowNum(), sampstat);
 			}
 			catch (NumberFormatException e)
 			{
@@ -359,7 +380,8 @@ public class McpdImporter extends AbstractExcelImporter
 		{
 			try
 			{
-				if (!validCollsrc.contains(Integer.parseInt(collsrc))) addImportResult(ImportStatus.MCPD_INVALID_COLLSRC, r.getRowNum(), collsrc);
+				if (!validCollsrc.contains(Integer.parseInt(collsrc)))
+					addImportResult(ImportStatus.MCPD_INVALID_COLLSRC, r.getRowNum(), collsrc);
 			}
 			catch (NumberFormatException e)
 			{
@@ -852,7 +874,20 @@ public class McpdImporter extends AbstractExcelImporter
 
 	private TaxonomiesRecord getOrCreateTaxonomy(DSLContext context, TaxonomiesRecord taxonomy)
 	{
-		TaxonomiesRecord result = context.selectFrom(TAXONOMIES).where(TAXONOMIES.GENUS.isNotDistinctFrom(taxonomy.getGenus())).and(TAXONOMIES.SPECIES.isNotDistinctFrom(taxonomy.getSpecies())).and(TAXONOMIES.SUBTAXA.isNotDistinctFrom(taxonomy.getSubtaxa())).and(TAXONOMIES.SPECIES_AUTHOR.isNotDistinctFrom(taxonomy.getSpeciesAuthor())).and(TAXONOMIES.SUBTAXA_AUTHOR.isNotDistinctFrom(taxonomy.getSubtaxaAuthor())).fetchAnyInto(TaxonomiesRecord.class);
+		SelectConditionStep<TaxonomiesRecord> query = context.selectFrom(TAXONOMIES)
+															 .where(TAXONOMIES.GENUS.isNotDistinctFrom(taxonomy.getGenus()));
+
+		// Special distinction for species here, cause it'll be set to an empty string in the database by default, whereas the template might have it as NULL
+		if (taxonomy.getSpecies() == null || taxonomy.getSpecies().trim().isEmpty())
+			query.and(TAXONOMIES.SPECIES.isNotDistinctFrom(""));
+		else
+			query.and(TAXONOMIES.SPECIES.isNotDistinctFrom(taxonomy.getSpecies()));
+
+		query.and(TAXONOMIES.SUBTAXA.isNotDistinctFrom(taxonomy.getSubtaxa()))
+			 .and(TAXONOMIES.SPECIES_AUTHOR.isNotDistinctFrom(taxonomy.getSpeciesAuthor()))
+			 .and(TAXONOMIES.SUBTAXA_AUTHOR.isNotDistinctFrom(taxonomy.getSubtaxaAuthor()));
+
+		TaxonomiesRecord result = query.fetchAnyInto(TaxonomiesRecord.class);
 
 		if (result == null)
 		{
