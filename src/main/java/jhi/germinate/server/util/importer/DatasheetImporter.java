@@ -551,7 +551,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 
 						   institution = context.selectFrom(INSTITUTIONS)
 																   .where(INSTITUTIONS.NAME.isNotDistinctFrom(institutionName))
-																   .and(INSTITUTIONS.ADDRESS.isNotDistinctFrom(address))
+//																   .and(INSTITUTIONS.ADDRESS.isNotDistinctFrom(address))
 																   .and(INSTITUTIONS.COUNTRY_ID.isNotDistinctFrom(countryId))
 																   .fetchAny();
 

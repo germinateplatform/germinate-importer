@@ -4,16 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Added germplasm display name based on new database field.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- FIX: Fixed taxonomy creation issues during MCPD import.&#10;-">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelTransposedImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelTransposedImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -398,7 +392,18 @@
       <workItem from="1725872591025" duration="2673000" />
       <workItem from="1725887508760" duration="582000" />
       <workItem from="1727336196119" duration="1361000" />
-      <workItem from="1727686293275" duration="2621000" />
+      <workItem from="1727686293275" duration="2759000" />
+      <workItem from="1727887158932" duration="1149000" />
+      <workItem from="1727937347800" duration="140000" />
+      <workItem from="1727948776971" duration="1391000" />
+      <workItem from="1728029951508" duration="1001000" />
+      <workItem from="1728053228745" duration="322000" />
+      <workItem from="1728225612190" duration="575000" />
+      <workItem from="1728289043765" duration="26000" />
+      <workItem from="1728486647429" duration="668000" />
+      <workItem from="1728635667488" duration="2678000" />
+      <workItem from="1728974542431" duration="4069000" />
+      <workItem from="1729067982485" duration="1802000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -743,7 +748,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="64" />
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -774,7 +779,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Updated MCPD importer to use new MCPD table." />
     <MESSAGE value="- FIX: Fixed the catch-all exception handling which didn't store feedback to the database.&#10;- FIX: Fixed a bug where institution import from the MCPD would fail if no institution code was available.&#10;- FIX: Added MCPD fields that are also stored elsewhere to the mcpd table.&#10;-" />
     <MESSAGE value="- CHG: Updated dependencies.&#10;- CHG: Version bump to 4.4.0." />
     <MESSAGE value="- CHG: Fixed issues with MCPD importer only supporting a single duplicate institution." />
@@ -799,7 +803,8 @@
     <MESSAGE value="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import duplicate plot detection." />
     <MESSAGE value="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import trait match check." />
     <MESSAGE value="- CHG: Added germplasm display name based on new database field." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Added germplasm display name based on new database field." />
+    <MESSAGE value="- FIX: Fixed taxonomy creation issues during MCPD import.&#10;-" />
+    <option name="LAST_COMMIT_MESSAGE" value="- FIX: Fixed taxonomy creation issues during MCPD import.&#10;-" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

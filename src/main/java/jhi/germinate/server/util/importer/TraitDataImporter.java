@@ -922,17 +922,22 @@ public class TraitDataImporter extends DatasheetImporter
 //				 if (restrictions != null)
 //					 query.and(PHENOTYPES.RESTRICTIONS.isNotDistinctFrom(restrictions));
 
-				 List<Phenotypes> potentialMatches = query.fetchInto(Phenotypes.class);
+				 List<PhenotypesRecord> potentialMatches = query.fetchInto(PhenotypesRecord.class);
 
-				 Phenotypes match = null;
+				 PhenotypesRecord match = null;
 
 				 if (!CollectionUtils.isEmpty(potentialMatches))
 					 match = findMatch(restrictions, potentialMatches);
 
-				 if (match != null) {
+				 if (match != null)
+				 {
+					 // Just in case there is a match, but the restrictions changed, store them back
+					 match.store(PHENOTYPES.RESTRICTIONS);
 					 traitIds.add(match.getId());
 					 traitNameToId.put(match.getName(), match.getId());
-				 } else {
+				 }
+				 else
+				 {
 					 PhenotypesRecord trait = context.newRecord(PHENOTYPES);
 					 trait.setName(name);
 					 trait.setShortName(shortName);
@@ -953,18 +958,42 @@ public class TraitDataImporter extends DatasheetImporter
 		}
 	}
 
-	private Phenotypes findMatch(TraitRestrictions restrictions, List<Phenotypes> potentialMatches) {
+	private PhenotypesRecord findMatch(TraitRestrictions restrictions, List<PhenotypesRecord> potentialMatches)
+	{
 		if (restrictions != null)
 		{
-			for (Phenotypes p : potentialMatches)
+			for (PhenotypesRecord p : potentialMatches)
 			{
 				if (p.getRestrictions() != null)
 				{
+					Double min = p.getRestrictions().getMin();
+					Double max = p.getRestrictions().getMax();
+
+					if (restrictions.getMin() != null)
+					{
+						if (min == null)
+							min = restrictions.getMin();
+						else
+							min = Math.min(min, restrictions.getMin());
+					}
+					if (restrictions.getMax() != null)
+					{
+						if (max == null)
+							max = restrictions.getMax();
+						else
+							max = Math.max(max, restrictions.getMax());
+					}
+
 					if (Objects.equals(p.getRestrictions().getMin(), restrictions.getMin())
 							&& Objects.equals(p.getRestrictions().getMax(), restrictions.getMax()))
 					{
 						if (p.getRestrictions().getCategories() == null && restrictions.getCategories() == null)
 						{
+							if (min != null && max != null) {
+								p.getRestrictions().setMin(min);
+								p.getRestrictions().setMax(max);
+							}
+
 							return p;
 						}
 						else if (p.getRestrictions().getCategories() != null && restrictions.getCategories() != null)
@@ -975,32 +1004,44 @@ public class TraitDataImporter extends DatasheetImporter
 
 								int matchCount = 0;
 
-								for (String[] s : p.getRestrictions().getCategories()) {
+								for (String[] s : p.getRestrictions().getCategories())
+								{
 									Set<String> t = new HashSet<>();
-									for (String st : s) {
+									for (String st : s)
+									{
 										t.add(st);
 									}
 									reference.add(t);
 								}
 
-								for (String[] s : p.getRestrictions().getCategories()) {
+								for (String[] s : p.getRestrictions().getCategories())
+								{
 									Set<String> t = new HashSet<>();
-									for (String st : s) {
+									for (String st : s)
+									{
 										t.add(st);
 									}
 
-									for (Set<String> ref : reference) {
+									for (Set<String> ref : reference)
+									{
 										Set<String> intersection = new HashSet<>(t);
 										intersection.retainAll(ref);
 
-										if (intersection.size() == t.size()) {
+										if (intersection.size() == t.size())
+										{
 											matchCount++;
 											break;
 										}
 									}
 								}
 
-								if (matchCount == p.getRestrictions().getCategories().length) {
+								if (matchCount == p.getRestrictions().getCategories().length)
+								{
+									if (min != null && max != null) {
+										p.getRestrictions().setMin(min);
+										p.getRestrictions().setMax(max);
+									}
+
 									return p;
 								}
 							}
