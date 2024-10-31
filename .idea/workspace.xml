@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- FIX: Fixed taxonomy creation issues during MCPD import.&#10;-">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Adjust trait min max limits if required.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,6 +109,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
     &quot;Gradle.germinate-importer [:McpdImporter.main()].executor&quot;: &quot;Debug&quot;,
     &quot;Gradle.germinate-importer [:TraitDataImporter.main()].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.germinate-importer [build].executor&quot;: &quot;Run&quot;,
@@ -403,7 +403,12 @@
       <workItem from="1728486647429" duration="668000" />
       <workItem from="1728635667488" duration="2678000" />
       <workItem from="1728974542431" duration="4069000" />
-      <workItem from="1729067982485" duration="1802000" />
+      <workItem from="1729067982485" duration="2466000" />
+      <workItem from="1729751947410" duration="3550000" />
+      <workItem from="1729842808196" duration="590000" />
+      <workItem from="1730104631361" duration="2987000" />
+      <workItem from="1730191679107" duration="563000" />
+      <workItem from="1730374430178" duration="23000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -748,7 +753,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <option name="localTasksCounter" value="66" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -779,7 +784,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- FIX: Fixed the catch-all exception handling which didn't store feedback to the database.&#10;- FIX: Fixed a bug where institution import from the MCPD would fail if no institution code was available.&#10;- FIX: Added MCPD fields that are also stored elsewhere to the mcpd table.&#10;-" />
     <MESSAGE value="- CHG: Updated dependencies.&#10;- CHG: Version bump to 4.4.0." />
     <MESSAGE value="- CHG: Fixed issues with MCPD importer only supporting a single duplicate institution." />
     <MESSAGE value="- FIX: Fixed potential issues with germplasm name matching." />
@@ -804,7 +808,8 @@
     <MESSAGE value="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import trait match check." />
     <MESSAGE value="- CHG: Added germplasm display name based on new database field." />
     <MESSAGE value="- FIX: Fixed taxonomy creation issues during MCPD import.&#10;-" />
-    <option name="LAST_COMMIT_MESSAGE" value="- FIX: Fixed taxonomy creation issues during MCPD import.&#10;-" />
+    <MESSAGE value="- CHG: Adjust trait min max limits if required." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Adjust trait min max limits if required." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

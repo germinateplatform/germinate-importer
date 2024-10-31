@@ -210,7 +210,7 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 		if (result != null)
 			result = result.replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
 
-		if (Objects.equals(result, ""))
+		if (Objects.equals(result.trim(), ""))
 			return null;
 		else
 			return result.trim();
@@ -243,10 +243,10 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 		{
 			String value = r.getCellText(index).replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
 
-			if (Objects.equals(value, ""))
+			if (Objects.equals(value.trim(), ""))
 				return null;
 			else
-				return value.trim();
+				return value;
 		}
 		catch (Exception e)
 		{
