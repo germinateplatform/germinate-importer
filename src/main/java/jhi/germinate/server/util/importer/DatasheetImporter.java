@@ -720,15 +720,15 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 									   .fetchAny();
 				  }
 
-				  if (dataset == null)
-				  {
-					  // If it doesn't, then check if the dataset exists (assuming name+description are unique)
-					  dataset = context.selectFrom(DATASETS)
-									   .where(DATASETS.NAME.isNotDistinctFrom(name))
-									   .and(DATASETS.DESCRIPTION.isNotDistinctFrom(description))
-									   .and(DATASETS.DATASETTYPE_ID.eq(datasetType))
-									   .fetchAny();
-				  }
+//				  if (dataset == null)
+//				  {
+//					  // If it doesn't, then check if the dataset exists (assuming name+description are unique)
+//					  dataset = context.selectFrom(DATASETS)
+//									   .where(DATASETS.NAME.isNotDistinctFrom(name))
+//									   .and(DATASETS.DESCRIPTION.isNotDistinctFrom(description))
+//									   .and(DATASETS.DATASETTYPE_ID.eq(datasetType))
+//									   .fetchAny();
+//				  }
 
 				  if (dataset == null)
 				  {

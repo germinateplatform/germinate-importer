@@ -208,7 +208,7 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 		String result = c.getText();
 
 		if (result != null)
-			result = result.replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
+			result = result.replaceAll("\u00A0", " ").replaceAll("\\r?\\n", " ");
 
 		if (Objects.equals(result.trim(), ""))
 			return null;
@@ -220,7 +220,7 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 	{
 		try
 		{
-			String value = r.getCellText(columnNameToIndex.get(column)).replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
+			String value = r.getCellText(columnNameToIndex.get(column)).replaceAll("\u00A0", " ").replaceAll("\\r?\\n", " ");
 
 			if (Objects.equals(value.trim(), ""))
 				return null;
@@ -241,12 +241,12 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 
 		try
 		{
-			String value = r.getCellText(index).replaceAll("\u00A0", "").replaceAll("\\r?\\n", " ");
+			String value = r.getCellText(index).replaceAll("\u00A0", " ").replaceAll("\\r?\\n", " ");
 
 			if (Objects.equals(value.trim(), ""))
 				return null;
 			else
-				return value;
+				return value.trim();
 		}
 		catch (Exception e)
 		{
@@ -268,14 +268,14 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 
 	protected boolean cellEmpty(Row r, int i)
 	{
-		return r.getCell(i) == null || r.getCell(i).getType() == CellType.EMPTY || StringUtils.isEmpty(r.getCellText(i).replaceAll("\u00A0", ""));
+		return r.getCell(i) == null || r.getCell(i).getType() == CellType.EMPTY || StringUtils.isEmpty(r.getCellText(i).replaceAll("\u00A0", " "));
 	}
 
 	protected boolean allCellsEmpty(Row r)
 	{
 		for (int i = 0; i < r.getCellCount(); i++)
 		{
-			if (r.getCell(i) != null && r.getCell(i).getType() != CellType.EMPTY && !StringUtils.isEmpty(r.getCellText(i).replaceAll("\u00A0", "")))
+			if (r.getCell(i) != null && r.getCell(i).getType() != CellType.EMPTY && !StringUtils.isEmpty(r.getCellText(i).replaceAll("\u00A0", " ")))
 				return false;
 		}
 

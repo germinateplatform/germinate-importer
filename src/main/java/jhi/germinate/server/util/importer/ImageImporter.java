@@ -86,7 +86,7 @@ public class ImageImporter extends AbstractImporter
 //		if (prefix.startsWith("/")) prefix = prefix.substring(1);
 //		URI uri = URI.create("jar:file:/" + prefix);
 
-		try (FileSystem fs = FileSystems.newFileSystem(zipFile.toPath(), null))
+		try (FileSystem fs = FileSystems.newFileSystem(zipFile.toPath(), (ClassLoader) null))
 		{
 			Path template = fs.getPath("images.xlsx");
 
@@ -292,7 +292,7 @@ public class ImageImporter extends AbstractImporter
 //		if (prefix.startsWith("/")) prefix = prefix.substring(1);
 //		URI uri = URI.create("jar:file:/" + prefix);
 
-		try (FileSystem fs = FileSystems.newFileSystem(zipFile.toPath(), null))
+		try (FileSystem fs = FileSystems.newFileSystem(zipFile.toPath(), (ClassLoader) null))
 		{
 			Path template = fs.getPath("images.xlsx");
 
