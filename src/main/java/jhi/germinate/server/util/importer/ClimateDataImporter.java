@@ -26,17 +26,21 @@ import static jhi.germinate.server.database.codegen.tables.Units.*;
  */
 public class ClimateDataImporter extends DatasheetImporter
 {
-	/** Required column headers */
+	/**
+	 * Required column headers
+	 */
 	private static final String[] COLUMN_HEADERS = {"Name", "Short Name", "Description", "Data Type", "Unit Name", "Unit Abbreviation", "Unit Descriptions"};
 
 	private List<String>          locationNames;
 	private Map<String, Integer>  climateNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<String, Integer>  columnNameToIndex;
-	/** Used to check climate values against climate definitions during checking stage */
+	/**
+	 * Used to check climate values against climate definitions during checking stage
+	 */
 	private Map<String, Climates> climateDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	private final Set<Integer> locationIds = new HashSet<>();
-	private final Set<Integer> climateIds = new HashSet<>();
+	private final Set<Integer> climateIds  = new HashSet<>();
 
 	public static void main(String[] args)
 	{
@@ -282,26 +286,28 @@ public class ClimateDataImporter extends DatasheetImporter
 
 			if (headers != null)
 			{
+				List<String> climates = headers.stream()
+											   .skip(2)
+											   .map(this::getCellValue)
+											   .filter(c -> !StringUtils.isEmpty(c))
+											   .toList();
 				// Get the data type for each column
-				List<ClimatesDatatype> dataTypes = headers.stream()
-														  .skip(2)
-														  .map(this::getCellValue)
-														  .filter(c -> !StringUtils.isEmpty(c))
+				List<ClimatesDatatype> dataTypes = climates.stream()
 														  .map(c -> climateDefinitions.get(c).getDatatype())
-														  .collect(Collectors.toList());
+														  .toList();
 
 				// Now check them to make sure their content fits the data type
 				s.openStream()
 				 .skip(1)
 				 .forEachOrdered(r -> {
-					 for (int i = 3; i < r.getPhysicalCellCount(); i++)
+					 for (int i = 2; i < r.getPhysicalCellCount(); i++)
 					 {
 						 String cellValue = getCellValue(r, i);
 
 						 if (StringUtils.isEmpty(cellValue))
 							 continue;
 
-						 switch (dataTypes.get(i - 3))
+						 switch (dataTypes.get(i - 2))
 						 {
 							 case numeric:
 								 try
@@ -310,7 +316,7 @@ public class ClimateDataImporter extends DatasheetImporter
 								 }
 								 catch (NumberFormatException e)
 								 {
-									 addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Value of a numeric climate isn't a number: " + cellValue);
+									 addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Value of a numeric climate " + climates.get(i - 2) +" isn't a number: " + cellValue);
 								 }
 								 break;
 							 case date:

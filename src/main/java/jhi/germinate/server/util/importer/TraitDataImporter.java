@@ -51,6 +51,9 @@ public class TraitDataImporter extends DatasheetImporter
 	private final Set<Integer> traitIds     = new HashSet<>();
 	private final Set<Integer> germplasmIds = new HashSet<>();
 
+	private final Set<String> validPositiveBoolean = new HashSet<>(Arrays.asList("true", "yes", "1"));
+	private final Set<String> validNegativeBoolean = new HashSet<>(Arrays.asList("false", "no", "0"));
+
 	private List<String> locationNames;
 
 	private int traitColumnStartIndex = 10;
@@ -109,23 +112,23 @@ public class TraitDataImporter extends DatasheetImporter
 			  .filter(s -> Objects.equals(s.getName(), "PHENOTYPES"))
 			  .findFirst()
 			  .ifPresent(s ->
-						 {
-							 try
-							 {
-								 // Map headers to their index
-								 s.openStream()
-								  .findFirst()
-								  .ifPresent(this::getTraitHeaderMapping);
-								 // Check the sheet
-								 s.openStream()
-								  .skip(1)
-								  .forEachOrdered(this::checkTrait);
-							 }
-							 catch (IOException e)
-							 {
-								 addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-							 }
-						 });
+			  {
+				  try
+				  {
+					  // Map headers to their index
+					  s.openStream()
+					   .findFirst()
+					   .ifPresent(this::getTraitHeaderMapping);
+					  // Check the sheet
+					  s.openStream()
+					   .skip(1)
+					   .forEachOrdered(this::checkTrait);
+				  }
+				  catch (IOException e)
+				  {
+					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				  }
+			  });
 
 			this.locationNames = checkLocationSheet(wb.findSheet("LOCATION").orElse(null));
 
@@ -442,10 +445,10 @@ public class TraitDataImporter extends DatasheetImporter
 			// Check if all columns are there
 			Arrays.stream(COLUMN_HEADERS_TRAITS)
 				  .forEach(c ->
-						   {
-							   if (!traitColumnNameToIndex.containsKey(c))
-								   addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, -1, c);
-						   });
+				  {
+					  if (!traitColumnNameToIndex.containsKey(c))
+						  addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, -1, c);
+				  });
 		}
 		catch (IllegalStateException e)
 		{
@@ -471,6 +474,9 @@ public class TraitDataImporter extends DatasheetImporter
 		String categories = getCellValue(r, traitColumnNameToIndex.get("Trait categories (comma separated)"));
 		String minimum = getCellValue(r, traitColumnNameToIndex.get("Min (only for numeric traits)"));
 		String maximum = getCellValue(r, traitColumnNameToIndex.get("Max (only for numeric traits)"));
+		String setSize = getCellValue(r, traitColumnNameToIndex.get("Set Size"));
+		String isTimeseries = getCellValue(r, traitColumnNameToIndex.get("Is timeseries"));
+
 		TraitRestrictions restrictions = null;
 
 		if (StringUtils.isEmpty(name))
@@ -484,6 +490,24 @@ public class TraitDataImporter extends DatasheetImporter
 
 		if (!StringUtils.isEmpty(unitName) && unitName.length() > 255)
 			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Unit Name: " + unitName + " exceeds 255 characters.");
+
+		if (!StringUtils.isEmpty(setSize))
+		{
+			try
+			{
+				Integer.parseInt(minimum);
+			}
+			catch (NumberFormatException e)
+			{
+				addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Set size isn't a valid number: " + setSize);
+			}
+		}
+
+		if (!StringUtils.isEmpty(isTimeseries))
+		{
+			if (!validPositiveBoolean.contains(isTimeseries) || !validNegativeBoolean.contains(isTimeseries))
+				addImportResult(ImportStatus.GENERIC_INVALID_BOOLEAN, r.getRowNum(), "Is timeseries flag isn't a valid boolean: " + isTimeseries);
+		}
 
 		PhenotypesDatatype dt;
 		try
@@ -707,7 +731,7 @@ public class TraitDataImporter extends DatasheetImporter
 								 }
 
 								 if (!found)
-									 addImportResult(ImportStatus.TRIALS_DATA_VIOLATES_RESTRICTION, r.getRowNum(), "Cell value not within valid category range: " + cellValue + " not in " + restrictions.toString());
+									 addImportResult(ImportStatus.TRIALS_DATA_VIOLATES_RESTRICTION, r.getRowNum(), "Cell value not within valid category range: " + cellValue + " not in " + traitDefinitions.get(t));
 							 }
 						 });
 					 });
@@ -908,6 +932,21 @@ public class TraitDataImporter extends DatasheetImporter
 					 }
 				 }
 
+				 String setSizeString = getCellValue(r, traitColumnNameToIndex.get("Set Size"));
+				 String isTimeseriesString = getCellValue(r, traitColumnNameToIndex.get("Is timeseries"));
+				 Integer setSize = null;
+				 Boolean isTimeseries = null;
+
+				 if (!StringUtils.isEmpty(setSizeString))
+					 setSize = Integer.parseInt(setSizeString);
+				 if (!StringUtils.isEmpty(isTimeseriesString))
+				 {
+					 if (validPositiveBoolean.contains(isTimeseriesString))
+						 isTimeseries = true;
+					 else if (validNegativeBoolean.contains(isTimeseriesString))
+						 isTimeseries = false;
+				 }
+
 				 SelectConditionStep<PhenotypesRecord> query = context.selectFrom(PHENOTYPES)
 																	  .where(PHENOTYPES.NAME.isNotDistinctFrom(name))
 																	  .and(PHENOTYPES.DATATYPE.isNotDistinctFrom(dataType));
@@ -945,6 +984,8 @@ public class TraitDataImporter extends DatasheetImporter
 					 trait.setDatatype(dataType);
 					 trait.setUnitId(unit == null ? null : unit.getId());
 					 trait.setRestrictions(restrictions);
+					 trait.setSetsize(setSize);
+					 trait.setIsTimeseries(isTimeseries);
 					 trait.store();
 
 					 traitIds.add(trait.getId());
@@ -989,7 +1030,8 @@ public class TraitDataImporter extends DatasheetImporter
 					{
 						if (p.getRestrictions().getCategories() == null && restrictions.getCategories() == null)
 						{
-							if (min != null && max != null) {
+							if (min != null && max != null)
+							{
 								p.getRestrictions().setMin(min);
 								p.getRestrictions().setMax(max);
 							}
@@ -1037,7 +1079,8 @@ public class TraitDataImporter extends DatasheetImporter
 
 								if (matchCount == p.getRestrictions().getCategories().length)
 								{
-									if (min != null && max != null) {
+									if (min != null && max != null)
+									{
 										p.getRestrictions().setMin(min);
 										p.getRestrictions().setMax(max);
 									}
@@ -1082,6 +1125,7 @@ public class TraitDataImporter extends DatasheetImporter
 			Row headerRow = dataRows.get(0);
 
 			Map<Integer, Integer> rowToTrialsetupId = new HashMap<>();
+			Map<String, TrialsetupRecord> existingTrialsetups = new HashMap<>();
 
 			for (int r = 1; r < dataRows.size(); r++)
 			{
@@ -1112,21 +1156,30 @@ public class TraitDataImporter extends DatasheetImporter
 				if (!StringUtils.isEmpty(treatmentName))
 					treatmentId = treatmentToId.get(treatmentName);
 
-				TrialsetupRecord ts = context.newRecord(TRIALSETUP);
-				ts.setGerminatebaseId(germplasmId);
-				ts.setRep(rep);
-				ts.setBlock(block);
-				ts.setTrialRow(row);
-				ts.setTrialColumn(column);
-				ts.setLatitude(latitude);
-				ts.setLongitude(longitude);
-				ts.setElevation(elevation);
-				ts.setTreatmentId(treatmentId);
-				ts.setDatasetId(dataset.getId());
-				if (!StringUtils.isEmpty(locationName))
-					ts.setLocationId(this.locationNameToId.get(locationName));
+				String id = germplasmId + "|" + row + "|" + column + "|" + rep + "|" + treatmentId + "|" + locationName;
 
-				ts.store();
+				TrialsetupRecord ts = existingTrialsetups.get(id);
+
+				if (ts == null)
+				{
+					ts = context.newRecord(TRIALSETUP);
+					ts.setGerminatebaseId(germplasmId);
+					ts.setRep(rep);
+					ts.setBlock(block);
+					ts.setTrialRow(row);
+					ts.setTrialColumn(column);
+					ts.setLatitude(latitude);
+					ts.setLongitude(longitude);
+					ts.setElevation(elevation);
+					ts.setTreatmentId(treatmentId);
+					ts.setDatasetId(dataset.getId());
+					if (!StringUtils.isEmpty(locationName))
+						ts.setLocationId(this.locationNameToId.get(locationName));
+
+					ts.store();
+				}
+
+				existingTrialsetups.put(id, ts);
 
 				rowToTrialsetupId.put(r, ts.getId());
 			}
