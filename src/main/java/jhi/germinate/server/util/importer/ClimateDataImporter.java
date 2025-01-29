@@ -286,13 +286,13 @@ public class ClimateDataImporter extends DatasheetImporter
 
 			if (headers != null)
 			{
-				List<String> climates = headers.stream()
+				List<String> climateHeaders = headers.stream()
 											   .skip(2)
 											   .map(this::getCellValue)
 											   .filter(c -> !StringUtils.isEmpty(c))
 											   .toList();
 				// Get the data type for each column
-				List<ClimatesDatatype> dataTypes = climates.stream()
+				List<ClimatesDatatype> dataTypes = climateHeaders.stream()
 														  .map(c -> climateDefinitions.get(c).getDatatype())
 														  .toList();
 
@@ -316,13 +316,13 @@ public class ClimateDataImporter extends DatasheetImporter
 								 }
 								 catch (NumberFormatException e)
 								 {
-									 addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Value of a numeric climate " + climates.get(i - 2) +" isn't a number: " + cellValue);
+									 addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Value of a numeric climate " + climateHeaders.get(i - 2) +" isn't a number: " + cellValue);
 								 }
 								 break;
 							 case date:
 								 Date date = getCellValueDate(r, i);
 								 if (date == null)
-									 addImportResult(ImportStatus.GENERIC_INVALID_DATE, r.getRowNum(), "Value of a date climate isn't a date: " + cellValue);
+									 addImportResult(ImportStatus.GENERIC_INVALID_DATE, r.getRowNum(), "Value of a date climate " + climateHeaders.get(i - 2) +" isn't a date: " + cellValue);
 								 break;
 
 							 case categorical:

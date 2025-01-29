@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updated Gradle to 8.8&#10;- CHG: Removed dataset lookup. Each upload results in a new dataset.&#10;- FIX: Fixed issues with non-breakable whitespaces.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added set size and timeseries flag to traits/phenotypes.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.7.4.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.7.4.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.7.4.jar" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ClimateDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ClimateDataImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
     </list>
@@ -249,8 +250,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.117" />
-        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.117" />
+        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.153" />
+        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.153" />
       </set>
     </attachedChunks>
   </component>
@@ -423,7 +424,8 @@
       <workItem from="1736436931953" duration="1807000" />
       <workItem from="1737641453354" duration="13000" />
       <workItem from="1737641470625" duration="405000" />
-      <workItem from="1737641882745" duration="857000" />
+      <workItem from="1737641882745" duration="900000" />
+      <workItem from="1738145283286" duration="4952000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -768,7 +770,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="67" />
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -799,7 +801,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Fixed issues with MCPD importer only supporting a single duplicate institution." />
     <MESSAGE value="- FIX: Fixed potential issues with germplasm name matching." />
     <MESSAGE value="- CHG: Updated dependencies." />
     <MESSAGE value="- FIX: Fixed issues with Excel genotype importer. It wasn't updating the flat file importer internally.&#10;- CHG: Removed compound importer as it has been merged with trials data templates.&#10;- CHG: Version bump to 4.4.2." />
@@ -824,7 +825,8 @@
     <MESSAGE value="- FIX: Fixed taxonomy creation issues during MCPD import.&#10;-" />
     <MESSAGE value="- CHG: Adjust trait min max limits if required." />
     <MESSAGE value="- CHG: Updated Gradle to 8.8&#10;- CHG: Removed dataset lookup. Each upload results in a new dataset.&#10;- FIX: Fixed issues with non-breakable whitespaces." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updated Gradle to 8.8&#10;- CHG: Removed dataset lookup. Each upload results in a new dataset.&#10;- FIX: Fixed issues with non-breakable whitespaces." />
+    <MESSAGE value="- ADD: Added set size and timeseries flag to traits/phenotypes." />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added set size and timeseries flag to traits/phenotypes." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

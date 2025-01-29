@@ -661,9 +661,9 @@ public class TraitDataImporter extends DatasheetImporter
 																	  .filter(t -> !StringUtils.isEmpty(t.getName()))
 																	  .filter(t -> t.getRestrictions() != null)
 																	  .map(Phenotypes::getName)
-																	  .collect(Collectors.toList());
+																	  .toList();
 
-				if (traitsWithRestrictions.size() > 0)
+				if (!traitsWithRestrictions.isEmpty())
 				{
 					// Store trait name to column index mapping
 					Map<String, Integer> traitIndex = new HashMap<>();
