@@ -2,7 +2,7 @@ package jhi.germinate.server.util.importer;
 
 import com.google.gson.*;
 import jhi.germinate.server.Database;
-import jhi.germinate.server.database.codegen.enums.PhenotypesDatatype;
+import jhi.germinate.server.database.codegen.enums.*;
 import jhi.germinate.server.database.codegen.tables.pojos.Phenotypes;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.*;
@@ -59,12 +59,20 @@ public class TraitDataImporter extends DatasheetImporter
 	private int traitColumnStartIndex = 10;
 
 	public static void main(String[] args)
+			throws SQLException, IOException
 	{
-		if (args.length != 6)
-			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+//		if (args.length != 6)
+//			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
+//
+//		TraitDataImporter importer = new TraitDataImporter(Integer.parseInt(args[5]));
+//		importer.init(args);
+//		importer.run();
 
-		TraitDataImporter importer = new TraitDataImporter(Integer.parseInt(args[5]));
-		importer.init(args);
+		List<String> argsList = Arrays.asList("localhost", "germinate_demo", "", "root", "", "c:/Users/sr41756/germinate/demo/", "c:/Users/sr41756/Downloads/trials-data-timeseries.xlsx", RunType.CHECK.name(), "109");
+		String[] arrrgs = argsList.toArray(new String[0]);
+
+		TraitDataImporter importer = new TraitDataImporter(createImportJobFromCommandline(arrrgs, DataImportJobsDatatype.trial));
+		importer.init(arrrgs);
 		importer.run();
 	}
 
@@ -505,7 +513,7 @@ public class TraitDataImporter extends DatasheetImporter
 
 		if (!StringUtils.isEmpty(isTimeseries))
 		{
-			if (!validPositiveBoolean.contains(isTimeseries) || !validNegativeBoolean.contains(isTimeseries))
+			if (!validPositiveBoolean.contains(isTimeseries.toLowerCase()) && !validNegativeBoolean.contains(isTimeseries.toLowerCase()))
 				addImportResult(ImportStatus.GENERIC_INVALID_BOOLEAN, r.getRowNum(), "Is timeseries flag isn't a valid boolean: " + isTimeseries);
 		}
 

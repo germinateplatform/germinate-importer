@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added set size and timeseries flag to traits/phenotypes.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Version bump for release.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.7.4.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ClimateDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ClimateDataImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.8.0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.8.0.jar" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -110,32 +110,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.germinate-importer [:McpdImporter.main()].executor&quot;: &quot;Debug&quot;,
-    &quot;Gradle.germinate-importer [:TraitDataImporter.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.germinate-importer [build].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.germinate-importer [clean].executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/sr41756/workspaces/java/germinate-importer/lib&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.Download Sources.executor": "Run",
+    "Gradle.germinate-importer [:McpdImporter.main()].executor": "Debug",
+    "Gradle.germinate-importer [:TraitDataImporter.main()].executor": "Run",
+    "Gradle.germinate-importer [:jhi.germinate.server.util.importer.TraitDataImporter.main()].executor": "Run",
+    "Gradle.germinate-importer [build].executor": "Run",
+    "Gradle.germinate-importer [clean].executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/sr41756/workspaces/java/germinate-importer/lib",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\sr41756\workspaces\java\germinate-importer\lib" />
@@ -250,8 +251,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.153" />
-        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.153" />
+        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.189" />
+        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.189" />
       </set>
     </attachedChunks>
   </component>
@@ -426,6 +427,14 @@
       <workItem from="1737641470625" duration="405000" />
       <workItem from="1737641882745" duration="900000" />
       <workItem from="1738145283286" duration="4952000" />
+      <workItem from="1738158829420" duration="89000" />
+      <workItem from="1738235555425" duration="1208000" />
+      <workItem from="1738315913921" duration="1191000" />
+      <workItem from="1738571774373" duration="2723000" />
+      <workItem from="1738658464281" duration="7000" />
+      <workItem from="1738761308669" duration="1191000" />
+      <workItem from="1739114052006" duration="24000" />
+      <workItem from="1739357730065" duration="831000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -770,7 +779,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="68" />
+    <option name="localTasksCounter" value="69" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -801,7 +810,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- FIX: Fixed potential issues with germplasm name matching." />
     <MESSAGE value="- CHG: Updated dependencies." />
     <MESSAGE value="- FIX: Fixed issues with Excel genotype importer. It wasn't updating the flat file importer internally.&#10;- CHG: Removed compound importer as it has been merged with trials data templates.&#10;- CHG: Version bump to 4.4.2." />
     <MESSAGE value="- CHG: Version bump to 4.4.2." />
@@ -826,7 +834,8 @@
     <MESSAGE value="- CHG: Adjust trait min max limits if required." />
     <MESSAGE value="- CHG: Updated Gradle to 8.8&#10;- CHG: Removed dataset lookup. Each upload results in a new dataset.&#10;- FIX: Fixed issues with non-breakable whitespaces." />
     <MESSAGE value="- ADD: Added set size and timeseries flag to traits/phenotypes." />
-    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added set size and timeseries flag to traits/phenotypes." />
+    <MESSAGE value="- CHG: Version bump for release." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Version bump for release." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -878,7 +887,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>748</line>
+          <line>756</line>
           <option name="timeStamp" value="38" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -923,27 +932,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>752</line>
+          <line>760</line>
           <option name="timeStamp" value="70" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>774</line>
+          <line>782</line>
           <option name="timeStamp" value="72" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>783</line>
+          <line>791</line>
           <option name="timeStamp" value="74" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>788</line>
+          <line>796</line>
           <option name="timeStamp" value="75" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>426</line>
+          <line>434</line>
           <option name="timeStamp" value="76" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -1047,11 +1056,6 @@
           <option name="timeStamp" value="109" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java</url>
-          <line>47</line>
-          <option name="timeStamp" value="111" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java</url>
           <line>55</line>
           <option name="timeStamp" value="113" />
@@ -1103,6 +1107,11 @@
             <option name="lambda-ordinal" value="-1" />
           </properties>
           <option name="timeStamp" value="124" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>515</line>
+          <option name="timeStamp" value="126" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
