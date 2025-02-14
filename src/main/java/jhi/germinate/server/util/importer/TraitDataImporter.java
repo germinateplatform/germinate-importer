@@ -61,18 +61,11 @@ public class TraitDataImporter extends DatasheetImporter
 	public static void main(String[] args)
 			throws SQLException, IOException
 	{
-//		if (args.length != 6)
-//			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
-//
-//		TraitDataImporter importer = new TraitDataImporter(Integer.parseInt(args[5]));
-//		importer.init(args);
-//		importer.run();
+		if (args.length != 6)
+			throw new RuntimeException("Invalid number of arguments: " + Arrays.toString(args));
 
-		List<String> argsList = Arrays.asList("localhost", "germinate_demo", "", "root", "", "c:/Users/sr41756/germinate/demo/", "c:/Users/sr41756/Downloads/trials-data-timeseries.xlsx", RunType.CHECK.name(), "109");
-		String[] arrrgs = argsList.toArray(new String[0]);
-
-		TraitDataImporter importer = new TraitDataImporter(createImportJobFromCommandline(arrrgs, DataImportJobsDatatype.trial));
-		importer.init(arrrgs);
+		TraitDataImporter importer = new TraitDataImporter(Integer.parseInt(args[5]));
+		importer.init(args);
 		importer.run();
 	}
 
