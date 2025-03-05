@@ -181,9 +181,7 @@ public class ClimateDataImporter extends DatasheetImporter
 		{
 			String climateName = getCellValue(r, i);
 			if (!StringUtils.isEmpty(climateName) && !climateDefinitions.containsKey(climateName))
-			{
 				addImportResult(ImportStatus.CLIMATE_MISSING_CLIMATE_DECLARATION, 0, climateName);
-			}
 		}
 	}
 
@@ -545,7 +543,7 @@ public class ClimateDataImporter extends DatasheetImporter
 
 					Integer climateId = climateNameToId.get(name);
 
-					Double value = getCellValueDouble(dataRow, c);
+					String value = getCellValue(dataRow, c);
 
 					if (value == null)
 						continue;
