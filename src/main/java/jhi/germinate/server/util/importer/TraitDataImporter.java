@@ -293,7 +293,9 @@ public class TraitDataImporter extends DatasheetImporter
 		{
 			try
 			{
-				Short.parseShort(row);
+				double v = Double.parseDouble(row);
+				if (v < -32768 || v > 32767 || v != (short) v)
+					throw new NumberFormatException();
 			}
 			catch (NumberFormatException e)
 			{
@@ -305,7 +307,9 @@ public class TraitDataImporter extends DatasheetImporter
 		{
 			try
 			{
-				Short.parseShort(column);
+				double v = Double.parseDouble(column);
+				if (v < -32768 || v > 32767 || v != (short) v)
+					throw new NumberFormatException();
 			}
 			catch (NumberFormatException e)
 			{
@@ -660,7 +664,7 @@ public class TraitDataImporter extends DatasheetImporter
 				// Get all the traits that have restrictions
 				List<String> traitsWithRestrictions = traitDefinitions.values().stream()
 																	  .filter(t -> !StringUtils.isEmpty(t.getName()))
-																	  .filter(t -> t.getRestrictions() != null)
+																	  .filter(t -> t.getRestrictions() != null && (t.getDatatype() == PhenotypesDatatype.numeric || t.getDatatype() == PhenotypesDatatype.categorical))
 																	  .map(Phenotypes::getName)
 																	  .toList();
 
@@ -728,6 +732,26 @@ public class TraitDataImporter extends DatasheetImporter
 											 found = true;
 											 break outer;
 										 }
+										 else
+										 {
+											 // Try parsing both as numbers, then compare
+											 try
+											 {
+												 double one = Double.parseDouble(cellValue);
+												 double two = Double.parseDouble(possValue);
+
+												 // Fuzzy double comparison
+												 if ((one == two) || (Math.abs(one - two) < 0.000001d))
+												 {
+													 found = true;
+													 break outer;
+												 }
+											 }
+											 catch (Exception e)
+											 {
+												 // Ignore
+											 }
+										 }
 									 }
 								 }
 
@@ -761,6 +785,10 @@ public class TraitDataImporter extends DatasheetImporter
 					  s.openStream()
 					   .findFirst()
 					   .ifPresent(this::getTraitHeaderMapping);
+					  // Check the sheet to get the trait mapping
+					  s.openStream()
+					   .skip(1)
+					   .forEachOrdered(this::checkTrait);
 				  }
 				  catch (IOException e)
 				  {
@@ -936,7 +964,7 @@ public class TraitDataImporter extends DatasheetImporter
 				 String setSizeString = getCellValue(r, traitColumnNameToIndex.get("Set Size"));
 				 String isTimeseriesString = getCellValue(r, traitColumnNameToIndex.get("Is timeseries"));
 				 Integer setSize = null;
-				 Boolean isTimeseries = null;
+				 Boolean isTimeseries = false;
 
 				 if (!StringUtils.isEmpty(setSizeString))
 					 setSize = Integer.parseInt(setSizeString);
@@ -1203,6 +1231,7 @@ public class TraitDataImporter extends DatasheetImporter
 						continue;
 
 					Integer traitId = traitNameToId.get(name);
+					Phenotypes trait = traitDefinitions.get(name);
 
 					String value = getCellValue(dataRow, c);
 
@@ -1213,6 +1242,44 @@ public class TraitDataImporter extends DatasheetImporter
 
 					if (datesRow != null)
 						date = getCellValueDate(datesRow, c);
+
+					// See if it's a date column, if so, get the actual date value, then reformat
+					if (trait.getDatatype() == PhenotypesDatatype.date)
+					{
+						Date dateValue = getCellValueDate(dataRow, c);
+
+						if (dateValue != null)
+							value = SDF_FULL_DASH.format(dateValue);
+					}
+
+					// See if we can match the value to its actual trait category restriction equivalent. This is used to map e.g. "2.0" to "2".
+					if (trait.getRestrictions() != null && trait.getRestrictions().getCategories() != null)
+					{
+						outer:
+						for (String[] categoryGroup : trait.getRestrictions().getCategories())
+						{
+							for (String cat : categoryGroup)
+							{
+								// Try parsing both as numbers, then compare
+								try
+								{
+									double one = Double.parseDouble(cat);
+									double two = Double.parseDouble(value);
+
+									// Fuzzy double comparison
+									if ((one == two) || (Math.abs(one - two) < 0.000001d))
+									{
+										value = cat;
+										break outer;
+									}
+								}
+								catch (Exception e)
+								{
+									// Ignore
+								}
+							}
+						}
+					}
 
 					PhenotypedataRecord record = context.newRecord(PHENOTYPEDATA);
 					record.setTrialsetupId(rowToTrialsetupId.get(r));

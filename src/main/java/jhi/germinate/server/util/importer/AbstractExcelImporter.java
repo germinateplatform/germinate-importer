@@ -2,7 +2,7 @@ package jhi.germinate.server.util.importer;
 
 import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.tables.records.*;
-import jhi.germinate.server.database.pojo.ImportStatus;
+import jhi.germinate.server.database.pojo.*;
 import jhi.germinate.server.util.StringUtils;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
@@ -12,6 +12,7 @@ import java.math.*;
 import java.nio.file.*;
 import java.sql.Date;
 import java.sql.*;
+import java.time.*;
 import java.util.*;
 
 import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
@@ -22,6 +23,8 @@ import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
  */
 public abstract class AbstractExcelImporter extends AbstractImporter
 {
+	private static final ReadingOptions OPTIONS = new ReadingOptions(true, true);
+
 	public AbstractExcelImporter(Integer importJobId)
 	{
 		super(importJobId);
@@ -136,7 +139,11 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 	{
 		try
 		{
-			return Short.parseShort(getCellValue(r, columnNameToIndex, column));
+			double v = Double.parseDouble(getCellValue(r, columnNameToIndex, column));
+			if (v < -32768 || v > 32767 || v != (short) v)
+				return null;
+			else
+				return (short) v;
 		}
 		catch (Exception e)
 		{
@@ -168,7 +175,7 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 					{
 					}
 				}
-				else
+				else if (value.length() == 8)
 				{
 					// Replace all hyphens with zeros so that we only have one case to handle.
 					value = value.replace("-", "0");
@@ -186,6 +193,25 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 							date = SDF_YEAR_DAY.parse(value.substring(0, 4) + value.substring(6, 8));
 						else
 							date = SDF_FULL.parse(value);
+					}
+					catch (Exception e)
+					{
+					}
+				}
+				else
+				{
+					try
+					{
+						// This is a bit of a hack, since FastExcel doesn't give us a reliable way of determining if a cell is a date or not.
+						// So we basically try and convert it to a date, then check if it's within a "valid/acceptable" range
+						LocalDateTime start = LocalDateTime.of(-3000, 1, 1, 0, 0);
+						LocalDateTime end = LocalDateTime.of(3000, 12, 31, 23, 59);
+						LocalDateTime dateTime = r.getCell(index).asDate();
+
+						if (dateTime.isAfter(start) && dateTime.isBefore(end))
+						{
+							date = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+						}
 					}
 					catch (Exception e)
 					{
@@ -285,7 +311,7 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 	@Override
 	protected final void checkFile()
 	{
-		try (ReadableWorkbook wb = new ReadableWorkbook(this.getInputFile()))
+		try (ReadableWorkbook wb = new ReadableWorkbook(this.getInputFile(), OPTIONS))
 		{
 			checkFile(wb);
 		}
@@ -298,7 +324,7 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 	@Override
 	protected final void importFile()
 	{
-		try (ReadableWorkbook wb = new ReadableWorkbook(this.getInputFile()))
+		try (ReadableWorkbook wb = new ReadableWorkbook(this.getInputFile(), OPTIONS))
 		{
 			importFile(wb);
 		}
@@ -311,7 +337,7 @@ public abstract class AbstractExcelImporter extends AbstractImporter
 	@Override
 	protected final void updateFile()
 	{
-		try (ReadableWorkbook wb = new ReadableWorkbook(this.getInputFile()))
+		try (ReadableWorkbook wb = new ReadableWorkbook(this.getInputFile(), OPTIONS))
 		{
 			updateFile(wb);
 		}
