@@ -7,9 +7,9 @@
     <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Improved handling of dates during data import.&#10;- CHG: Improved handling of issues with data category equality. E.g. categories 1,2,3, value retrieved from Excel is 2.0.&#10;- CHG: Version bump.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.8.3.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.8.4.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.8.2.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.8.4.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.8.4.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.8.8.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.8.4.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.8.8.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -150,19 +150,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Gradle.germinate-importer [build]">
-    <configuration name="AbstractExcelImporter (1)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.AbstractExcelImporter" />
-      <module name="germinate-importer.main" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="AbstractExcelImporter (2)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.AbstractExcelImporter" />
       <module name="germinate-importer.main" />
@@ -178,6 +165,19 @@
     </configuration>
     <configuration name="AbstractExcelImporter (3)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.AbstractExcelImporter" />
+      <module name="germinate-importer.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TraitDataImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.TraitDataImporter" />
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
@@ -234,7 +234,7 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Application.AbstractExcelImporter (1)" />
+      <item itemvalue="Application.TraitDataImporter" />
       <item itemvalue="Application.AbstractExcelImporter (2)" />
       <item itemvalue="Application.AbstractExcelImporter (3)" />
       <item itemvalue="Gradle.germinate-importer [build]" />
@@ -244,17 +244,17 @@
       <list>
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
+        <item itemvalue="Application.TraitDataImporter" />
         <item itemvalue="Application.AbstractExcelImporter (3)" />
         <item itemvalue="Application.AbstractExcelImporter (2)" />
-        <item itemvalue="Application.AbstractExcelImporter (1)" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.25659.39" />
-        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.25659.39" />
+        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.26927.53" />
+        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-IU-251.26927.53" />
       </set>
     </attachedChunks>
   </component>
@@ -452,6 +452,22 @@
       <workItem from="1742892607301" duration="1627000" />
       <workItem from="1742896166182" duration="1084000" />
       <workItem from="1742900032148" duration="29000" />
+      <workItem from="1742900065094" duration="647000" />
+      <workItem from="1742973661088" duration="819000" />
+      <workItem from="1743060224017" duration="3788000" />
+      <workItem from="1743492022674" duration="172000" />
+      <workItem from="1745400730000" duration="781000" />
+      <workItem from="1747651159917" duration="1252000" />
+      <workItem from="1750336154422" duration="23000" />
+      <workItem from="1750665906836" duration="700000" />
+      <workItem from="1750750827973" duration="1311000" />
+      <workItem from="1750834784337" duration="929000" />
+      <workItem from="1750927993731" duration="2477000" />
+      <workItem from="1751029050084" duration="775000" />
+      <workItem from="1751035874929" duration="554000" />
+      <workItem from="1751271753267" duration="1789000" />
+      <workItem from="1752581643304" duration="278000" />
+      <workItem from="1752581941254" duration="903000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -796,7 +812,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="72" />
+    <option name="localTasksCounter" value="73" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -827,7 +843,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Version bump to 4.4.2." />
     <MESSAGE value="- CHG: Updates to accommodate row/column index for phenotypic data." />
     <MESSAGE value="- ADD: Added importer for trials data shapefiles.&#10;- ADD: Added WARNING status codes in addition to just ERROR" />
     <MESSAGE value="- ADD: Added import job stat counts.&#10;- CHG: Changed the experiment that will be created by dataset imports to use a generic experiment. Can be re-assigned in the UI later." />
@@ -852,7 +867,8 @@
     <MESSAGE value="- CHG: Version bump for release." />
     <MESSAGE value="- FIX: Fixed error with trait data import and new timeseries flag." />
     <MESSAGE value="- FIX: Fixed issue with import of non-numeric environmental variables." />
-    <option name="LAST_COMMIT_MESSAGE" value="- FIX: Fixed issue with import of non-numeric environmental variables." />
+    <MESSAGE value="- CHG: Improved handling of dates during data import.&#10;- CHG: Improved handling of issues with data category equality. E.g. categories 1,2,3, value retrieved from Excel is 2.0.&#10;- CHG: Version bump." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Improved handling of dates during data import.&#10;- CHG: Improved handling of issues with data category equality. E.g. categories 1,2,3, value retrieved from Excel is 2.0.&#10;- CHG: Version bump." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -966,11 +982,6 @@
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
           <line>817</line>
           <option name="timeStamp" value="75" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>431</line>
-          <option name="timeStamp" value="76" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java</url>
@@ -1126,14 +1137,19 @@
           <option name="timeStamp" value="124" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>512</line>
-          <option name="timeStamp" value="126" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java</url>
           <line>160</line>
           <option name="timeStamp" value="128" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>664</line>
+          <option name="timeStamp" value="130" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>604</line>
+          <option name="timeStamp" value="131" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

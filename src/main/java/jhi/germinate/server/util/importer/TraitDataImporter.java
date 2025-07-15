@@ -620,7 +620,7 @@ public class TraitDataImporter extends DatasheetImporter
 				List<PhenotypesDatatype> dataTypes = headers.stream()
 															.skip(this.traitColumnStartIndex)
 															.map(this::getCellValue)
-															.filter(c -> !StringUtils.isEmpty(c))
+															.filter(c -> !StringUtils.isEmpty(c) && traitDefinitions.containsKey(c))
 															.map(c -> traitDefinitions.get(c).getDatatype())
 															.collect(Collectors.toList());
 
