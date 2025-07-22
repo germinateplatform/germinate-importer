@@ -5,8 +5,9 @@ import jhi.germinate.server.database.codegen.enums.PedigreesRelationshipType;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
 import jhi.germinate.server.util.*;
-import org.dhatim.fastexcel.reader.Row;
+import jhi.germinate.server.util.importer.util.GermplasmNotFoundException;
 import org.dhatim.fastexcel.reader.*;
+import org.dhatim.fastexcel.reader.Row;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 
@@ -14,11 +15,10 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
-import static jhi.germinate.server.database.codegen.tables.Pedigreedefinitions.*;
-import static jhi.germinate.server.database.codegen.tables.Pedigreedescriptions.*;
-import static jhi.germinate.server.database.codegen.tables.Pedigreenotations.*;
-import static jhi.germinate.server.database.codegen.tables.Pedigrees.*;
+import static jhi.germinate.server.database.codegen.tables.Pedigreedefinitions.PEDIGREEDEFINITIONS;
+import static jhi.germinate.server.database.codegen.tables.Pedigreedescriptions.PEDIGREEDESCRIPTIONS;
+import static jhi.germinate.server.database.codegen.tables.Pedigreenotations.PEDIGREENOTATIONS;
+import static jhi.germinate.server.database.codegen.tables.Pedigrees.PEDIGREES;
 
 /**
  * @author Sebastian Raubach
@@ -36,10 +36,11 @@ public class PedigreeImporter extends DatasheetImporter
 	public static String FIELD_NOTATION = "Pedigree Notation";
 
 
-	private final Map<String, Integer> germplasmToId           = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer> notationToId            = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private       Map<String, Integer> pedigreeDescriptionToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final Set<Integer> germplasmIds = new HashSet<>();
+	private final Set<Integer>         germplasmIds            = new HashSet<>();
+
+	private GermplasmLookup germplasmLookup;
 
 	public static void main(String[] args)
 	{
@@ -66,11 +67,11 @@ public class PedigreeImporter extends DatasheetImporter
 	{
 		super.prepare();
 
+		germplasmLookup = new GermplasmLookup();
+
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			context.selectFrom(GERMINATEBASE).forEach(g -> germplasmToId.put(g.getName(), g.getId()));
-
 			Field<String> concat = PEDIGREEDESCRIPTIONS.NAME.concat("|").concat(DSL.coalesce(PEDIGREEDESCRIPTIONS.AUTHOR, "null"));
 			pedigreeDescriptionToId = context.select(concat, PEDIGREEDESCRIPTIONS.ID).from(PEDIGREEDESCRIPTIONS).fetchMap(concat, PEDIGREEDESCRIPTIONS.ID);
 
@@ -116,7 +117,8 @@ public class PedigreeImporter extends DatasheetImporter
 						String description = getCellValue(headers, 4);
 						String author = getCellValue(headers, 5);
 
-						if (!Objects.equals(accenumb, FIELD_ACCENUMB)) addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_ACCENUMB);
+						if (!Objects.equals(accenumb, FIELD_ACCENUMB))
+							addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_ACCENUMB);
 						if (!Objects.equals(parentOne, FIELD_ACCENUMB_PARENT_1))
 							addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_ACCENUMB_PARENT_1);
 						if (!Objects.equals(parentTwo, FIELD_ACCENUMB_PARENT_2))
@@ -125,7 +127,8 @@ public class PedigreeImporter extends DatasheetImporter
 							addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_DESCRIPTION_PROCEDURE);
 						if (!Objects.equals(description, FIELD_DESCRIPTION))
 							addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_DESCRIPTION);
-						if (!Objects.equals(author, FIELD_AUTHOR)) addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_AUTHOR);
+						if (!Objects.equals(author, FIELD_AUTHOR))
+							addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_AUTHOR);
 					}
 
 					for (int i = 1; i < rows.size(); i++)
@@ -139,11 +142,39 @@ public class PedigreeImporter extends DatasheetImporter
 						String parentTwo = getCellValue(row, 2);
 						String description = getCellValue(row, 4);
 
-						if (!germplasmToId.containsKey(accenumb)) addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, row.getRowNum(), accenumb);
-						if (!StringUtils.isEmpty(parentOne) && !germplasmToId.containsKey(parentOne))
-							addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, row.getRowNum(), parentOne);
-						if (!StringUtils.isEmpty(parentTwo) && !germplasmToId.containsKey(parentTwo))
-							addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, row.getRowNum(), parentTwo);
+						try
+						{
+							germplasmLookup.getGermplasmId(accenumb);
+						}
+						catch (GermplasmNotFoundException e)
+						{
+							addImportResult(e.getReason(), row.getRowNum(), accenumb);
+						}
+
+						if (!StringUtils.isEmpty(parentOne))
+						{
+							try
+							{
+								germplasmLookup.getGermplasmId(parentOne);
+							}
+							catch (GermplasmNotFoundException e)
+							{
+								addImportResult(e.getReason(), row.getRowNum(), parentOne);
+							}
+						}
+
+						if (!StringUtils.isEmpty(parentTwo))
+						{
+							try
+							{
+								germplasmLookup.getGermplasmId(parentTwo);
+							}
+							catch (GermplasmNotFoundException e)
+							{
+								addImportResult(e.getReason(), row.getRowNum(), parentTwo);
+							}
+						}
+
 						if (StringUtils.isEmpty(description))
 							addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, row.getRowNum(), FIELD_DESCRIPTION_PROCEDURE);
 					}
@@ -177,9 +208,12 @@ public class PedigreeImporter extends DatasheetImporter
 						String str = getCellValue(headers, 1);
 						String notation = getCellValue(headers, 2);
 
-						if (!Objects.equals(accenumb, FIELD_ACCENUMB)) addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_ACCENUMB);
-						if (!Objects.equals(str, FIELD_STRING)) addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_STRING);
-						if (!Objects.equals(notation, FIELD_NOTATION)) addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_NOTATION);
+						if (!Objects.equals(accenumb, FIELD_ACCENUMB))
+							addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_ACCENUMB);
+						if (!Objects.equals(str, FIELD_STRING))
+							addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_STRING);
+						if (!Objects.equals(notation, FIELD_NOTATION))
+							addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 1, FIELD_NOTATION);
 					}
 
 					for (int i = 1; i < rows.size(); i++)
@@ -192,8 +226,17 @@ public class PedigreeImporter extends DatasheetImporter
 						String str = getCellValue(row, 1);
 						String notation = getCellValue(row, 2);
 
-						if (!germplasmToId.containsKey(accenumb)) addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, row.getRowNum(), accenumb);
-						if (StringUtils.isEmpty(str)) addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, row.getRowNum(), FIELD_STRING);
+						try
+						{
+							germplasmLookup.getGermplasmId(accenumb);
+						}
+						catch (GermplasmNotFoundException e)
+						{
+							addImportResult(e.getReason(), row.getRowNum(), accenumb);
+						}
+
+						if (StringUtils.isEmpty(str))
+							addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, row.getRowNum(), FIELD_STRING);
 						if (StringUtils.isEmpty(notation))
 							addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, row.getRowNum(), FIELD_NOTATION);
 					}
@@ -225,9 +268,9 @@ public class PedigreeImporter extends DatasheetImporter
 					String description = getCellValue(r, 4);
 					String author = getCellValue(r, 5);
 
-					Integer germplasmId = germplasmToId.get(accenumb);
-					Integer parentOneId = germplasmToId.get(parentOne);
-					Integer parentTwoId = StringUtils.isEmpty(parentTwo) ? null : germplasmToId.get(parentTwo);
+					Integer germplasmId = germplasmLookup.getGermplasmId(accenumb);
+					Integer parentOneId = germplasmLookup.getGermplasmId(parentOne);
+					Integer parentTwoId = StringUtils.isEmpty(parentTwo) ? null : germplasmLookup.getGermplasmId(parentTwo);
 					Integer descriptionId = pedigreeDescriptionToId.get(description + "|" + author);
 
 					if (germplasmId != null)
@@ -290,7 +333,7 @@ public class PedigreeImporter extends DatasheetImporter
 					String str = getCellValue(r, 1);
 					String notation = getCellValue(r, 2);
 
-					Integer germplasmId = germplasmToId.get(accenumb);
+					Integer germplasmId = germplasmLookup.getGermplasmId(accenumb);
 					Integer notationId = notationToId.get(notation);
 
 					if (germplasmId != null)

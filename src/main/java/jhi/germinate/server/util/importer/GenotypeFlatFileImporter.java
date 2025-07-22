@@ -6,6 +6,7 @@ import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
 import jhi.germinate.server.util.*;
 import jhi.germinate.server.util.importer.task.*;
+import jhi.germinate.server.util.importer.util.GermplasmNotFoundException;
 import org.jooq.DSLContext;
 
 import java.io.*;
@@ -15,24 +16,22 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Datasets.*;
-import static jhi.germinate.server.database.codegen.tables.Experiments.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
-import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
-import static jhi.germinate.server.database.codegen.tables.Mapfeaturetypes.*;
-import static jhi.germinate.server.database.codegen.tables.Maps.*;
-import static jhi.germinate.server.database.codegen.tables.Markers.*;
-import static jhi.germinate.server.database.codegen.tables.Markertypes.*;
+import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.DATASETFILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Datasets.DATASETS;
+import static jhi.germinate.server.database.codegen.tables.Experiments.EXPERIMENTS;
+import static jhi.germinate.server.database.codegen.tables.Fileresources.FILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.FILERESOURCETYPES;
+import static jhi.germinate.server.database.codegen.tables.Mapfeaturetypes.MAPFEATURETYPES;
+import static jhi.germinate.server.database.codegen.tables.Maps.MAPS;
+import static jhi.germinate.server.database.codegen.tables.Markers.MARKERS;
+import static jhi.germinate.server.database.codegen.tables.Markertypes.MARKERTYPES;
 
 /**
  * @author Sebastian Raubach
  */
 public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 {
-	private final Map<String, Integer> germplasmToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final Map<String, Integer> markerToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer> markerToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private       File                 hdf5TargetFolder;
 
 	private       String[]            markers       = null;
@@ -48,7 +47,10 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 
 	private CountDownLatch latch;
 
-	public static void main(String[] args) throws SQLException, IOException
+	private GermplasmLookup germplasmLookup;
+
+	public static void main(String[] args)
+			throws SQLException, IOException
 	{
 		GenotypeFlatFileImporter importer;
 
@@ -77,14 +79,14 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 	@Override
 	protected void prepare()
 	{
+		germplasmLookup = new GermplasmLookup();
+
 		this.hdf5TargetFolder = new File(new File(this.jobDetails.getJobConfig().getBaseFolder(), "data"), "genotypes");
 		this.hdf5TargetFolder.mkdirs();
 
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			context.selectFrom(GERMINATEBASE)
-				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 			context.selectFrom(MARKERS)
 				   .forEach(m -> markerToId.put(m.getMarkerName(), m.getId()));
 		}
@@ -208,11 +210,18 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 
 				String germplasm = line.substring(0, index);
 
-				if (!germplasmToId.containsKey(germplasm))
-					addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, counter, germplasm);
+				try
+				{
+					germplasmLookup.getGermplasmId(germplasm);
+				}
+				catch (GermplasmNotFoundException e)
+				{
+					addImportResult(e.getReason(), counter, germplasm);
+				}
 
 				counter++;
-			} while ((line = br.readLine()) != null);
+			}
+			while ((line = br.readLine()) != null);
 		}
 		catch (IOException e)
 		{
@@ -221,7 +230,7 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 	}
 
 	private String readHeaders(BufferedReader br)
-		throws IOException
+			throws IOException
 	{
 		String line;
 
@@ -292,7 +301,7 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 
 				// Remember the germplasm ids
 				String germplasm = line.substring(0, index);
-				germplasmIdsInFile.add(germplasmToId.get(germplasm));
+				germplasmIdsInFile.add(germplasmLookup.getGermplasmId(germplasm));
 			}
 			while ((line = br.readLine()) != null);
 
@@ -404,13 +413,13 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 
 					// Start the mapdefinition importer
 					new Thread(new MapdefinitionImporterTask(
-						markers,
-						markerIds,
-						map.getId(),
-						mapFeatureType.getId(),
-						chromosomes,
-						positions,
-						this::addImportResult)
+							markers,
+							markerIds,
+							map.getId(),
+							mapFeatureType.getId(),
+							chromosomes,
+							positions,
+							this::addImportResult)
 					{
 						@Override
 						protected void onFinished()
@@ -432,10 +441,10 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 
 			// Import the dataset members
 			new Thread(new DatasetMemberImporterTask(
-				markerIdsInFile,
-				germplasmIdsInFile,
-				dataset.getId(),
-				this::addImportResult)
+					markerIdsInFile,
+					germplasmIdsInFile,
+					dataset.getId(),
+					this::addImportResult)
 			{
 				@Override
 				protected void onFinished()
@@ -500,5 +509,17 @@ public class GenotypeFlatFileImporter extends AbstractFlatFileImporter
 	{
 		// We don't update, just import
 		this.importFile(br);
+	}
+
+	@Override
+	protected int getMarkerCount()
+	{
+		return markerIdsInFile.size();
+	}
+
+	@Override
+	protected int getGermplasmCount()
+	{
+		return germplasmIdsInFile.size();
 	}
 }

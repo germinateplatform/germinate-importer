@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.sql.*;
 import java.util.Set;
 
-import static jhi.germinate.server.database.codegen.tables.Datasetmembers.*;
+import static jhi.germinate.server.database.codegen.tables.Datasetmembers.DATASETMEMBERS;
 
 public abstract class DatasetMemberImporterTask implements Runnable
 {

@@ -20,11 +20,8 @@ public class GenotypeExcelImporter extends DatasheetImporter
 	private              File                     txtFile;
 	private              GenotypeFlatFileImporter flatFileImporter;
 
-	private final Set<Integer> germplasmIds = new HashSet<>();
-	private final Set<Integer> markerIds    = new HashSet<>();
-
 	public static void main(String[] args)
-		throws SQLException, IOException
+			throws SQLException, IOException
 	{
 		GenotypeExcelImporter importer;
 
@@ -188,7 +185,7 @@ public class GenotypeExcelImporter extends DatasheetImporter
 		super.postImport();
 
 		importJobStats.setDatasetId(dataset.getId());
-		importJobStats.setGermplasm(germplasmIds.size());
-		importJobStats.setMarkers(markerIds.size());
+		importJobStats.setGermplasm(flatFileImporter.getGermplasmCount());
+		importJobStats.setMarkers(flatFileImporter.getMarkerCount());
 	}
 }

@@ -57,4 +57,8 @@ public abstract class AbstractFlatFileImporter extends AbstractImporter
 	protected abstract void importFile(BufferedReader br);
 
 	protected abstract void updateFile(BufferedReader br);
+
+	protected abstract int getMarkerCount();
+
+	protected abstract int getGermplasmCount();
 }

@@ -9,7 +9,7 @@ import java.util.*;
 public class GdalUtils
 {
 	public static GdalInfo gdalinfo(File file)
-		throws IOException, InterruptedException
+			throws IOException, InterruptedException
 	{
 		List<String> params = new ArrayList<>();
 		params.add("gdalinfo");
@@ -33,7 +33,7 @@ public class GdalUtils
 	}
 
 	public static boolean gdalwarp(File input, File output)
-		throws IOException, InterruptedException
+			throws IOException, InterruptedException
 	{
 		List<String> params = new ArrayList<>();
 		params.add("gdalwarp");
@@ -58,7 +58,7 @@ public class GdalUtils
 	}
 
 	public static boolean gdal_translate(File input, File output)
-		throws IOException, InterruptedException
+			throws IOException, InterruptedException
 	{
 		List<String> params = new ArrayList<>();
 
@@ -101,7 +101,7 @@ public class GdalUtils
 	}
 
 	private static String captureJsonOutput(Process process)
-		throws IOException
+			throws IOException
 	{
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream())))
 		{
@@ -115,7 +115,8 @@ public class GdalUtils
 			{
 				buffer.append(line);
 				line = reader.readLine();
-			} while (line != null);
+			}
+			while (line != null);
 
 			return buffer.toString();
 		}

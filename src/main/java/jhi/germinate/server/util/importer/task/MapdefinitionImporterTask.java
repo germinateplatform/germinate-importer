@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.*;
 
-import static jhi.germinate.server.database.codegen.tables.Mapdefinitions.*;
+import static jhi.germinate.server.database.codegen.tables.Mapdefinitions.MAPDEFINITIONS;
 
 public abstract class MapdefinitionImporterTask implements Runnable
 {

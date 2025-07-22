@@ -3,6 +3,7 @@ package jhi.germinate.server.util.importer;
 import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
+import jhi.germinate.server.util.importer.util.GermplasmNotFoundException;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 import org.jooq.tools.StringUtils;
@@ -12,25 +13,25 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
-import static jhi.germinate.server.database.codegen.tables.Groupmembers.*;
-import static jhi.germinate.server.database.codegen.tables.Groups.*;
-import static jhi.germinate.server.database.codegen.tables.Locations.*;
-import static jhi.germinate.server.database.codegen.tables.Markers.*;
+import static jhi.germinate.server.database.codegen.tables.Groupmembers.GROUPMEMBERS;
+import static jhi.germinate.server.database.codegen.tables.Groups.GROUPS;
+import static jhi.germinate.server.database.codegen.tables.Locations.LOCATIONS;
+import static jhi.germinate.server.database.codegen.tables.Markers.MARKERS;
 
 /**
  * @author Sebastian Raubach
  */
 public class GroupImporter extends AbstractExcelImporter
 {
-	private final Map<String, Integer> accenumbToId     = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer> markerNameToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
+	private final Set<Integer> markerIds    = new HashSet<>();
+	private final Set<Integer> locationIds  = new HashSet<>();
+	private final Set<Integer> groupIds     = new HashSet<>();
 	private final Set<Integer> germplasmIds = new HashSet<>();
-	private final Set<Integer> markerIds = new HashSet<>();
-	private final Set<Integer> locationIds = new HashSet<>();
-	private final Set<Integer> groupIds = new HashSet<>();
+
+	private GermplasmLookup germplasmLookup;
 
 	private final Map<Integer, Map<Integer, Integer>> groupIndexToIdPerType = new HashMap<>();
 
@@ -58,12 +59,11 @@ public class GroupImporter extends AbstractExcelImporter
 	@Override
 	protected void prepare()
 	{
+		germplasmLookup = new GermplasmLookup();
+
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			context.selectFrom(GERMINATEBASE)
-				   .forEach(g -> accenumbToId.put(g.getName(), g.getId()));
-
 			context.selectFrom(MARKERS)
 				   .forEach(m -> markerNameToId.put(m.getMarkerName(), m.getId()));
 
@@ -230,8 +230,14 @@ public class GroupImporter extends AbstractExcelImporter
 
 		String germplasm = getCellValue(r, 0);
 
-		if (!accenumbToId.containsKey(germplasm))
-			addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, r.getRowNum(), germplasm);
+		try
+		{
+			germplasmLookup.getGermplasmId(germplasm);
+		}
+		catch (GermplasmNotFoundException e)
+		{
+			addImportResult(e.getReason(), r.getRowNum(), germplasm);
+		}
 
 		checkCells(r);
 	}
@@ -292,7 +298,7 @@ public class GroupImporter extends AbstractExcelImporter
 	}
 
 	private void importGroupMembers(DSLContext context, Sheet s, int groupTypeId)
-		throws IOException
+			throws IOException
 	{
 		List<GroupmembersRecord> newGroupMembers = new ArrayList<>();
 
@@ -327,7 +333,7 @@ public class GroupImporter extends AbstractExcelImporter
 							 markerIds.add(groupMember.getForeignId());
 							 break;
 						 case 3:
-							 groupMember.setForeignId(accenumbToId.get(identifier));
+							 groupMember.setForeignId(germplasmLookup.getGermplasmId(identifier));
 							 germplasmIds.add(groupMember.getForeignId());
 							 break;
 					 }

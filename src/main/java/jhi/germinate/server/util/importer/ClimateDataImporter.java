@@ -10,16 +10,16 @@ import jhi.germinate.server.util.StringUtils;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
-import java.io.*;
-import java.sql.Date;
+import java.io.IOException;
 import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
 
-import static jhi.germinate.server.database.codegen.tables.Climatedata.*;
-import static jhi.germinate.server.database.codegen.tables.Climates.*;
-import static jhi.germinate.server.database.codegen.tables.Units.*;
+import static jhi.germinate.server.database.codegen.tables.Climatedata.CLIMATEDATA;
+import static jhi.germinate.server.database.codegen.tables.Climates.CLIMATES;
+import static jhi.germinate.server.database.codegen.tables.Units.UNITS;
 
 /**
  * @author Sebastian Raubach
@@ -285,14 +285,14 @@ public class ClimateDataImporter extends DatasheetImporter
 			if (headers != null)
 			{
 				List<String> climateHeaders = headers.stream()
-											   .skip(2)
-											   .map(this::getCellValue)
-											   .filter(c -> !StringUtils.isEmpty(c))
-											   .toList();
+													 .skip(2)
+													 .map(this::getCellValue)
+													 .filter(c -> !StringUtils.isEmpty(c))
+													 .toList();
 				// Get the data type for each column
 				List<ClimatesDatatype> dataTypes = climateHeaders.stream()
-														  .map(c -> climateDefinitions.get(c).getDatatype())
-														  .toList();
+																 .map(c -> climateDefinitions.get(c).getDatatype())
+																 .toList();
 
 				// Now check them to make sure their content fits the data type
 				s.openStream()
@@ -314,13 +314,13 @@ public class ClimateDataImporter extends DatasheetImporter
 								 }
 								 catch (NumberFormatException e)
 								 {
-									 addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Value of a numeric climate " + climateHeaders.get(i - 2) +" isn't a number: " + cellValue);
+									 addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Value of a numeric climate " + climateHeaders.get(i - 2) + " isn't a number: " + cellValue);
 								 }
 								 break;
 							 case date:
 								 Date date = getCellValueDate(r, i);
 								 if (date == null)
-									 addImportResult(ImportStatus.GENERIC_INVALID_DATE, r.getRowNum(), "Value of a date climate " + climateHeaders.get(i - 2) +" isn't a date: " + cellValue);
+									 addImportResult(ImportStatus.GENERIC_INVALID_DATE, r.getRowNum(), "Value of a date climate " + climateHeaders.get(i - 2) + " isn't a date: " + cellValue);
 								 break;
 
 							 case categorical:

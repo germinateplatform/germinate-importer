@@ -15,7 +15,7 @@ import java.time.*;
 import java.util.*;
 import java.util.logging.*;
 
-import static jhi.germinate.server.database.codegen.tables.DataImportJobs.*;
+import static jhi.germinate.server.database.codegen.tables.DataImportJobs.DATA_IMPORT_JOBS;
 
 public abstract class AbstractImporter
 {
@@ -28,7 +28,7 @@ public abstract class AbstractImporter
 	protected final Integer                         importJobId;
 	protected       DataImportJobs                  jobDetails;
 	private         File                            inputFile;
-	private         Map<ImportStatus, ImportResult> errorMap = new HashMap<>();
+	private         Map<ImportStatus, ImportResult> errorMap       = new HashMap<>();
 	private         String[]                        args;
 	protected       ImportJobStats                  importJobStats = new ImportJobStats();
 
@@ -44,7 +44,9 @@ public abstract class AbstractImporter
 		return Arrays.copyOf(args, args.length);
 	}
 
-	protected static Integer createImportJobFromCommandline(String[] args, DataImportJobsDatatype type) throws IOException, SQLException {
+	protected static Integer createImportJobFromCommandline(String[] args, DataImportJobsDatatype type)
+			throws IOException, SQLException
+	{
 		Database.init(args[0], args[1], args[2], args[3], args[4], false);
 
 		File germinateFolder = new File(args[5]);
@@ -61,17 +63,23 @@ public abstract class AbstractImporter
 
 		RunType runType;
 
-		try {
+		try
+		{
 			runType = RunType.getType(args[7]);
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			throw new IOException("Invalid run type specified: '" + args[7] + "'.");
 		}
 
 		int userId;
 
-		try {
+		try
+		{
 			userId = Integer.parseInt(args[8]);
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			throw new IOException("Invalid user id specified: " + args[8] + ".");
 		}
 

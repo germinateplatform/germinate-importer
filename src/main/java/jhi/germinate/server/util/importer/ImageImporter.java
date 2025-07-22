@@ -5,45 +5,46 @@ import jhi.germinate.server.database.codegen.tables.pojos.ViewTableImages;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
 import jhi.germinate.server.util.StringUtils;
-import org.dhatim.fastexcel.reader.Row;
+import jhi.germinate.server.util.importer.util.GermplasmNotFoundException;
 import org.dhatim.fastexcel.reader.*;
+import org.dhatim.fastexcel.reader.Row;
 import org.jooq.*;
 
-import java.io.File;
 import java.io.*;
+import java.io.File;
+import java.nio.file.*;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
-import java.nio.file.*;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
-import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
-import static jhi.germinate.server.database.codegen.tables.ImageToTags.*;
-import static jhi.germinate.server.database.codegen.tables.Images.*;
-import static jhi.germinate.server.database.codegen.tables.Imagetags.*;
-import static jhi.germinate.server.database.codegen.tables.Imagetypes.*;
-import static jhi.germinate.server.database.codegen.tables.Phenotypes.*;
+import static jhi.germinate.server.database.codegen.tables.Fileresources.FILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.FILERESOURCETYPES;
+import static jhi.germinate.server.database.codegen.tables.ImageToTags.IMAGE_TO_TAGS;
+import static jhi.germinate.server.database.codegen.tables.Images.IMAGES;
+import static jhi.germinate.server.database.codegen.tables.Imagetags.IMAGETAGS;
+import static jhi.germinate.server.database.codegen.tables.Imagetypes.IMAGETYPES;
+import static jhi.germinate.server.database.codegen.tables.Phenotypes.PHENOTYPES;
 
 /**
  * @author Sebastian Raubach
  */
 public class ImageImporter extends AbstractImporter
 {
-	private final Map<String, Integer>         accenumbToId     = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final Map<String, Integer>         traitNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final Map<String, ViewTableImages> filenameToImage  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final Map<String, Integer>         tagToImageTagId  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final Map<String, Integer>         imageTypeToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>         traitNameToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, ViewTableImages> filenameToImage = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>         tagToImageTagId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer>         imageTypeToId   = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	private final Set<Integer> germplasmIds = new HashSet<>();
-	private final Set<Integer> traitIds = new HashSet<>();
+	private final Set<Integer> traitIds     = new HashSet<>();
 
 	private List<String> validReferenceTypes = Arrays.asList("germinatebase", "phenotypes");
 
 	private Path templateUnzipped;
+
+	private GermplasmLookup germplasmLookup;
 
 	public static void main(String[] args)
 	{
@@ -62,10 +63,11 @@ public class ImageImporter extends AbstractImporter
 	@Override
 	protected void prepare()
 	{
+		germplasmLookup = new GermplasmLookup();
+
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			context.selectFrom(GERMINATEBASE).forEach(g -> accenumbToId.put(g.getName(), g.getId()));
 			context.selectFrom(PHENOTYPES).forEach(g -> traitNameToId.put(g.getName(), g.getId()));
 			context.selectFrom(IMAGETAGS).forEach(g -> tagToImageTagId.put(g.getTagName(), g.getId()));
 			context.selectFrom(IMAGETYPES).forEach(g -> imageTypeToId.put(g.getReferenceTable(), g.getId()));
@@ -165,7 +167,7 @@ public class ImageImporter extends AbstractImporter
 														switch (reference)
 														{
 															case "germinatebase":
-																contains = accenumbToId.containsValue(intId);
+																contains = germplasmLookup.containsGermplasmId(intId);
 																break;
 															case "phenotypes":
 																contains = traitNameToId.containsValue(intId);
@@ -194,7 +196,16 @@ public class ImageImporter extends AbstractImporter
 													switch (reference)
 													{
 														case "germinatebase":
-															contains = accenumbToId.containsKey(name);
+															// We're only setting this to true so the final addImportResult isn't called cause we're handling this ourselves here
+															contains = true;
+															try
+															{
+																germplasmLookup.getGermplasmId(name);
+															}
+															catch (GermplasmNotFoundException e)
+															{
+																addImportResult(e.getReason(), i, name);
+															}
 															break;
 														case "phenotypes":
 															contains = traitNameToId.containsKey(name);
@@ -345,7 +356,7 @@ public class ImageImporter extends AbstractImporter
 											switch (reference)
 											{
 												case "germinatebase":
-													intId = accenumbToId.get(name);
+													intId = germplasmLookup.getGermplasmId(name);
 													germplasmIds.add(intId);
 													break;
 												case "phenotypes":

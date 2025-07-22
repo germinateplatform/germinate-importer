@@ -2,24 +2,24 @@ package jhi.germinate.server.util.importer;
 
 import com.google.gson.*;
 import jhi.germinate.server.Database;
-import jhi.germinate.server.database.codegen.enums.*;
+import jhi.germinate.server.database.codegen.enums.PhenotypesDatatype;
 import jhi.germinate.server.database.codegen.tables.pojos.Phenotypes;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.*;
 import jhi.germinate.server.util.*;
-import org.dhatim.fastexcel.reader.Row;
+import jhi.germinate.server.util.importer.util.GermplasmNotFoundException;
 import org.dhatim.fastexcel.reader.*;
+import org.dhatim.fastexcel.reader.Row;
 import org.jooq.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
 
-import static jhi.germinate.server.database.codegen.tables.Germinatebase.GERMINATEBASE;
 import static jhi.germinate.server.database.codegen.tables.Phenotypedata.PHENOTYPEDATA;
 import static jhi.germinate.server.database.codegen.tables.Phenotypes.PHENOTYPES;
 import static jhi.germinate.server.database.codegen.tables.Treatments.TREATMENTS;
@@ -38,7 +38,6 @@ public class TraitDataImporter extends DatasheetImporter
 	private static final String[] COLUMN_HEADERS_DATA   = {"Line/Phenotype", "Rep", "Block", "Row", "Column", "Treatment", "Location", "Latitude", "Longitude", "Elevation"};
 
 	private final Map<String, Integer>    traitNameToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final Map<String, Integer>    germplasmToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer>    treatmentToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private       Map<String, Integer>    traitColumnNameToIndex;
 	private       Map<String, Integer>    dataColumnNameToIndex;
@@ -55,6 +54,8 @@ public class TraitDataImporter extends DatasheetImporter
 	private final Set<String> validNegativeBoolean = new HashSet<>(Arrays.asList("false", "no", "0"));
 
 	private List<String> locationNames;
+
+	private GermplasmLookup germplasmLookup;
 
 	private int traitColumnStartIndex = 10;
 
@@ -79,6 +80,8 @@ public class TraitDataImporter extends DatasheetImporter
 	{
 		super.prepare();
 
+		germplasmLookup = new GermplasmLookup();
+
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
@@ -88,9 +91,6 @@ public class TraitDataImporter extends DatasheetImporter
 			context.selectFrom(PHENOTYPES)
 				   .fetchInto(Phenotypes.class)
 				   .forEach(p -> traitDefinitions.put(p.getName(), p));
-
-			context.selectFrom(GERMINATEBASE)
-				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 
 			context.selectFrom(TREATMENTS)
 				   .forEach(t -> treatmentToId.put(t.getName(), t.getId()));
@@ -405,8 +405,17 @@ public class TraitDataImporter extends DatasheetImporter
 
 		if (StringUtils.isEmpty(germplasmName))
 			addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "ACCENUMB missing");
-		else if (!germplasmToId.containsKey(germplasmName))
-			addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, r.getRowNum(), germplasmName);
+		else
+		{
+			try
+			{
+				germplasmLookup.getGermplasmId(germplasmName);
+			}
+			catch (GermplasmNotFoundException e)
+			{
+				addImportResult(e.getReason(), r.getRowNum(), germplasmName);
+			}
+		}
 
 		if (StringUtils.isEmpty(rep))
 			addImportResult(ImportStatus.TRIALS_DATA_REP_MISSING, r.getRowNum(), "Rep missing");
@@ -1176,7 +1185,7 @@ public class TraitDataImporter extends DatasheetImporter
 				if (StringUtils.isEmpty(block))
 					block = "1";
 				String locationName = getCellValue(dataRow, dataColumnNameToIndex, "Location");
-				Integer germplasmId = germplasmToId.get(germplasmName);
+				Integer germplasmId = germplasmLookup.getGermplasmId(germplasmName);
 				String treatmentName = getCellValue(dataRow, dataColumnNameToIndex, "Treatment");
 				Integer treatmentId = null;
 

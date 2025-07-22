@@ -550,10 +550,10 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 						   Integer countryId = countryCode2ToId.get(countryCode);
 
 						   institution = context.selectFrom(INSTITUTIONS)
-																   .where(INSTITUTIONS.NAME.isNotDistinctFrom(institutionName))
+												.where(INSTITUTIONS.NAME.isNotDistinctFrom(institutionName))
 //																   .and(INSTITUTIONS.ADDRESS.isNotDistinctFrom(address))
-																   .and(INSTITUTIONS.COUNTRY_ID.isNotDistinctFrom(countryId))
-																   .fetchAny();
+												.and(INSTITUTIONS.COUNTRY_ID.isNotDistinctFrom(countryId))
+												.fetchAny();
 
 						   if (institution == null)
 						   {
@@ -713,7 +713,8 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				  if (index != null)
 					  dublinCore.setSubject(new String[]{getCellValue(rows.get(index), 2)});
 
-				  if (datasetId != null) {
+				  if (datasetId != null)
+				  {
 					  // Check if the dataset exists with the specified BrAPI studyDbId
 					  dataset = context.selectFrom(DATASETS)
 									   .where(DATASETS.ID.eq(datasetId))

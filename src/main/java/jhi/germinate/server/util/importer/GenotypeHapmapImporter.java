@@ -6,6 +6,7 @@ import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.ImportStatus;
 import jhi.germinate.server.util.StringUtils;
 import jhi.germinate.server.util.importer.task.*;
+import jhi.germinate.server.util.importer.util.GermplasmNotFoundException;
 import org.jooq.DSLContext;
 
 import java.io.*;
@@ -15,21 +16,19 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Datasets.*;
-import static jhi.germinate.server.database.codegen.tables.Experiments.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
-import static jhi.germinate.server.database.codegen.tables.Germinatebase.*;
-import static jhi.germinate.server.database.codegen.tables.Mapfeaturetypes.*;
-import static jhi.germinate.server.database.codegen.tables.Maps.*;
-import static jhi.germinate.server.database.codegen.tables.Markers.*;
-import static jhi.germinate.server.database.codegen.tables.Markertypes.*;
+import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.DATASETFILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Datasets.DATASETS;
+import static jhi.germinate.server.database.codegen.tables.Experiments.EXPERIMENTS;
+import static jhi.germinate.server.database.codegen.tables.Fileresources.FILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.FILERESOURCETYPES;
+import static jhi.germinate.server.database.codegen.tables.Mapfeaturetypes.MAPFEATURETYPES;
+import static jhi.germinate.server.database.codegen.tables.Maps.MAPS;
+import static jhi.germinate.server.database.codegen.tables.Markers.MARKERS;
+import static jhi.germinate.server.database.codegen.tables.Markertypes.MARKERTYPES;
 
 public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 {
-	private final Map<String, Integer> germplasmToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private final Map<String, Integer> markerToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer> markerToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	private final Set<Integer> markerIdsInFile    = new HashSet<>();
 	private final Set<Integer> germplasmIdsInFile = new HashSet<>();
@@ -41,8 +40,10 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 	private int chromosomeValueCount = 0;
 	private int positionValueCount   = 0;
 
+	private GermplasmLookup germplasmLookup;
+
 	public static void main(String[] args)
-		throws SQLException, IOException
+			throws SQLException, IOException
 	{
 		GenotypeHapmapImporter importer;
 
@@ -71,14 +72,14 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 	@Override
 	protected void prepare()
 	{
+		germplasmLookup = new GermplasmLookup();
+
 		this.hdf5TargetFolder = new File(new File(this.jobDetails.getJobConfig().getBaseFolder(), "data"), "genotypes");
 		this.hdf5TargetFolder.mkdirs();
 
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			context.selectFrom(GERMINATEBASE)
-				   .forEach(g -> germplasmToId.put(g.getName(), g.getId()));
 			context.selectFrom(MARKERS)
 				   .forEach(m -> markerToId.put(m.getMarkerName(), m.getId()));
 		}
@@ -169,8 +170,14 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 
 			for (String g : germplasm)
 			{
-				if (!germplasmToId.containsKey(g))
-					addImportResult(ImportStatus.GENERIC_INVALID_GERMPLASM, 1, g);
+				try
+				{
+					germplasmLookup.getGermplasmId(g);
+				}
+				catch (GermplasmNotFoundException e)
+				{
+					addImportResult(e.getReason(), 1, g);
+				}
 			}
 
 			int counter = 1;
@@ -225,7 +232,7 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 			String[] germplasm = Arrays.copyOfRange(parts, 11, parts.length);
 
 			for (String g : germplasm)
-				germplasmIdsInFile.add(germplasmToId.get(g));
+				germplasmIdsInFile.add(germplasmLookup.getGermplasmId(g));
 
 			List<String> markers = new ArrayList<>();
 			List<String> chromosomes = new ArrayList<>();
@@ -347,13 +354,13 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 			{
 				// Start the mapdefinition importer
 				new Thread(new MapdefinitionImporterTask(
-					markers.toArray(new String[0]),
-					markerIds,
-					map.getId(),
-					mapFeatureType.getId(),
-					chromosomes.toArray(new String[0]),
-					positions.toArray(new String[0]),
-					this::addImportResult)
+						markers.toArray(new String[0]),
+						markerIds,
+						map.getId(),
+						mapFeatureType.getId(),
+						chromosomes.toArray(new String[0]),
+						positions.toArray(new String[0]),
+						this::addImportResult)
 				{
 					@Override
 					protected void onFinished()
@@ -370,10 +377,10 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 
 			// Import the dataset members
 			new Thread(new DatasetMemberImporterTask(
-				markerIdsInFile,
-				germplasmIdsInFile,
-				dataset.getId(),
-				this::addImportResult)
+					markerIdsInFile,
+					germplasmIdsInFile,
+					dataset.getId(),
+					this::addImportResult)
 			{
 				@Override
 				protected void onFinished()
@@ -427,5 +434,17 @@ public class GenotypeHapmapImporter extends AbstractFlatFileImporter
 	{
 		// We don't update, just import
 		this.importFile(br);
+	}
+
+	@Override
+	protected int getGermplasmCount()
+	{
+		return germplasmIdsInFile.size();
+	}
+
+	@Override
+	protected int getMarkerCount()
+	{
+		return markerIdsInFile.size();
 	}
 }

@@ -2,7 +2,7 @@ package jhi.germinate.server.util.importer;
 
 import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.tables.records.*;
-import jhi.germinate.server.database.pojo.*;
+import jhi.germinate.server.database.pojo.ImportStatus;
 import jhi.germinate.server.util.StringUtils;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
@@ -10,13 +10,13 @@ import org.jooq.DSLContext;
 import java.io.*;
 import java.math.*;
 import java.nio.file.*;
-import java.sql.Date;
 import java.sql.*;
+import java.sql.Date;
 import java.time.*;
 import java.util.*;
 
-import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
+import static jhi.germinate.server.database.codegen.tables.Fileresources.FILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.FILERESOURCETYPES;
 
 /**
  * @author Sebastian Raubach

@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.sql.*;
 import java.util.List;
 
-import static jhi.germinate.server.database.codegen.tables.Markers.*;
+import static jhi.germinate.server.database.codegen.tables.Markers.MARKERS;
 
 public class MarkerImporterTask implements Runnable
 {

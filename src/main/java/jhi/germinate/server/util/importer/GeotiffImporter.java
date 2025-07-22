@@ -13,19 +13,19 @@ import org.jooq.DSLContext;
 
 import java.io.*;
 import java.math.*;
-import java.nio.file.FileSystem;
 import java.nio.file.*;
-import java.sql.Date;
+import java.nio.file.FileSystem;
 import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 
-import static jhi.germinate.server.database.codegen.tables.Climates.*;
-import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Datasets.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresources.*;
-import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.*;
-import static jhi.germinate.server.database.codegen.tables.Mapoverlays.*;
-import static jhi.germinate.server.database.codegen.tables.Phenotypes.*;
+import static jhi.germinate.server.database.codegen.tables.Climates.CLIMATES;
+import static jhi.germinate.server.database.codegen.tables.Datasetfileresources.DATASETFILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Datasets.DATASETS;
+import static jhi.germinate.server.database.codegen.tables.Fileresources.FILERESOURCES;
+import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.FILERESOURCETYPES;
+import static jhi.germinate.server.database.codegen.tables.Mapoverlays.MAPOVERLAYS;
+import static jhi.germinate.server.database.codegen.tables.Phenotypes.PHENOTYPES;
 
 /**
  * @author Sebastian Raubach

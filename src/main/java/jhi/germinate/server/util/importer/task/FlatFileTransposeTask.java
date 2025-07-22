@@ -44,7 +44,7 @@ public class FlatFileTransposeTask implements Runnable
 	}
 
 	private void readData()
-		throws IOException
+			throws IOException
 	{
 		try (BufferedReader in = new BufferedReader(new FileReader(input)))
 		{
@@ -71,7 +71,7 @@ public class FlatFileTransposeTask implements Runnable
 	}
 
 	private void writeCache()
-		throws IOException
+			throws IOException
 	{
 		int cols = this.data.get(0).length;
 		this.maxCols = cols;
@@ -106,7 +106,7 @@ public class FlatFileTransposeTask implements Runnable
 	}
 
 	private void writeData()
-		throws IOException
+			throws IOException
 	{
 		try (BufferedWriter out = new BufferedWriter(new FileWriter(output)))
 		{
