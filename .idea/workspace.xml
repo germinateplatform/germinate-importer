@@ -4,29 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Dependency update.&#10;- CHG: Version bump.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added GermplasmLookup to more easily find a germplasm ID based on either name or display name. Exceptions are thrown if display name has to be used but doesn't uniquely match an id.&#10;- CHG: Adjusted all germplasm-centric import processes to use display name fallback.&#10;-">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.8.8.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.8.8.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractExcelImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractFlatFileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractFlatFileImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ClimateDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ClimateDataImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelTransposedImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelTransposedImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeHapmapImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GeotiffImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GroupImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GroupImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/PedigreeImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/PedigreeImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/DatasetMemberImporterTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/DatasetMemberImporterTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/FlatFileTransposeTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/FlatFileTransposeTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/MapdefinitionImporterTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/MapdefinitionImporterTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/MarkerImporterTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/task/MarkerImporterTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/util/GdalUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/util/GdalUtils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,6 +51,11 @@
                 <item name="germinate-importer" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="germinate-importer" type="f1a62948:ProjectNode" />
+                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -129,6 +119,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Gradle.Build germinate-importer.executor&quot;: &quot;Run&quot;,
     &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
     &quot;Gradle.germinate-importer [:McpdImporter.main()].executor&quot;: &quot;Debug&quot;,
     &quot;Gradle.germinate-importer [:TraitDataImporter.main()].executor&quot;: &quot;Run&quot;,
@@ -490,7 +481,13 @@
       <workItem from="1753100868271" duration="41000" />
       <workItem from="1753100912989" duration="58000" />
       <workItem from="1753100982468" duration="1436000" />
-      <workItem from="1753171442735" duration="5561000" />
+      <workItem from="1753171442735" duration="7990000" />
+      <workItem from="1753265012971" duration="1144000" />
+      <workItem from="1753342884991" duration="1088000" />
+      <workItem from="1753345680363" duration="35000" />
+      <workItem from="1753345721057" duration="22000" />
+      <workItem from="1753345757204" duration="232000" />
+      <workItem from="1753345994728" duration="860000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -835,7 +832,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="74" />
+    <option name="localTasksCounter" value="75" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -866,7 +863,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- ADD: Added importer for trials data shapefiles.&#10;- ADD: Added WARNING status codes in addition to just ERROR" />
     <MESSAGE value="- ADD: Added import job stat counts.&#10;- CHG: Changed the experiment that will be created by dataset imports to use a generic experiment. Can be re-assigned in the UI later." />
     <MESSAGE value="- ADD: Added a way to support import of genotypic data straight from the command line without going through the Germinate API." />
     <MESSAGE value="- CHG: Dependency update." />
@@ -891,7 +887,8 @@
     <MESSAGE value="- FIX: Fixed issue with import of non-numeric environmental variables." />
     <MESSAGE value="- CHG: Improved handling of dates during data import.&#10;- CHG: Improved handling of issues with data category equality. E.g. categories 1,2,3, value retrieved from Excel is 2.0.&#10;- CHG: Version bump." />
     <MESSAGE value="- CHG: Dependency update.&#10;- CHG: Version bump." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Dependency update.&#10;- CHG: Version bump." />
+    <MESSAGE value="- ADD: Added GermplasmLookup to more easily find a germplasm ID based on either name or display name. Exceptions are thrown if display name has to be used but doesn't uniquely match an id.&#10;- CHG: Adjusted all germplasm-centric import processes to use display name fallback.&#10;-" />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added GermplasmLookup to more easily find a germplasm ID based on either name or display name. Exceptions are thrown if display name has to be used but doesn't uniquely match an id.&#10;- CHG: Adjusted all germplasm-centric import processes to use display name fallback.&#10;-" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -970,11 +967,6 @@
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeFlatFileImporter.java</url>
           <line>237</line>
           <option name="timeStamp" value="66" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/GenotypeExcelImporter.java</url>
-          <line>84</line>
-          <option name="timeStamp" value="67" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractFlatFileImporter.java</url>
@@ -1136,12 +1128,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>673</line>
+          <line>677</line>
           <option name="timeStamp" value="130" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>613</line>
+          <line>617</line>
           <option name="timeStamp" value="131" />
         </line-breakpoint>
       </breakpoints>

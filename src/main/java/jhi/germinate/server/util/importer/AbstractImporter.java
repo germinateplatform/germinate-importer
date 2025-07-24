@@ -28,7 +28,8 @@ public abstract class AbstractImporter
 	protected final Integer                         importJobId;
 	protected       DataImportJobs                  jobDetails;
 	private         File                            inputFile;
-	private         Map<ImportStatus, ImportResult> errorMap       = new HashMap<>();
+	private         List<ImportResult>              errorList      = new ArrayList<>();
+	private         Set<ImportStatus>               errorSet       = new HashSet<>();
 	private         String[]                        args;
 	protected       ImportJobStats                  importJobStats = new ImportJobStats();
 
@@ -180,7 +181,7 @@ public abstract class AbstractImporter
 				inputFile.delete();
 			}
 
-			Logger.getLogger("").log(Level.INFO, errorMap.toString());
+			Logger.getLogger("").log(Level.INFO, errorList.toString());
 
 			List<ImportResult> result = getImportResult();
 
@@ -214,22 +215,28 @@ public abstract class AbstractImporter
 
 	protected boolean hasImportError()
 	{
-		return errorMap.values().stream().anyMatch(r -> r.getType() == ImportResult.StatusType.ERROR);
+		return errorList.stream().anyMatch(r -> r.getType() == ImportResult.StatusType.ERROR);
 	}
 
 	protected void addImportResult(ImportStatus status, int rowIndex, String message)
 	{
-		if (!errorMap.containsKey(status)) errorMap.put(status, new ImportResult(status, rowIndex, message));
+		if (!status.isAllowsMultiple() && errorSet.contains(status))
+			return;
+
+		errorList.add(new ImportResult(status, rowIndex, message));
 	}
 
 	protected void addImportResult(ImportStatus status, int rowIndex, String message, ImportResult.StatusType type)
 	{
-		if (!errorMap.containsKey(status)) errorMap.put(status, new ImportResult(status, rowIndex, message, type));
+		if (!status.isAllowsMultiple() && errorSet.contains(status))
+			return;
+
+		errorList.add(new ImportResult(status, rowIndex, message, type));
 	}
 
-	private List<ImportResult> getImportResult()
+	protected List<ImportResult> getImportResult()
 	{
-		return new ArrayList<>(errorMap.values());
+		return new ArrayList<>(errorList);
 	}
 
 	protected File getInputFile()
@@ -240,11 +247,6 @@ public abstract class AbstractImporter
 	protected void setInputFile(File file)
 	{
 		this.inputFile = file;
-	}
-
-	protected Map<ImportStatus, ImportResult> getErrorMap()
-	{
-		return Collections.unmodifiableMap(this.errorMap);
 	}
 
 	protected abstract void prepare();

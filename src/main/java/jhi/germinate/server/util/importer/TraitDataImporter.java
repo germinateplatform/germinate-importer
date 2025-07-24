@@ -402,6 +402,10 @@ public class TraitDataImporter extends DatasheetImporter
 
 		String germplasmName = getCellValue(r, 0);
 		String rep = getCellValue(r, 1);
+		String block = getCellValue(r, dataColumnNameToIndex, "Block");
+
+		if (!StringUtils.isEmpty(block) && block.length() > 10)
+			addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Block: " + block + " exceeds 10 characters.");
 
 		if (StringUtils.isEmpty(germplasmName))
 			addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "ACCENUMB missing");

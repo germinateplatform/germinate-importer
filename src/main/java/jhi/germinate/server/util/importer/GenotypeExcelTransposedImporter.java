@@ -85,10 +85,10 @@ public class GenotypeExcelTransposedImporter extends DatasheetImporter
 
 		flatFileImporter.checkFile();
 
-		Map<ImportStatus, ImportResult> result = flatFileImporter.getErrorMap();
+		List<ImportResult> result = flatFileImporter.getImportResult();
 
-		for (Map.Entry<ImportStatus, ImportResult> entry : result.entrySet())
-			addImportResult(entry.getKey(), entry.getValue().getRowIndex(), entry.getValue().getMessage());
+		for (ImportResult entry : result)
+			addImportResult(entry.getStatus(), entry.getRowIndex(), entry.getMessage());
 	}
 
 	private void exportData(ReadableWorkbook wb)

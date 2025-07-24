@@ -1189,30 +1189,6 @@ public class McpdImporter extends AbstractExcelImporter
 		importJobStats.setGermplasm(newGermplasm.size());
 	}
 
-	@Override
-	protected boolean hasImportError()
-	{
-		return super.hasImportError();
-	}
-
-	@Override
-	protected void addImportResult(ImportStatus status, int rowIndex, String message)
-	{
-		super.addImportResult(status, rowIndex, message);
-	}
-
-	@Override
-	protected void addImportResult(ImportStatus status, int rowIndex, String message, ImportResult.StatusType type)
-	{
-		super.addImportResult(status, rowIndex, message, type);
-	}
-
-	@Override
-	protected Map<ImportStatus, ImportResult> getErrorMap()
-	{
-		return super.getErrorMap();
-	}
-
 	private static class Germplasm
 	{
 		private GerminatebaseRecord       germinatebase = new GerminatebaseRecord();
