@@ -801,7 +801,7 @@ public class McpdImporter extends AbstractExcelImporter
 			}
 			else
 			{
-				existing.changed(i, false);
+				existing.touched(i, false);
 			}
 		}
 

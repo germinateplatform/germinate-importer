@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added check to trials data 'Block' field length (restricted to 10 characters).&#10;- ADD: Added flag to import status to indicate if it can be highlighted multiple times.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Big dependency update.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -485,7 +484,8 @@
       <workItem from="1753345757204" duration="232000" />
       <workItem from="1753345994728" duration="1651000" />
       <workItem from="1753775127740" duration="555000" />
-      <workItem from="1753775708918" duration="803000" />
+      <workItem from="1753775708918" duration="1153000" />
+      <workItem from="1753786274658" duration="68000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -830,7 +830,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="76" />
+    <option name="localTasksCounter" value="78" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -861,7 +861,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- ADD: Added a way to support import of genotypic data straight from the command line without going through the Germinate API." />
     <MESSAGE value="- CHG: Dependency update." />
     <MESSAGE value="- ADD: Set fileResourceId in data import job stats." />
     <MESSAGE value="- ADD: Added trials data check for Rep column values. They are now required." />
@@ -886,7 +885,8 @@
     <MESSAGE value="- CHG: Dependency update.&#10;- CHG: Version bump." />
     <MESSAGE value="- ADD: Added GermplasmLookup to more easily find a germplasm ID based on either name or display name. Exceptions are thrown if display name has to be used but doesn't uniquely match an id.&#10;- CHG: Adjusted all germplasm-centric import processes to use display name fallback.&#10;-" />
     <MESSAGE value="- ADD: Added check to trials data 'Block' field length (restricted to 10 characters).&#10;- ADD: Added flag to import status to indicate if it can be highlighted multiple times." />
-    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added check to trials data 'Block' field length (restricted to 10 characters).&#10;- ADD: Added flag to import status to indicate if it can be highlighted multiple times." />
+    <MESSAGE value="- CHG: Big dependency update." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Big dependency update." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -938,27 +938,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>85</line>
+          <line>84</line>
           <option name="timeStamp" value="46" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>111</line>
+          <line>110</line>
           <option name="timeStamp" value="47" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>258</line>
+          <line>257</line>
           <option name="timeStamp" value="55" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>300</line>
+          <line>299</line>
           <option name="timeStamp" value="57" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ImageImporter.java</url>
-          <line>308</line>
+          <line>307</line>
           <option name="timeStamp" value="58" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
