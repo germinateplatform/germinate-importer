@@ -28,7 +28,7 @@ dependencies {
     implementation fileTree(dir: 'lib', include: ['*.jar'])
 
     implementation 'cisd:jhdf5:19.04.1'
-    implementation 'org.jooq:jooq:3.16.18'
+    implementation 'org.jooq:jooq:3.20.5'
     implementation 'com.google.code.gson:gson:2.10'
     implementation 'com.mysql:mysql-connector-j:8.2.0'
     implementation 'org.dhatim:fastexcel-reader:0.19.0'
@@ -37,7 +37,8 @@ dependencies {
     implementation 'org.geotools:gt-shapefile:27.2'
 
     // Only needed for local debug
-    implementation 'org.flywaydb:flyway-core:6.5.7'
+    implementation 'org.flywaydb:flyway-core:10.22.0'
+    implementation 'org.flywaydb:flyway-mysql:10.22.0'
 
     // Dev dependencies
     implementation 'de.poiu.apron:apron:2.1.1'

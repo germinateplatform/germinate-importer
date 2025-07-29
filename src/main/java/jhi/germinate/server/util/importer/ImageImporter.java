@@ -15,9 +15,9 @@ import java.io.File;
 import java.nio.file.*;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static jhi.germinate.server.database.codegen.tables.Fileresources.FILERESOURCES;
 import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.FILERESOURCETYPES;
@@ -417,16 +417,14 @@ public class ImageImporter extends AbstractImporter
 												}
 
 												return tagId;
-											}).collect(Collectors.toList());
+											}).toList();
 
-											try (InsertValuesStep4<ImageToTagsRecord, Integer, Integer, Timestamp, Timestamp> res = context.insertInto(IMAGE_TO_TAGS, IMAGE_TO_TAGS.IMAGE_ID, IMAGE_TO_TAGS.IMAGETAG_ID, IMAGE_TO_TAGS.CREATED_ON, IMAGE_TO_TAGS.UPDATED_ON))
-											{
-												ids.forEach(tagId -> {
-													res.values(image.getId(), tagId, new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
-												});
+											InsertValuesStep4<ImageToTagsRecord, Integer, Integer, Timestamp, Timestamp> res = context.insertInto(IMAGE_TO_TAGS, IMAGE_TO_TAGS.IMAGE_ID, IMAGE_TO_TAGS.IMAGETAG_ID, IMAGE_TO_TAGS.CREATED_ON, IMAGE_TO_TAGS.UPDATED_ON);
+											ids.forEach(tagId -> {
+												res.values(image.getId(), tagId, new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
+											});
 
-												res.execute();
-											}
+											res.execute();
 										}
 									}
 								}
