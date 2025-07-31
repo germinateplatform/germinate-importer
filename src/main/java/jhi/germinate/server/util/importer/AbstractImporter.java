@@ -45,7 +45,7 @@ public abstract class AbstractImporter
 		return Arrays.copyOf(args, args.length);
 	}
 
-	protected static Integer createImportJobFromCommandline(String[] args, DataImportJobsDatatype type)
+	public static Integer createImportJobFromCommandline(String[] args, DataImportJobsDatatype type)
 			throws IOException, SQLException
 	{
 		Database.init(args[0], args[1], args[2], args[3], args[4], false);
@@ -126,7 +126,7 @@ public abstract class AbstractImporter
 		}
 	}
 
-	protected void init(String[] args)
+	public void init(String[] args)
 	{
 		this.args = args;
 		Database.init(args[0], args[1], args[2], args[3], args[4], false);
@@ -223,6 +223,7 @@ public abstract class AbstractImporter
 		if (!status.isAllowsMultiple() && errorSet.contains(status))
 			return;
 
+		errorSet.add(status);
 		errorList.add(new ImportResult(status, rowIndex, message));
 	}
 
@@ -231,6 +232,7 @@ public abstract class AbstractImporter
 		if (!status.isAllowsMultiple() && errorSet.contains(status))
 			return;
 
+		errorSet.add(status);
 		errorList.add(new ImportResult(status, rowIndex, message, type));
 	}
 

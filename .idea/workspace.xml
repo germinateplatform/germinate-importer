@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Big dependency update.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.8.8.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.8.8.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,11 +48,6 @@
                 <item name="germinate-importer" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="germinate-importer" type="f1a62948:ProjectNode" />
-                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -147,6 +144,7 @@
       <recent name="C:\Users\sr41756\workspaces\java\germinate-importer" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="jhi.germinate.server.util.importer.cli" />
       <recent name="jhi.germinate.server.util.importer" />
       <recent name="jhi.germinate.server.util.importer.task" />
     </key>
@@ -165,12 +163,25 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="AbstractExcelImporter (3)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+    <configuration name="AbstractExcelImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.AbstractExcelImporter" />
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
+          <option name="PATTERN" value="jhi.germinate.server.util.importer.cli.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AbstractExcelImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.AbstractExcelImporter" />
+      <module name="germinate-importer.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="jhi.germinate.server.util.importer.cli.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -183,7 +194,7 @@
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="jhi.germinate.server.util.importer.*" />
+          <option name="PATTERN" value="jhi.germinate.server.util.importer.cli.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -236,9 +247,9 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Application.AbstractExcelImporter" />
       <item itemvalue="Application.TraitDataImporter" />
       <item itemvalue="Application.AbstractExcelImporter (2)" />
-      <item itemvalue="Application.AbstractExcelImporter (3)" />
       <item itemvalue="Gradle.germinate-importer [build]" />
       <item itemvalue="Gradle.germinate-importer [clean]" />
     </list>
@@ -247,7 +258,6 @@
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
         <item itemvalue="Application.TraitDataImporter" />
-        <item itemvalue="Application.AbstractExcelImporter (3)" />
         <item itemvalue="Application.AbstractExcelImporter (2)" />
       </list>
     </recent_temporary>
@@ -485,7 +495,12 @@
       <workItem from="1753345994728" duration="1651000" />
       <workItem from="1753775127740" duration="555000" />
       <workItem from="1753775708918" duration="1153000" />
-      <workItem from="1753786274658" duration="68000" />
+      <workItem from="1753786274658" duration="4231000" />
+      <workItem from="1753857337254" duration="8911000" />
+      <workItem from="1753943652641" duration="4943000" />
+      <workItem from="1753957315068" duration="23000" />
+      <workItem from="1753957349186" duration="1201000" />
+      <workItem from="1753958562513" duration="1087000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -830,7 +845,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="78" />
+    <option name="localTasksCounter" value="79" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

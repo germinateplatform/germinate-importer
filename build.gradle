@@ -42,4 +42,6 @@ dependencies {
 
     // Dev dependencies
     implementation 'de.poiu.apron:apron:2.1.1'
+
+    implementation 'info.picocli:picocli:4.7.7'
 }
