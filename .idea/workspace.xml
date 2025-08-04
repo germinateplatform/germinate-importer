@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Big dependency update.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added proper CLI support. This way the main Germinate .jar file can be called with specific commands. Currently, this includes all data import options.&#10;-">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.8.8.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.8.8.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.8.8.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.8.8.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.9.0.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -500,7 +500,12 @@
       <workItem from="1753943652641" duration="4943000" />
       <workItem from="1753957315068" duration="23000" />
       <workItem from="1753957349186" duration="1201000" />
-      <workItem from="1753958562513" duration="1087000" />
+      <workItem from="1753958562513" duration="2400000" />
+      <workItem from="1754035634070" duration="1586000" />
+      <workItem from="1754295323780" duration="837000" />
+      <workItem from="1754301692866" duration="652000" />
+      <workItem from="1754313814270" duration="194000" />
+      <workItem from="1754314019781" duration="29000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -845,7 +850,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="79" />
+    <option name="localTasksCounter" value="80" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -876,7 +881,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Dependency update." />
     <MESSAGE value="- ADD: Set fileResourceId in data import job stats." />
     <MESSAGE value="- ADD: Added trials data check for Rep column values. They are now required." />
     <MESSAGE value="- CHG: Dependency update to support Tomcat 10.1.&#10;- ADD: Added support for transposed Excel data import." />
@@ -901,7 +905,8 @@
     <MESSAGE value="- ADD: Added GermplasmLookup to more easily find a germplasm ID based on either name or display name. Exceptions are thrown if display name has to be used but doesn't uniquely match an id.&#10;- CHG: Adjusted all germplasm-centric import processes to use display name fallback.&#10;-" />
     <MESSAGE value="- ADD: Added check to trials data 'Block' field length (restricted to 10 characters).&#10;- ADD: Added flag to import status to indicate if it can be highlighted multiple times." />
     <MESSAGE value="- CHG: Big dependency update." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Big dependency update." />
+    <MESSAGE value="- ADD: Added proper CLI support. This way the main Germinate .jar file can be called with specific commands. Currently, this includes all data import options.&#10;-" />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added proper CLI support. This way the main Germinate .jar file can be called with specific commands. Currently, this includes all data import options.&#10;-" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
