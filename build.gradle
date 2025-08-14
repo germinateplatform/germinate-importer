@@ -2,8 +2,8 @@ plugins {
     id 'java'
 }
 
-group 'uk.ac.hutton.germinate-importer'
-version '4.9.0'
+group = 'uk.ac.hutton.germinate-importer'
+version = '4.9.0'
 
 compileJava.options.encoding = 'UTF-8'
 
@@ -13,13 +13,13 @@ java {
 
 repositories {
     maven {
-        url 'https://nexus.geomatys.com/repository/geotoolkit/'
+        url = 'https://nexus.geomatys.com/repository/geotoolkit/'
     }
     maven {
-        url 'https://repo.osgeo.org/repository/release/'
+        url = 'https://repo.osgeo.org/repository/release/'
     }
     maven {
-        url 'https://maven.scijava.org/content/repositories/public/'
+        url = 'https://maven.scijava.org/content/repositories/public/'
     }
     mavenCentral()
 }

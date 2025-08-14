@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Version bump.&#10;- CHG: Dependency update.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Dependency update.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-4.9.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-4.9.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.9.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.9.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew.bat" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,11 +48,6 @@
                 <item name="germinate-importer" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="germinate-importer" type="f1a62948:ProjectNode" />
-                <item name="Run Configurations" type="7b0102dc:RunConfigurationsNode" />
               </path>
             </expand>
             <select />
@@ -120,6 +116,7 @@
     &quot;Gradle.germinate-importer [clean].executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
@@ -264,8 +261,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.27812.49" />
-        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-IU-251.27812.49" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
+        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-IU-252.23892.409" />
       </set>
     </attachedChunks>
   </component>
@@ -508,7 +505,11 @@
       <workItem from="1754317920731" duration="34000" />
       <workItem from="1754381054478" duration="602000" />
       <workItem from="1754388211932" duration="289000" />
-      <workItem from="1754388510594" duration="622000" />
+      <workItem from="1754388510594" duration="1881000" />
+      <workItem from="1755003112758" duration="3055000" />
+      <workItem from="1755067961114" duration="2314000" />
+      <workItem from="1755162024629" duration="52000" />
+      <workItem from="1755162081396" duration="398000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -853,7 +854,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="81" />
+    <option name="localTasksCounter" value="82" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -884,7 +885,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- ADD: Added trials data check for Rep column values. They are now required." />
     <MESSAGE value="- CHG: Dependency update to support Tomcat 10.1.&#10;- ADD: Added support for transposed Excel data import." />
     <MESSAGE value="- CHG: Slightly changed how trait definitions are matched against the database by restricting the fields that are checked to a minimum." />
     <MESSAGE value="- CHG: Updated dependencies.&#10;- CHG: Version bump." />
@@ -909,7 +909,8 @@
     <MESSAGE value="- CHG: Big dependency update." />
     <MESSAGE value="- ADD: Added proper CLI support. This way the main Germinate .jar file can be called with specific commands. Currently, this includes all data import options.&#10;-" />
     <MESSAGE value="- CHG: Version bump.&#10;- CHG: Dependency update." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Version bump.&#10;- CHG: Dependency update." />
+    <MESSAGE value="- CHG: Dependency update." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Dependency update." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1146,6 +1147,11 @@
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
           <line>617</line>
           <option name="timeStamp" value="131" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/cli/AbstractImporterCommand.java</url>
+          <line>143</line>
+          <option name="timeStamp" value="132" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
