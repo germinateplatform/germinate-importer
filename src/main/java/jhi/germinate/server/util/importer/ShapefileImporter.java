@@ -28,7 +28,7 @@ import static jhi.germinate.server.database.codegen.tables.Trialsetup.TRIALSETUP
  */
 public class ShapefileImporter extends AbstractImporter
 {
-	private final Set<String> accenumbs = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, Integer> accenumbs = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	public static void main(String[] args)
 	{
@@ -51,11 +51,14 @@ public class ShapefileImporter extends AbstractImporter
 		{
 			DSLContext context = Database.getContext(conn);
 
-			context.select(GERMINATEBASE.NAME, GERMINATEBASE.ID, TRIALSETUP.TRIAL_ROW, TRIALSETUP.TRIAL_COLUMN)
+			context.select(GERMINATEBASE.DISPLAY_NAME, GERMINATEBASE.NAME, GERMINATEBASE.ID, TRIALSETUP.TRIAL_ROW, TRIALSETUP.TRIAL_COLUMN)
 				   .from(TRIALSETUP)
 				   .leftJoin(GERMINATEBASE).on(GERMINATEBASE.ID.eq(TRIALSETUP.GERMINATEBASE_ID))
 				   .where(TRIALSETUP.DATASET_ID.eq(jobDetails.getJobConfig().getTargetDatasetId()))
-				   .forEach(g -> accenumbs.add(g.get(TRIALSETUP.TRIAL_ROW) + "|" + g.get(TRIALSETUP.TRIAL_COLUMN) + "|" + g.get(GERMINATEBASE.NAME)));
+				   .forEach(g -> {
+					   accenumbs.put(g.get(TRIALSETUP.TRIAL_ROW) + "|" + g.get(TRIALSETUP.TRIAL_COLUMN) + "|" + g.get(GERMINATEBASE.NAME), g.get(GERMINATEBASE.ID));
+					   accenumbs.put(g.get(TRIALSETUP.TRIAL_ROW) + "|" + g.get(TRIALSETUP.TRIAL_COLUMN) + "|" + g.get(GERMINATEBASE.DISPLAY_NAME), g.get(GERMINATEBASE.ID));
+				   });
 		}
 		catch (SQLException e)
 		{
@@ -193,10 +196,10 @@ public class ShapefileImporter extends AbstractImporter
 						}
 					}
 
-					boolean match = accenumbs.contains(numRow + "|" + numCol + "|" + germplasm);
+					Integer matchingId = accenumbs.get(numRow + "|" + numCol + "|" + germplasm);
 
 					// Check the row and column indices match
-					if (!match)
+					if (matchingId == null)
 						addImportResult(ImportStatus.SHAPEFILE_ROW_COL_GERMPLASM_CONFLICT, -1, "A conflict between the (`germplasm`, `row`, `column`) tuple in the shapefile and the trials data setup has been found. Please correct this inconsistency: " + numRow + "|" + numCol + "|" + germplasm);
 				}
 			}

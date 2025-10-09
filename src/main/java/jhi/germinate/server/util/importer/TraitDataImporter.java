@@ -740,7 +740,7 @@ public class TraitDataImporter extends DatasheetImporter
 								 {
 									 for (String possValue : cat)
 									 {
-										 if (Objects.equals(cellValue, possValue))
+										 if (Objects.equals(cellValue, possValue) || Objects.equals(cellValue.toLowerCase(), possValue.toLowerCase()))
 										 {
 											 found = true;
 											 break outer;

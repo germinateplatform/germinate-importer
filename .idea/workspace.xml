@@ -4,10 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Gradle updated to 9.0.0.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Downgraded Gradle to v8.8 due to incompatibilties with gradle-cargo-plugin.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/germinate-core-4.9.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-4.9.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/AbstractImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +49,11 @@
                 <item name="germinate-importer" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="germinate-importer" type="f1a62948:ProjectNode" />
+                <item name="Run Configurations" type="7b0102dc:RunConfigurationsNode" />
               </path>
             </expand>
             <select />
@@ -261,7 +268,6 @@
     <attachedChunks>
       <set>
         <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
-        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-IU-252.23892.409" />
       </set>
     </attachedChunks>
   </component>
@@ -509,7 +515,13 @@
       <workItem from="1755067961114" duration="2314000" />
       <workItem from="1755162024629" duration="52000" />
       <workItem from="1755162081396" duration="1024000" />
-      <workItem from="1755511390478" duration="18000" />
+      <workItem from="1755511390478" duration="832000" />
+      <workItem from="1755589633165" duration="595000" />
+      <workItem from="1756202731786" duration="988000" />
+      <workItem from="1756274910165" duration="223000" />
+      <workItem from="1756980635838" duration="540000" />
+      <workItem from="1756981200521" duration="594000" />
+      <workItem from="1756983213782" duration="89000" />
     </task>
     <task id="LOCAL-00006" summary="- CHG: Changed the way reps are handled. There's now a dedicated `rep` column in the phenotypedata table.">
       <created>1630077053907</created>
@@ -854,7 +866,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="83" />
+    <option name="localTasksCounter" value="84" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -885,7 +897,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Slightly changed how trait definitions are matched against the database by restricting the fields that are checked to a minimum." />
     <MESSAGE value="- CHG: Updated dependencies.&#10;- CHG: Version bump." />
     <MESSAGE value="- CHG: Adjusted code to work with newer codegen version." />
     <MESSAGE value="- ADD: Added support for importing into an existing trial based on the BrAPI id." />
@@ -910,7 +921,8 @@
     <MESSAGE value="- CHG: Version bump.&#10;- CHG: Dependency update." />
     <MESSAGE value="- CHG: Dependency update." />
     <MESSAGE value="- CHG: Gradle updated to 9.0.0." />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Gradle updated to 9.0.0." />
+    <MESSAGE value="- CHG: Downgraded Gradle to v8.8 due to incompatibilties with gradle-cargo-plugin." />
+    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Downgraded Gradle to v8.8 due to incompatibilties with gradle-cargo-plugin." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -997,17 +1009,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java</url>
-          <line>107</line>
+          <line>110</line>
           <option name="timeStamp" value="78" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java</url>
-          <line>199</line>
+          <line>202</line>
           <option name="timeStamp" value="83" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/ShapefileImporter.java</url>
-          <line>207</line>
+          <line>210</line>
           <option name="timeStamp" value="84" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">

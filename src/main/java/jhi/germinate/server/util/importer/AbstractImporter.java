@@ -5,6 +5,7 @@ import jhi.germinate.server.database.codegen.enums.*;
 import jhi.germinate.server.database.codegen.tables.pojos.DataImportJobs;
 import jhi.germinate.server.database.codegen.tables.records.DataImportJobsRecord;
 import jhi.germinate.server.database.pojo.*;
+import jhi.germinate.server.util.FileUtils;
 import org.jooq.DSLContext;
 
 import java.io.*;
@@ -32,6 +33,9 @@ public abstract class AbstractImporter
 	private         Set<ImportStatus>               errorSet       = new HashSet<>();
 	private         String[]                        args;
 	protected       ImportJobStats                  importJobStats = new ImportJobStats();
+
+	// File to indicate to Germinate that the database permissions cache needs to be updated
+	private File databasePermissionIndicationFile;
 
 	private Instant start;
 
@@ -139,6 +143,9 @@ public abstract class AbstractImporter
 			job.setStatus(DataImportJobsStatus.running);
 			job.store(DATA_IMPORT_JOBS.STATUS);
 
+			File germinateFolder = new File(job.getJobConfig().getBaseFolder());
+			databasePermissionIndicationFile = new File(germinateFolder, "dbupdate.info");
+
 			this.jobDetails = job.into(DataImportJobs.class);
 
 			this.inputFile = new File(new File(new File(this.jobDetails.getJobConfig().getBaseFolder(), "async"), this.jobDetails.getUuid()), this.jobDetails.getJobConfig().getDataFilename());
@@ -205,6 +212,8 @@ public abstract class AbstractImporter
 
 			Logger.getLogger("").info("DURATION: " + duration);
 			System.out.println("DURATION: " + duration);
+
+			FileUtils.touch(databasePermissionIndicationFile.toPath());
 		}
 		catch (Exception e)
 		{
