@@ -829,7 +829,14 @@ public class TraitDataImporter extends DatasheetImporter
 
 			Sheet data = wb.findSheet("DATA").orElse(null);
 			Sheet dates = wb.findSheet("RECORDING_DATES").orElse(null);
+
+			context.execute("SET autocommit=0;");
+			context.execute("SET unique_checks=0;");
+			context.execute("SET foreign_key_checks=0;");
 			importData(context, data, dates);
+			context.execute("SET autocommit=1;");
+			context.execute("SET unique_checks=1;");
+			context.execute("SET foreign_key_checks=1;");
 		}
 		catch (SQLException e)
 		{
