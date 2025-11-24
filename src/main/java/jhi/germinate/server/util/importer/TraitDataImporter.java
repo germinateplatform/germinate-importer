@@ -1022,6 +1022,8 @@ public class TraitDataImporter extends DatasheetImporter
 					 // Just in case there is a match, but the restrictions changed, store them back
 					 match.store(PHENOTYPES.RESTRICTIONS);
 					 traitIds.add(match.getId());
+					 if (!StringUtils.isEmpty(match.getShortName()))
+						 traitNameToId.put(match.getShortName(), match.getId());
 					 traitNameToId.put(match.getName(), match.getId());
 				 }
 				 else
@@ -1038,6 +1040,8 @@ public class TraitDataImporter extends DatasheetImporter
 					 trait.store();
 
 					 traitIds.add(trait.getId());
+					 if (!StringUtils.isEmpty(trait.getShortName()))
+						 traitNameToId.put(trait.getShortName(), trait.getId());
 					 traitNameToId.put(trait.getName(), trait.getId());
 				 }
 			 });

@@ -508,7 +508,8 @@ public class ClimateDataImporter extends DatasheetImporter
 				 }
 
 				 climateIds.add(climate.getId());
-
+				 if (!StringUtils.isEmpty(climate.getShortName()))
+					 climateNameToId.put(climate.getShortName(), climate.getId());
 				 climateNameToId.put(climate.getName(), climate.getId());
 			 });
 		}
