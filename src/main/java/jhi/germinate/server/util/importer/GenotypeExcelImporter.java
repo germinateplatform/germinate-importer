@@ -2,6 +2,7 @@ package jhi.germinate.server.util.importer;
 
 import jhi.germinate.server.database.codegen.enums.DataImportJobsDatatype;
 import jhi.germinate.server.database.pojo.*;
+import jhi.germinate.server.util.StringUtils;
 import org.dhatim.fastexcel.reader.*;
 
 import java.io.*;
@@ -104,7 +105,10 @@ public class GenotypeExcelImporter extends DatasheetImporter
 					  bw.newLine();
 					  bw.write("# markerType = " + getCellValue(rows.get(metadataLabelToRowIndex.get("Marker Technology")), 2));
 					  bw.newLine();
-					  bw.write("# map = " + getCellValue(rows.get(metadataLabelToRowIndex.get("Map Name")), 2));
+					  String mapName = getCellValue(rows.get(metadataLabelToRowIndex.get("Map Name")), 2);
+					  if (StringUtils.isEmpty(mapName))
+						  mapName = getInputFile().getName();
+					  bw.write("# map = " + mapName);
 					  bw.newLine();
 				  }
 				  catch (IOException e)

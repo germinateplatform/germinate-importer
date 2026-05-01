@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'uk.ac.hutton.germinate-importer'
-version = '4.9.2'
+version = '5.0.0'
 
 compileJava.options.encoding = 'UTF-8'
 
@@ -18,10 +18,10 @@ repositories {
     maven {
         url = 'https://repo.osgeo.org/repository/release/'
     }
+    mavenCentral()
     maven {
         url = 'https://maven.scijava.org/content/repositories/public/'
     }
-    mavenCentral()
 }
 
 dependencies {

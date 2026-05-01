@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
 
+import static jhi.germinate.server.database.codegen.tables.Phenotypecategories.PHENOTYPECATEGORIES;
 import static jhi.germinate.server.database.codegen.tables.Phenotypedata.PHENOTYPEDATA;
 import static jhi.germinate.server.database.codegen.tables.Phenotypes.PHENOTYPES;
 import static jhi.germinate.server.database.codegen.tables.Treatments.TREATMENTS;
@@ -564,8 +565,18 @@ public class TraitDataImporter extends DatasheetImporter
 			}
 			catch (JsonSyntaxException | NullPointerException e)
 			{
-				e.printStackTrace();
-				addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_CATEGORIES, r.getRowNum(), "Trait categories: " + categories + " has invalid format.");
+				String[] cats = Arrays.stream(categories.split(",")).filter(c -> !StringUtils.isEmpty(c)).map(String::trim).toArray(String[]::new);
+
+				if (cats.length > 1)
+				{
+					restrictions = new TraitRestrictions();
+					restrictions.setCategories(new String[][]{cats});
+				}
+				else
+				{
+					e.printStackTrace();
+					addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_CATEGORIES, r.getRowNum(), "Trait categories: " + categories + " has invalid format.");
+				}
 			}
 		}
 
@@ -896,6 +907,7 @@ public class TraitDataImporter extends DatasheetImporter
 				 String shortName = getCellValue(r, traitColumnNameToIndex.get("Short Name"));
 				 String description = getCellValue(r, traitColumnNameToIndex.get("Description"));
 				 String dataTypeString = getCellValue(r, traitColumnNameToIndex.get("Data Type"));
+				 String categoryString = getCellValue(r, traitColumnNameToIndex.get("Trait category"));
 				 PhenotypesDatatype dataType = PhenotypesDatatype.text;
 				 if (!StringUtils.isEmpty(dataTypeString))
 				 {
@@ -927,6 +939,17 @@ public class TraitDataImporter extends DatasheetImporter
 					 unit.store();
 				 }
 
+				 PhenotypecategoriesRecord category = context.selectFrom(PHENOTYPECATEGORIES)
+															 .where(PHENOTYPECATEGORIES.NAME.isNotDistinctFrom(categoryString))
+															 .fetchAny();
+
+				 if (!StringUtils.isEmpty(categoryString) && category == null)
+				 {
+					 category = context.newRecord(PHENOTYPECATEGORIES);
+					 category.setName(categoryString);
+					 category.store();
+				 }
+
 				 TraitRestrictions restrictions = null;
 				 String categories = getCellValue(r, traitColumnNameToIndex.get("Trait categories (comma separated)"));
 				 String minimum = getCellValue(r, traitColumnNameToIndex.get("Min (only for numeric traits)"));
@@ -934,8 +957,10 @@ public class TraitDataImporter extends DatasheetImporter
 
 				 if (!StringUtils.isEmpty(categories))
 				 {
+					 boolean valid = false;
 					 try
 					 {
+
 						 // Try to parse it
 						 String[][] cats = new Gson().fromJson(categories, String[][].class);
 
@@ -943,12 +968,28 @@ public class TraitDataImporter extends DatasheetImporter
 						 {
 							 restrictions = new TraitRestrictions();
 							 restrictions.setCategories(cats);
+							 valid = true;
 						 }
 					 }
 					 catch (JsonSyntaxException | NullPointerException e)
 					 {
-						 addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_CATEGORIES, r.getRowNum(), "Trait categories: " + categories + " has invalid format.");
+						 // Ignore, we're just checking validity here
 					 }
+
+					 if (!valid)
+					 {
+						 String[] cats = Arrays.stream(categories.split(",")).filter(c -> !StringUtils.isEmpty(c)).map(String::trim).toArray(String[]::new);
+
+						 if (cats.length > 1)
+						 {
+							 restrictions = new TraitRestrictions();
+							 restrictions.setCategories(new String[][]{cats});
+							 valid = true;
+						 }
+					 }
+
+					 if (!valid)
+						 addImportResult(ImportStatus.TRIALS_INVALID_TRAIT_CATEGORIES, r.getRowNum(), "Trait categories: " + categories + " has invalid format.");
 				 }
 
 				 if (!StringUtils.isEmpty(minimum))
@@ -1006,6 +1047,8 @@ public class TraitDataImporter extends DatasheetImporter
 					 query.and(PHENOTYPES.DESCRIPTION.isNotDistinctFrom(description));
 				 if (!StringUtils.isEmpty(shortName))
 					 query.and(PHENOTYPES.SHORT_NAME.isNotDistinctFrom(shortName));
+				 if (category != null)
+					 query.and(PHENOTYPES.CATEGORY_ID.isNotDistinctFrom(category.getId()));
 
 //				 if (restrictions != null)
 //					 query.and(PHENOTYPES.RESTRICTIONS.isNotDistinctFrom(restrictions));
@@ -1034,6 +1077,7 @@ public class TraitDataImporter extends DatasheetImporter
 					 trait.setDescription(description);
 					 trait.setDatatype(dataType);
 					 trait.setUnitId(unit == null ? null : unit.getId());
+					 trait.setCategoryId(category == null ? null : category.getId());
 					 trait.setRestrictions(restrictions);
 					 trait.setSetsize(setSize);
 					 trait.setIsTimeseries(isTimeseries);

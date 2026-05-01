@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.nio.file.*;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 import static jhi.germinate.server.database.codegen.tables.Attributedata.ATTRIBUTEDATA;
 import static jhi.germinate.server.database.codegen.tables.Attributes.ATTRIBUTES;
@@ -240,7 +241,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Location Name");
 				 if (!StringUtils.isEmpty(shortName) && shortName.length() > 22)
 					 addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Location Short Name: " + shortName + " is longer than 22 characters.");
-				 if (!StringUtils.isEmpty(country) && !countryCode2ToId.containsKey(country))
+				 if (!StringUtils.isEmpty(country) || !countryCode2ToId.containsKey(country))
 					 addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), country);
 				 if (!StringUtils.isEmpty(elevation))
 				 {
@@ -313,7 +314,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 			Integer index = metadataLabelToRowIndex.get("Title");
 			if (index != null)
 			{
-				String name = getCellValue(rows.get(index), 0);
+				String name = getCellValue(rows.get(index), 2);
 				if (StringUtils.isEmpty(name))
 					addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, index, "Title");
 			}
@@ -325,7 +326,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 			index = metadataLabelToRowIndex.get("Description");
 			if (index != null)
 			{
-				String description = getCellValue(rows.get(index), 0);
+				String description = getCellValue(rows.get(index), 2);
 				if (StringUtils.isEmpty(description))
 					addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, index, "Description");
 			}
@@ -484,6 +485,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					   {
 					   }
 					   String value = getCellValue(r, 2);
+					   Date dateValue = getCellValueDate(r, 2);
 
 					   if (dt == null || StringUtils.isEmpty(attribute) || StringUtils.isEmpty(value))
 						   return;
@@ -508,7 +510,10 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 
 					   AttributedataRecord ad = context.newRecord(ATTRIBUTEDATA);
 					   ad.setAttributeId(attributeId);
-					   ad.setValue(value);
+					   if (dt == AttributesDatatype.date && dateValue != null)
+						   ad.setValue(SDF_FULL_DASH.format(dateValue));
+					   else
+						   ad.setValue(value);
 					   ad.setForeignId(dataset.getId());
 					   ad.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 					   ad.store();
