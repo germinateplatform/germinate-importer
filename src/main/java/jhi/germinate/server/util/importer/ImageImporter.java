@@ -25,7 +25,7 @@ import static jhi.germinate.server.database.codegen.tables.ImageToTags.IMAGE_TO_
 import static jhi.germinate.server.database.codegen.tables.Images.IMAGES;
 import static jhi.germinate.server.database.codegen.tables.Imagetags.IMAGETAGS;
 import static jhi.germinate.server.database.codegen.tables.Imagetypes.IMAGETYPES;
-import static jhi.germinate.server.database.codegen.tables.Phenotypes.PHENOTYPES;
+import static jhi.germinate.server.database.codegen.tables.Variables.VARIABLES;
 
 /**
  * @author Sebastian Raubach
@@ -68,7 +68,7 @@ public class ImageImporter extends AbstractImporter
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			context.selectFrom(PHENOTYPES).forEach(g -> traitNameToId.put(g.getName(), g.getId()));
+			context.selectFrom(VARIABLES).forEach(g -> traitNameToId.put(g.getName(), g.getId()));
 			context.selectFrom(IMAGETAGS).forEach(g -> tagToImageTagId.put(g.getTagName(), g.getId()));
 			context.selectFrom(IMAGETYPES).forEach(g -> imageTypeToId.put(g.getReferenceTable(), g.getId()));
 		}
