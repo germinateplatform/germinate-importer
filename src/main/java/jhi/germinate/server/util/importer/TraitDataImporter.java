@@ -19,13 +19,18 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.*;
 
+import static jhi.germinate.server.database.codegen.tables.Methodontologies.METHODONTOLOGIES;
 import static jhi.germinate.server.database.codegen.tables.Methods.METHODS;
+import static jhi.germinate.server.database.codegen.tables.Ontologies.ONTOLOGIES;
 import static jhi.germinate.server.database.codegen.tables.Phenotypedata.PHENOTYPEDATA;
+import static jhi.germinate.server.database.codegen.tables.Scaleontologies.SCALEONTOLOGIES;
 import static jhi.germinate.server.database.codegen.tables.Scales.SCALES;
 import static jhi.germinate.server.database.codegen.tables.Traitcategories.TRAITCATEGORIES;
+import static jhi.germinate.server.database.codegen.tables.Traitontologies.TRAITONTOLOGIES;
 import static jhi.germinate.server.database.codegen.tables.Traits.TRAITS;
 import static jhi.germinate.server.database.codegen.tables.Treatments.TREATMENTS;
 import static jhi.germinate.server.database.codegen.tables.Trialsetup.TRIALSETUP;
+import static jhi.germinate.server.database.codegen.tables.Variableontologies.VARIABLEONTOLOGIES;
 import static jhi.germinate.server.database.codegen.tables.Variables.VARIABLES;
 import static jhi.germinate.server.database.codegen.tables.ViewTableTraits.VIEW_TABLE_TRAITS;
 
@@ -50,6 +55,7 @@ public class TraitDataImporter extends DatasheetImporter
 	 * Used to check trait values against trait definitions during checking stage
 	 */
 	private final Map<String, ViewTableTraits> variableDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private final Map<String, OntologyIds>     variableOntologyIds = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	private final Set<Integer> traitIds     = new HashSet<>();
 	private final Set<Integer> germplasmIds = new HashSet<>();
@@ -97,14 +103,14 @@ public class TraitDataImporter extends DatasheetImporter
 		{
 			DSLContext context = Database.getContext(conn);
 			context.selectFrom(VARIABLES)
-			       .forEach(p -> traitNameToId.put(p.getName(), p.getId()));
+				   .forEach(p -> traitNameToId.put(p.getName(), p.getId()));
 
 			context.selectFrom(VIEW_TABLE_TRAITS)
-			       .fetchInto(ViewTableTraits.class)
-			       .forEach(p -> variableDefinitions.put(p.getVariableName(), p));
+				   .fetchInto(ViewTableTraits.class)
+				   .forEach(p -> variableDefinitions.put(p.getVariableName(), p));
 
 			context.selectFrom(TREATMENTS)
-			       .forEach(t -> treatmentToId.put(t.getName(), t.getId()));
+				   .forEach(t -> treatmentToId.put(t.getName(), t.getId()));
 		}
 		catch (SQLException e)
 		{
@@ -144,21 +150,21 @@ public class TraitDataImporter extends DatasheetImporter
 				  }
 			  }, () -> {
 				  wb.getSheets()
-				    .filter(s -> Objects.equals(s.getName(), "PHENOTYPES"))
-				    .findFirst()
-				    .ifPresent(s ->
+					.filter(s -> Objects.equals(s.getName(), "PHENOTYPES"))
+					.findFirst()
+					.ifPresent(s ->
 					{
 						// Fall back to old traits sheet
 						try
 						{
 							// Map headers to their index
 							s.openStream()
-						     .findFirst()
-						     .ifPresent(this::getTraitHeaderMapping);
+							 .findFirst()
+							 .ifPresent(this::getTraitHeaderMapping);
 							// Check the sheet
 							s.openStream()
-						     .skip(1)
-						     .forEachOrdered(this::checkTrait);
+							 .skip(1)
+							 .forEachOrdered(this::checkTrait);
 						}
 						catch (IOException e)
 						{
@@ -204,51 +210,51 @@ public class TraitDataImporter extends DatasheetImporter
 			}
 
 			data.openStream()
-			    .findFirst()
-			    .ifPresent(this::getDataHeaderMapping);
+				.findFirst()
+				.ifPresent(this::getDataHeaderMapping);
 
 			data.openStream()
-			    .findFirst()
-			    .ifPresent(this::checkPredefinedHeaders);
+				.findFirst()
+				.ifPresent(this::checkPredefinedHeaders);
 
 			// Check trait names in data sheet against database and phenotypes sheet
 			data.openStream()
-			    .findFirst()
-			    .ifPresent(this::checkTraitNames);
+				.findFirst()
+				.ifPresent(this::checkTraitNames);
 			// Check germplasm names in data sheet against the database
 			data.openStream()
-			    .skip(1)
-			    .forEachOrdered(this::checkGermplasmNameAndRep);
+				.skip(1)
+				.forEachOrdered(this::checkGermplasmNameAndRep);
 
 			data.openStream()
-			    .skip(1)
-			    .forEachOrdered(this::checkLocationName);
+				.skip(1)
+				.forEachOrdered(this::checkLocationName);
 
 			data.openStream()
-			    .skip(1)
-			    .forEachOrdered(this::checkGpsInformation);
+				.skip(1)
+				.forEachOrdered(this::checkGpsInformation);
 
 			data.openStream()
-			    .skip(1)
-			    .forEachOrdered(this::checkRowColumn);
+				.skip(1)
+				.forEachOrdered(this::checkRowColumn);
 
 			checkData(data);
 
 			if (dates != null)
 			{
 				dates.openStream()
-				     .findFirst()
-				     .ifPresent(this::checkPredefinedHeaders);
+					 .findFirst()
+					 .ifPresent(this::checkPredefinedHeaders);
 
 				// Check trait names in dates sheet against database and phenotypes sheet
 				dates.openStream()
-				     .findFirst()
-				     .ifPresent(this::checkTraitNames);
+					 .findFirst()
+					 .ifPresent(this::checkTraitNames);
 
 				// Check germplasm names in dates sheet against the database
 				dates.openStream()
-				     .skip(1)
-				     .forEachOrdered(this::checkGermplasmNameAndRep);
+					 .skip(1)
+					 .forEachOrdered(this::checkGermplasmNameAndRep);
 
 				List<Row> dataRows = data.read();
 				List<Row> datesRows = dates.read();
@@ -467,13 +473,13 @@ public class TraitDataImporter extends DatasheetImporter
 	{
 		// Map column names to their index
 		dataColumnNameToIndex = IntStream.range(0, r.getCellCount())
-		                                 .filter(i -> !cellEmpty(r, i))
-		                                 .boxed()
-		                                 .collect(Collectors.toMap(r::getCellText, Function.identity()));
+										 .filter(i -> !cellEmpty(r, i))
+										 .boxed()
+										 .collect(Collectors.toMap(r::getCellText, Function.identity()));
 
 		traitColumnStartIndex = (int) Arrays.stream(COLUMN_HEADERS_DATA)
-		                                    .filter(h -> dataColumnNameToIndex.containsKey(h))
-		                                    .count();
+											.filter(h -> dataColumnNameToIndex.containsKey(h))
+											.count();
 	}
 
 	private void getVariableHeaderMapping(Row r)
@@ -482,13 +488,13 @@ public class TraitDataImporter extends DatasheetImporter
 		{
 			// Map column names to their index
 			traitColumnNameToIndex = IntStream.range(0, r.getCellCount())
-			                                  .filter(i -> !cellEmpty(r, i))
-			                                  .boxed()
-			                                  .collect(Collectors.toMap(r::getCellText, Function.identity()));
+											  .filter(i -> !cellEmpty(r, i))
+											  .boxed()
+											  .collect(Collectors.toMap(r::getCellText, Function.identity()));
 
 			// Check if all columns are there
 			Arrays.stream(COLUMN_HEADERS_VARIABLES)
-			      .forEach(c ->
+				  .forEach(c ->
 				  {
 					  if (!traitColumnNameToIndex.containsKey(c))
 						  addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, -1, c);
@@ -506,13 +512,13 @@ public class TraitDataImporter extends DatasheetImporter
 		{
 			// Map column names to their index
 			traitColumnNameToIndex = IntStream.range(0, r.getCellCount())
-			                                  .filter(i -> !cellEmpty(r, i))
-			                                  .boxed()
-			                                  .collect(Collectors.toMap(r::getCellText, Function.identity()));
+											  .filter(i -> !cellEmpty(r, i))
+											  .boxed()
+											  .collect(Collectors.toMap(r::getCellText, Function.identity()));
 
 			// Check if all columns are there
 			Arrays.stream(COLUMN_HEADERS_TRAITS)
-			      .forEach(c ->
+				  .forEach(c ->
 				  {
 					  if (!traitColumnNameToIndex.containsKey(c))
 						  addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, -1, c);
@@ -618,15 +624,18 @@ public class TraitDataImporter extends DatasheetImporter
 		// If only one side has a range, give 0 for this component
 
 		// --- AllowedValues overlap (weight: 0.6) ---
-		String[][] newVals  = newR.getCategories();
+		String[][] newVals = newR.getCategories();
 		String[][] candVals = candR.getCategories();
 
-		boolean newHasVals  = newVals  != null && newVals.length  > 0;
+		boolean newHasVals = newVals != null && newVals.length > 0;
 		boolean candHasVals = candVals != null && candVals.length > 0;
 
-		if (newHasVals && candHasVals) {
+		if (newHasVals && candHasVals)
+		{
 			score += 0.6 * computeAllowedValuesSimilarity(newVals, candVals);
-		} else if (!newHasVals && !candHasVals) {
+		}
+		else if (!newHasVals && !candHasVals)
+		{
 			score += 0.3;
 		}
 		// If only one side has allowedValues, give 0 for this component
@@ -639,17 +648,19 @@ public class TraitDataImporter extends DatasheetImporter
 	 * Uses best-match Jaccard similarity on inner arrays rather than requiring exact equality,
 	 * so e.g. ["2","6","intermediate"] and ["2","6"] are recognised as similar (score: 2/3 ≈ 0.67).
 	 */
-	private double computeAllowedValuesSimilarity(String[][] newVals, String[][] candVals) {
-		Set<Set<String>> newSets  = toLevelSets(newVals);
+	private double computeAllowedValuesSimilarity(String[][] newVals, String[][] candVals)
+	{
+		Set<Set<String>> newSets = toLevelSets(newVals);
 		Set<Set<String>> candSets = toLevelSets(candVals);
 
 		// For each level in the new scale, find the best-matching level in the candidate
 		double totalScore = 0.0;
-		for (Set<String> newLevel : newSets) {
+		for (Set<String> newLevel : newSets)
+		{
 			double bestLevelScore = candSets.stream()
-			                                .mapToDouble(candLevel -> jaccardSimilarity(newLevel, candLevel))
-			                                .max()
-			                                .orElse(0.0);
+											.mapToDouble(candLevel -> jaccardSimilarity(newLevel, candLevel))
+											.max()
+											.orElse(0.0);
 			totalScore += bestLevelScore;
 		}
 
@@ -661,7 +672,8 @@ public class TraitDataImporter extends DatasheetImporter
 	/**
 	 * Jaccard similarity between two sets: |intersection| / |union|.
 	 */
-	private double jaccardSimilarity(Set<String> a, Set<String> b) {
+	private double jaccardSimilarity(Set<String> a, Set<String> b)
+	{
 		if (a.isEmpty() && b.isEmpty()) return 1.0;
 
 		long intersection = a.stream().filter(b::contains).count();
@@ -676,11 +688,11 @@ public class TraitDataImporter extends DatasheetImporter
 	private Set<Set<String>> toLevelSets(String[][] values)
 	{
 		return Arrays.stream(values)
-		             .map(level -> Arrays.stream(level)
-		                                 .map(String::toLowerCase)
-		                                 .map(String::trim)
-		                                 .collect(Collectors.toSet()))
-		             .collect(Collectors.toSet());
+					 .map(level -> Arrays.stream(level)
+										 .map(String::toLowerCase)
+										 .map(String::trim)
+										 .collect(Collectors.toSet()))
+					 .collect(Collectors.toSet());
 	}
 
 	/**
@@ -733,42 +745,50 @@ public class TraitDataImporter extends DatasheetImporter
 				? new ArrayList<>(Arrays.asList(existingVals))
 				: new ArrayList<>();
 
-		for (String[] newLevel : newVals) {
+		for (String[] newLevel : newVals)
+		{
 			Set<String> newNormalised = Arrays.stream(newLevel)
-			                                  .map(String::toLowerCase)
-			                                  .map(String::trim)
-			                                  .collect(Collectors.toSet());
+											  .map(String::toLowerCase)
+											  .map(String::trim)
+											  .collect(Collectors.toSet());
 
 			// Find the best-matching existing level (if any)
 			int bestMatchIndex = -1;
 			double bestMatchScore = 0.0;
-			for (int i = 0; i < merged.size(); i++) {
+			for (int i = 0; i < merged.size(); i++)
+			{
 				Set<String> existingNormalised = Arrays.stream(merged.get(i))
-				                                       .map(String::toLowerCase)
-				                                       .map(String::trim)
-				                                       .collect(Collectors.toSet());
+													   .map(String::toLowerCase)
+													   .map(String::trim)
+													   .collect(Collectors.toSet());
 				double similarity = jaccardSimilarity(existingNormalised, newNormalised);
-				if (similarity >= 0.5 && similarity > bestMatchScore) {
+				if (similarity >= 0.5 && similarity > bestMatchScore)
+				{
 					bestMatchScore = similarity;
 					bestMatchIndex = i;
 				}
 			}
 
-			if (bestMatchIndex >= 0) {
+			if (bestMatchIndex >= 0)
+			{
 				// Merge: union of both levels, preserving original casing from each side
 				Set<String> existingNormalised = Arrays.stream(merged.get(bestMatchIndex))
-				                                       .map(String::toLowerCase)
-				                                       .map(String::trim)
-				                                       .collect(Collectors.toSet());
+													   .map(String::toLowerCase)
+													   .map(String::trim)
+													   .collect(Collectors.toSet());
 
 				List<String> union = new ArrayList<>(Arrays.asList(merged.get(bestMatchIndex)));
-				for (String newValue : newLevel) {
-					if (!existingNormalised.contains(newValue.toLowerCase().trim())) {
+				for (String newValue : newLevel)
+				{
+					if (!existingNormalised.contains(newValue.toLowerCase().trim()))
+					{
 						union.add(newValue);
 					}
 				}
 				merged.set(bestMatchIndex, union.toArray(new String[0]));
-			} else {
+			}
+			else
+			{
 				// Genuinely new level — append it
 				merged.add(newLevel);
 			}
@@ -828,6 +848,11 @@ public class TraitDataImporter extends DatasheetImporter
 		scale.check(r, container);
 
 		variableDefinitions.put(name, container);
+		variableOntologyIds.put(name, new OntologyIds()
+				.setVariable(variable.ontologyId)
+				.setTrait(trait.ontologyId)
+				.setMethod(method.ontologyId)
+				.setScale(scale.ontologyId));
 	}
 
 	private void checkTrait(Row r)
@@ -882,18 +907,18 @@ public class TraitDataImporter extends DatasheetImporter
 		{
 			// Get the header row
 			Row headers = s.openStream()
-			               .findFirst()
-			               .orElse(null);
+						   .findFirst()
+						   .orElse(null);
 
 			if (headers != null)
 			{
 				// Get the data type for each column
 				List<ViewTableTraitsScaleDatatype> dataTypes = headers.stream()
-				                                                      .skip(this.traitColumnStartIndex)
-				                                                      .map(this::getCellValue)
-				                                                      .filter(c -> !StringUtils.isEmpty(c) && variableDefinitions.containsKey(c))
-				                                                      .map(c -> variableDefinitions.get(c).getScaleDatatype())
-				                                                      .toList();
+																	  .skip(this.traitColumnStartIndex)
+																	  .map(this::getCellValue)
+																	  .filter(c -> !StringUtils.isEmpty(c) && variableDefinitions.containsKey(c))
+																	  .map(c -> variableDefinitions.get(c).getScaleDatatype())
+																	  .toList();
 
 				// Now check them to make sure their content fits the data type
 				s.openStream()
@@ -934,10 +959,10 @@ public class TraitDataImporter extends DatasheetImporter
 
 				// Get all the traits that have restrictions
 				List<String> traitsWithRestrictions = variableDefinitions.values().stream()
-				                                                         .filter(t -> !StringUtils.isEmpty(t.getVariableName()))
-				                                                         .filter(t -> t.getScaleRestrictions() != null && (t.getScaleDatatype() == ViewTableTraitsScaleDatatype.numeric || t.getScaleDatatype() == ViewTableTraitsScaleDatatype.categorical))
-				                                                         .map(ViewTableTraits::getVariableName)
-				                                                         .toList();
+																		 .filter(t -> !StringUtils.isEmpty(t.getVariableName()))
+																		 .filter(t -> t.getScaleRestrictions() != null && (t.getScaleDatatype() == ViewTableTraitsScaleDatatype.numeric || t.getScaleDatatype() == ViewTableTraitsScaleDatatype.categorical))
+																		 .map(ViewTableTraits::getVariableName)
+																		 .toList();
 
 				if (!traitsWithRestrictions.isEmpty())
 				{
@@ -1075,17 +1100,17 @@ public class TraitDataImporter extends DatasheetImporter
 				  importTraits(context, s, "Variable name");
 			  }, () -> {
 				  wb.findSheet("PHENOTYPES")
-				    .ifPresent(s -> {
+					.ifPresent(s -> {
 						try
 						{
 							// Map headers to their index
 							s.openStream()
-						     .findFirst()
-						     .ifPresent(this::getTraitHeaderMapping);
+							 .findFirst()
+							 .ifPresent(this::getTraitHeaderMapping);
 							// Check the sheet to get the trait mapping
 							s.openStream()
-						     .skip(2)
-						     .forEachOrdered(this::checkTrait);
+							 .skip(2)
+							 .forEachOrdered(this::checkTrait);
 						}
 						catch (IOException e)
 						{
@@ -1183,12 +1208,27 @@ public class TraitDataImporter extends DatasheetImporter
 				 if (container == null)
 					 return;
 
+				 OntologiesRecord ontology = context.selectFrom(ONTOLOGIES)
+													.where(ONTOLOGIES.NAME.eq("Crop Ontology"))
+													.and(ONTOLOGIES.URL.eq("https://cropontology.org/"))
+													.fetchAny();
+
+				 if (ontology == null)
+				 {
+					 ontology = context.newRecord(ONTOLOGIES);
+					 ontology.setName("Crop Ontology");
+					 ontology.setUrl("https://cropontology.org/");
+					 ontology.store();
+				 }
+
+				 OntologyIds ontologyIds = variableOntologyIds.get(name);
+
 				 List<ScalesRecord> potential = context.selectFrom(SCALES)
-				                                       .where(SCALES.NAME.isNotDistinctFrom(container.getScaleName()))
-				                                       .and(SCALES.DATATYPE.isNotDistinctFrom(ScalesDatatype.lookupLiteral(container.getScaleDatatype().getLiteral())))
-				                                       .and(SCALES.DESCRIPTION.isNotDistinctFrom(container.getScaleDescription()))
-				                                       .and(SCALES.UNIT.isNotDistinctFrom(container.getScaleUnit()))
-				                                       .fetchInto(ScalesRecord.class);
+													   .where(SCALES.NAME.isNotDistinctFrom(container.getScaleName()))
+													   .and(SCALES.DATATYPE.isNotDistinctFrom(ScalesDatatype.lookupLiteral(container.getScaleDatatype().getLiteral())))
+													   .and(SCALES.DESCRIPTION.isNotDistinctFrom(container.getScaleDescription()))
+													   .and(SCALES.UNIT.isNotDistinctFrom(container.getScaleUnit()))
+													   .fetchInto(ScalesRecord.class);
 
 				 ScalesRecord scale = context.newRecord(SCALES);
 				 scale.setName(container.getScaleName());
@@ -1202,6 +1242,15 @@ public class TraitDataImporter extends DatasheetImporter
 				 if (bestMatch == null)
 				 {
 					 scale.store();
+
+					 if (ontologyIds != null && !StringUtils.isEmpty(ontologyIds.getScale()))
+					 {
+						 ScaleontologiesRecord so = context.newRecord(SCALEONTOLOGIES);
+						 so.setScaleId(scale.getId());
+						 so.setOntologyId(ontology.getId());
+						 so.setOntologyPuid(ontologyIds.getScale());
+						 so.store();
+					 }
 				 }
 				 else
 				 {
@@ -1210,8 +1259,8 @@ public class TraitDataImporter extends DatasheetImporter
 				 }
 
 				 TraitcategoriesRecord category = context.selectFrom(TRAITCATEGORIES)
-				                                         .where(TRAITCATEGORIES.NAME.isNotDistinctFrom(container.getTraitCategoryName()))
-				                                         .fetchAny();
+														 .where(TRAITCATEGORIES.NAME.isNotDistinctFrom(container.getTraitCategoryName()))
+														 .fetchAny();
 
 				 if (!StringUtils.isEmpty(container.getTraitCategoryName()) && category == null)
 				 {
@@ -1221,12 +1270,12 @@ public class TraitDataImporter extends DatasheetImporter
 				 }
 
 				 MethodsRecord method = context.selectFrom(METHODS)
-				                               .where(METHODS.NAME.isNotDistinctFrom(container.getMethodName()))
-				                               .and(METHODS.DESCRIPTION.isNotDistinctFrom(container.getMethodDescription()))
-				                               .and(METHODS.SETSIZE.isNotDistinctFrom(container.getMethodSetSize()))
-				                               .and(METHODS.IS_TIMESERIES.isNotDistinctFrom(container.getMethodIsTimeseries()))
-				                               .and(METHODS.METHOD_CLASS.isNotDistinctFrom(MethodsMethodClass.lookupLiteral(container.getMethodClass().getLiteral())))
-				                               .fetchAny();
+											   .where(METHODS.NAME.isNotDistinctFrom(container.getMethodName()))
+											   .and(METHODS.DESCRIPTION.isNotDistinctFrom(container.getMethodDescription()))
+											   .and(METHODS.SETSIZE.isNotDistinctFrom(container.getMethodSetSize()))
+											   .and(METHODS.IS_TIMESERIES.isNotDistinctFrom(container.getMethodIsTimeseries()))
+											   .and(METHODS.METHOD_CLASS.isNotDistinctFrom(MethodsMethodClass.lookupLiteral(container.getMethodClass().getLiteral())))
+											   .fetchAny();
 
 				 if (method == null)
 				 {
@@ -1235,21 +1284,30 @@ public class TraitDataImporter extends DatasheetImporter
 					 method.setDescription(container.getMethodDescription());
 					 method.setSetsize(container.getMethodSetSize());
 					 if (container.getMethodIsTimeseries() != null)
-					 	 method.setIsTimeseries(container.getMethodIsTimeseries());
+						 method.setIsTimeseries(container.getMethodIsTimeseries());
 					 else
 						 method.setIsTimeseries(true);
 					 method.setMethodClass(MethodsMethodClass.lookupLiteral(container.getMethodClass().getLiteral()));
 					 method.store();
+
+					 if (ontologyIds != null && !StringUtils.isEmpty(ontologyIds.getMethod()))
+					 {
+						 MethodontologiesRecord mo = context.newRecord(METHODONTOLOGIES);
+						 mo.setMethodId(method.getId());
+						 mo.setOntologyId(ontology.getId());
+						 mo.setOntologyPuid(ontologyIds.getMethod());
+						 mo.store();
+					 }
 				 }
 
 				 TraitsRecord trait = context.selectFrom(TRAITS)
-				                             .where(TRAITS.NAME.isNotDistinctFrom(container.getTraitName()))
-				                             .and(TRAITS.DESCRIPTION.isNotDistinctFrom(container.getTraitDescription()))
-				                             .and(TRAITS.ABBREVIATION.isNotDistinctFrom(container.getTraitAbbreviation()))
-				                             .and(TRAITS.SYNONYMS.isNotDistinctFrom(container.getTraitSynonyms()))
-				                             .and(TRAITS.TRAIT_CLASS.isNotDistinctFrom(TraitsTraitClass.lookupLiteral(container.getTraitClass().getLiteral())))
-				                             .and(TRAITS.TRAITCATEGORY_ID.isNotDistinctFrom(category != null ? category.getId() : null))
-				                             .fetchAny();
+											 .where(TRAITS.NAME.isNotDistinctFrom(container.getTraitName()))
+											 .and(TRAITS.DESCRIPTION.isNotDistinctFrom(container.getTraitDescription()))
+											 .and(TRAITS.ABBREVIATION.isNotDistinctFrom(container.getTraitAbbreviation()))
+											 .and(TRAITS.SYNONYMS.isNotDistinctFrom(container.getTraitSynonyms()))
+											 .and(TRAITS.TRAIT_CLASS.isNotDistinctFrom(TraitsTraitClass.lookupLiteral(container.getTraitClass().getLiteral())))
+											 .and(TRAITS.TRAITCATEGORY_ID.isNotDistinctFrom(category != null ? category.getId() : null))
+											 .fetchAny();
 
 				 if (trait == null)
 				 {
@@ -1261,15 +1319,24 @@ public class TraitDataImporter extends DatasheetImporter
 					 trait.setTraitClass(TraitsTraitClass.lookupLiteral(container.getTraitClass().getLiteral()));
 					 trait.setTraitcategoryId(category != null ? category.getId() : null);
 					 trait.store();
+
+					 if (ontologyIds != null && !StringUtils.isEmpty(ontologyIds.getTrait()))
+					 {
+						 TraitontologiesRecord to = context.newRecord(TRAITONTOLOGIES);
+						 to.setTraitId(trait.getId());
+						 to.setOntologyId(ontology.getId());
+						 to.setOntologyPuid(ontologyIds.getTrait());
+						 to.store();
+					 }
 				 }
 
 				 VariablesRecord variable = context.selectFrom(VARIABLES)
-				                                   .where(VARIABLES.NAME.isNotDistinctFrom(container.getVariableName()))
-				                                   .and(VARIABLES.DESCRIPTION.isNotDistinctFrom(container.getVariableDescription()))
-				                                   .and(VARIABLES.SCALE_ID.isNotDistinctFrom(scale.getId()))
-				                                   .and(VARIABLES.TRAIT_ID.isNotDistinctFrom(trait.getId()))
-				                                   .and(VARIABLES.METHOD_ID.isNotDistinctFrom(method.getId()))
-				                                   .fetchAny();
+												   .where(VARIABLES.NAME.isNotDistinctFrom(container.getVariableName()))
+												   .and(VARIABLES.DESCRIPTION.isNotDistinctFrom(container.getVariableDescription()))
+												   .and(VARIABLES.SCALE_ID.isNotDistinctFrom(scale.getId()))
+												   .and(VARIABLES.TRAIT_ID.isNotDistinctFrom(trait.getId()))
+												   .and(VARIABLES.METHOD_ID.isNotDistinctFrom(method.getId()))
+												   .fetchAny();
 
 				 if (variable == null)
 				 {
@@ -1280,6 +1347,15 @@ public class TraitDataImporter extends DatasheetImporter
 					 variable.setMethodId(method.getId());
 					 variable.setScaleId(scale.getId());
 					 variable.store();
+
+					 if (ontologyIds != null && !StringUtils.isEmpty(ontologyIds.getVariable()))
+					 {
+						 VariableontologiesRecord vo = context.newRecord(VARIABLEONTOLOGIES);
+						 vo.setVariableId(variable.getId());
+						 vo.setOntologyId(ontology.getId());
+						 vo.setOntologyPuid(ontologyIds.getVariable());
+						 vo.store();
+					 }
 				 }
 
 				 container.setVariableId(variable.getId());
@@ -1301,8 +1377,8 @@ public class TraitDataImporter extends DatasheetImporter
 		{
 			// Before we start, let's check the headers again to set the correct trait start index
 			data.openStream()
-			    .findFirst()
-			    .ifPresent(this::checkPredefinedHeaders);
+				.findFirst()
+				.ifPresent(this::checkPredefinedHeaders);
 
 			List<Row> dataRows = data.read();
 			List<Row> datesRows = null;
@@ -1455,7 +1531,7 @@ public class TraitDataImporter extends DatasheetImporter
 					if (newData.size() >= 10000)
 					{
 						context.batchStore(newData)
-						       .execute();
+							   .execute();
 						newData.clear();
 					}
 				}
@@ -1463,7 +1539,7 @@ public class TraitDataImporter extends DatasheetImporter
 				if (!newData.isEmpty())
 				{
 					context.batchStore(newData)
-					       .execute();
+						   .execute();
 					newData.clear();
 				}
 			}
@@ -1527,7 +1603,6 @@ public class TraitDataImporter extends DatasheetImporter
 	private abstract class ImportBase
 	{
 		boolean legacy;
-		Integer dbId;
 		String  ontologyId;
 		String  name;
 		String  description;
@@ -1664,7 +1739,9 @@ public class TraitDataImporter extends DatasheetImporter
 					container.setMethodIsTimeseries(true);
 					addImportResult(ImportStatus.GENERIC_INVALID_BOOLEAN, r.getRowNum(), "Is timeseries flag isn't a valid boolean: " + isTimeseries);
 				}
-			} else {
+			}
+			else
+			{
 				container.setMethodIsTimeseries(true);
 			}
 		}
@@ -1779,6 +1856,59 @@ public class TraitDataImporter extends DatasheetImporter
 					addImportResult(ImportStatus.GENERIC_INVALID_NUMBER, r.getRowNum(), "Maximum isn't a valid number: " + maximum);
 				}
 			}
+		}
+	}
+
+
+	private static class OntologyIds
+	{
+		private String variable;
+		private String trait;
+		private String method;
+		private String scale;
+
+		public String getVariable()
+		{
+			return variable;
+		}
+
+		public OntologyIds setVariable(String variable)
+		{
+			this.variable = variable;
+			return this;
+		}
+
+		public String getTrait()
+		{
+			return trait;
+		}
+
+		public OntologyIds setTrait(String trait)
+		{
+			this.trait = trait;
+			return this;
+		}
+
+		public String getMethod()
+		{
+			return method;
+		}
+
+		public OntologyIds setMethod(String method)
+		{
+			this.method = method;
+			return this;
+		}
+
+		public String getScale()
+		{
+			return scale;
+		}
+
+		public OntologyIds setScale(String scale)
+		{
+			this.scale = scale;
+			return this;
 		}
 	}
 }
