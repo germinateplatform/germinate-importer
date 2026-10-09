@@ -79,7 +79,7 @@ public class TraitDataImporter extends DatasheetImporter
 		importer.init(args);
 		importer.run();
 
-//		args = new String[]{"localhost", "germinate_demo", null, "root", null, "C:/Users/sr41756/germinate/demo", "C:/Users/sr41756/Downloads/example-trials-data.xlsx", RunType.CHECK_AND_IMPORT.name(), "109"};
+//		args = new String[]{"localhost", "germinate_demo", null, "root", null, "C:/Users/sr41756/germinate/demo", "C:/Users/sr41756/workspaces/misc/germinate-data-templates/trials-data/example-trials-data.xlsx", RunType.CHECK_AND_IMPORT.name(), "109"};
 //		args = new String[]{"localhost", "germinate_demo", null, "root", null, "C:/Users/sr41756/germinate/demo", "C:/Users/sr41756/Downloads/example-ontologies-data.xlsx", RunType.CHECK_AND_IMPORT.name(), "109"};
 //
 //		TraitDataImporter importer = new TraitDataImporter(createImportJobFromCommandline(args, DataImportJobsDatatype.trial));
@@ -182,7 +182,7 @@ public class TraitDataImporter extends DatasheetImporter
 		catch (NullPointerException e)
 		{
 			e.printStackTrace();
-			addImportResult(ImportStatus.GENERIC_MISSING_EXCEL_SHEET, -1, "Generic error: " + e.getMessage());
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, "Generic error: " + e.getMessage());
 		}
 	}
 

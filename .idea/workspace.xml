@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Updated trials data importer for ontology templates.&#10;-">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added ontology reference links during import.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/germinate-codegen-5.0.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-codegen-5.0.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -40,18 +41,7 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="germinate-importer" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="germinate-importer" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="germinate-importer" type="f1a62948:ProjectNode" />
-                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
+                <item name="Run Configurations" type="7b0102dc:RunConfigurationsNode" />
               </path>
             </expand>
             <select />
@@ -121,7 +111,7 @@
     &quot;Gradle.germinate-importer [:TraitDataImporter.main()].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.germinate-importer [:jhi.germinate.server.util.importer.AbstractExcelImporter.main()].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.germinate-importer [:jhi.germinate.server.util.importer.ShapefileImporter.main()].executor&quot;: &quot;Debug&quot;,
-    &quot;Gradle.germinate-importer [:jhi.germinate.server.util.importer.TraitDataImporter.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.germinate-importer [:jhi.germinate.server.util.importer.TraitDataImporter.main()].executor&quot;: &quot;Debug&quot;,
     &quot;Gradle.germinate-importer [build].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.germinate-importer [clean].executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
@@ -157,7 +147,7 @@
       <recent name="jhi.germinate.server.util.importer.task" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.ShapefileImporter">
+  <component name="RunManager" selected="Gradle.germinate-importer [build]">
     <configuration name="ShapefileImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.ShapefileImporter" />
       <module name="germinate-importer.main" />
@@ -256,9 +246,9 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.ShapefileImporter" />
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
+        <item itemvalue="Application.ShapefileImporter" />
         <item itemvalue="Application.TraitDataImporter (5)" />
         <item itemvalue="Application.TraitDataImporter (4)" />
       </list>
@@ -267,8 +257,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-a203e0a19954-intellij.indexing.shared.core-IU-262.10315.125" />
-        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.10315.125" />
+        <option value="bundled-jdk-30f59d01ecdd-a203e0a19954-intellij.indexing.shared.core-IU-262.10968.63" />
+        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.10968.63" />
       </set>
     </attachedChunks>
   </component>
@@ -867,7 +857,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="88" />
+    <option name="localTasksCounter" value="89" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -898,7 +888,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- FIX: Fixed an issue with duplication detection during trait definition import.&#10;-" />
     <MESSAGE value="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import duplicate plot detection." />
     <MESSAGE value="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import trait match check." />
     <MESSAGE value="- CHG: Added germplasm display name based on new database field." />
@@ -923,7 +912,8 @@
     <MESSAGE value="- ADD: Added support for importing trait and climate data in the DATA sheet using the &quot;Short name&quot; as lookup from PHENOTYPES/CLIMATES." />
     <MESSAGE value="- FIX: Fixed an issue with the data sheet importer not actually checking the &quot;Title&quot; and &quot;Description&quot; fields.&#10;- ADD: Added trait categories.&#10;- CHG: Initial changes to support ontologies." />
     <MESSAGE value="- CHG: Updated trials data importer for ontology templates.&#10;-" />
-    <option name="LAST_COMMIT_MESSAGE" value="- CHG: Updated trials data importer for ontology templates.&#10;-" />
+    <MESSAGE value="- ADD: Added ontology reference links during import." />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added ontology reference links during import." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1147,16 +1137,6 @@
           <option name="timeStamp" value="132" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java</url>
-          <line>176</line>
-          <option name="timeStamp" value="144" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java</url>
-          <line>244</line>
-          <option name="timeStamp" value="145" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
           <line>1257</line>
           <option name="timeStamp" value="150" />
@@ -1170,6 +1150,21 @@
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
           <line>1471</line>
           <option name="timeStamp" value="153" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>81</line>
+          <option name="timeStamp" value="154" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java</url>
+          <line>907</line>
+          <option name="timeStamp" value="155" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java</url>
+          <line>912</line>
+          <option name="timeStamp" value="156" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
