@@ -78,13 +78,6 @@ public class TraitDataImporter extends DatasheetImporter
 		TraitDataImporter importer = new TraitDataImporter(Integer.parseInt(args[5]));
 		importer.init(args);
 		importer.run();
-
-//		args = new String[]{"localhost", "germinate_demo", null, "root", null, "C:/Users/sr41756/germinate/demo", "C:/Users/sr41756/workspaces/misc/germinate-data-templates/trials-data/example-trials-data.xlsx", RunType.CHECK_AND_IMPORT.name(), "109"};
-//		args = new String[]{"localhost", "germinate_demo", null, "root", null, "C:/Users/sr41756/germinate/demo", "C:/Users/sr41756/Downloads/example-ontologies-data.xlsx", RunType.CHECK_AND_IMPORT.name(), "109"};
-//
-//		TraitDataImporter importer = new TraitDataImporter(createImportJobFromCommandline(args, DataImportJobsDatatype.trial));
-//		importer.init(args);
-//		importer.run();
 	}
 
 	public TraitDataImporter(Integer importJobId)
@@ -126,52 +119,48 @@ public class TraitDataImporter extends DatasheetImporter
 
 		try
 		{
+			Runnable fallbackToPhenotypes = () -> wb.getSheets()
+													.filter(s -> Objects.equals(s.getName(), "PHENOTYPES"))
+													.findFirst()
+													.ifPresent(s -> {
+														try
+														{
+															s.openStream().findFirst().ifPresent(this::getTraitHeaderMapping);
+															s.openStream().skip(1).forEachOrdered(this::checkTrait);
+														}
+														catch (IOException e)
+														{
+															addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+														}
+													});
+
 			wb.getSheets()
 			  .filter(s -> Objects.equals(s.getName(), "TRAITS"))
 			  .findFirst()
-			  .ifPresentOrElse(s ->
-			  {
-				  // New ontology sheet found!
-				  try
+			  .ifPresentOrElse(s -> {
+				  try (var stream = s.openStream())
 				  {
-					  // Map headers to their index
-					  s.openStream()
-					   .skip(2)
-					   .findFirst()
-					   .ifPresent(this::getVariableHeaderMapping);
-					  // Check the sheet
-					  s.openStream()
-					   .skip(3)
-					   .forEachOrdered(this::checkVariable);
+					  var rows = stream.toList();
+
+					  // Check if header exists (index 2) AND there is at least one data row (index 3+)
+					  if (rows.size() > 3)
+					  {
+						  // Map headers from index 2
+						  getVariableHeaderMapping(rows.get(2));
+						  // Check data rows starting from index 3
+						  rows.stream().skip(3).forEachOrdered(this::checkVariable);
+						  return;
+					  }
 				  }
 				  catch (IOException e)
 				  {
 					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+					  return;
 				  }
-			  }, () -> {
-				  wb.getSheets()
-					.filter(s -> Objects.equals(s.getName(), "PHENOTYPES"))
-					.findFirst()
-					.ifPresent(s ->
-					{
-						// Fall back to old traits sheet
-						try
-						{
-							// Map headers to their index
-							s.openStream()
-							 .findFirst()
-							 .ifPresent(this::getTraitHeaderMapping);
-							// Check the sheet
-							s.openStream()
-							 .skip(1)
-							 .forEachOrdered(this::checkTrait);
-						}
-						catch (IOException e)
-						{
-							addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
-						}
-					});
-			  });
+
+				  // Fall back if TRAITS exists but has an empty data table
+				  fallbackToPhenotypes.run();
+			  }, fallbackToPhenotypes);
 
 			this.locationNames = checkLocationSheet(wb.findSheet("LOCATION").orElse(null));
 
