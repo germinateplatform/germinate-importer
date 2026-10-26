@@ -25,7 +25,7 @@ import static jhi.germinate.server.database.codegen.tables.Datasets.DATASETS;
 import static jhi.germinate.server.database.codegen.tables.Fileresources.FILERESOURCES;
 import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.FILERESOURCETYPES;
 import static jhi.germinate.server.database.codegen.tables.Mapoverlays.MAPOVERLAYS;
-import static jhi.germinate.server.database.codegen.tables.Phenotypes.PHENOTYPES;
+import static jhi.germinate.server.database.codegen.tables.Variables.VARIABLES;
 
 /**
  * @author Sebastian Raubach
@@ -62,7 +62,7 @@ public class GeotiffImporter extends AbstractImporter
 			DSLContext context = Database.getContext(conn);
 			context.selectFrom(DATASETS).forEach(d -> datasetIds.add(d.getId()));
 			context.selectFrom(CLIMATES).forEach(g -> climateNameToId.put(g.getName(), g.getId()));
-			context.selectFrom(PHENOTYPES).forEach(g -> traitNameToId.put(g.getName(), g.getId()));
+			context.selectFrom(VARIABLES).forEach(g -> traitNameToId.put(g.getName(), g.getId()));
 		}
 		catch (SQLException e)
 		{

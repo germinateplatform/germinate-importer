@@ -5,6 +5,7 @@ import jhi.germinate.server.database.codegen.enums.AttributesDatatype;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.*;
 import jhi.germinate.server.util.StringUtils;
+import jhi.germinate.server.util.importer.util.Util;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
 
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 import java.nio.file.*;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 import static jhi.germinate.server.database.codegen.tables.Attributedata.ATTRIBUTEDATA;
 import static jhi.germinate.server.database.codegen.tables.Attributes.ATTRIBUTES;
@@ -27,20 +29,23 @@ import static jhi.germinate.server.database.codegen.tables.Fileresources.FILERES
 import static jhi.germinate.server.database.codegen.tables.Fileresourcetypes.FILERESOURCETYPES;
 import static jhi.germinate.server.database.codegen.tables.Institutions.INSTITUTIONS;
 import static jhi.germinate.server.database.codegen.tables.Locations.LOCATIONS;
+import static jhi.germinate.server.database.codegen.tables.Studydetails.STUDYDETAILS;
 
 /**
  * @author Sebastian Raubach
  */
 public abstract class DatasheetImporter extends AbstractExcelImporter
 {
-	private static final String[] METADATA_LABELS     = {"Title", "Description", "Rights", "Date of creation", "Publisher", "Format", "Language", "Source", "Type", "Subject", "Contact", "Investigation Title", "Investigation Description", "Investigation unique ID", "Associated data file link", "Associated data file description", "Associated data file version"};
-	private static final String[] COLLABORATOR_LABELS = {"Last Name", "First Name", "Contributor role", "Contributor ID", "Email", "Phone", "Contributor", "Address", "Country"};
+	private static final String[] METADATA_LABELS          = {"Title", "Description", "Rights", "Date of creation", "Publisher", "Format", "Language", "Source", "Type", "Subject", "Contact", "Investigation Title", "Investigation Description", "Investigation unique ID", "Associated data file link", "Associated data file description", "Associated data file version"};
+	private static final String[] TRIAL_INFORMATION_LABELS = {"Trial start date", "Trial end date", "Description of the experimental design", "Type of experimental design", "Observation unit description", "Description of growth facility", "Type of growth facility", "Cultural practices", "Map of experimental design"};
+	private static final String[] COLLABORATOR_LABELS      = {"Last Name", "First Name", "Contributor role", "Contributor ID", "Email", "Phone", "Contributor", "Address", "Country"};
 
 	protected DatasetsRecord       dataset;
 	protected Integer              datasetId;
 	protected Map<String, Integer> locationNameToId = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private   Map<String, Integer> countryCode2ToId;
 	protected Map<String, Integer> metadataLabelToRowIndex;
+	protected Map<String, Integer> trialInfoLabelToRowIndex;
 	protected Map<String, Integer> collaboratorLabelToColIndex;
 	private   Map<String, Integer> attributeToId    = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -74,6 +79,9 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 	{
 		wb.findSheet("METADATA")
 		  .ifPresent(this::checkMetadataSheet);
+
+		wb.findSheet("TRIAL_INFORMATION")
+		  .ifPresent(this::checkTrialInformationSheet);
 
 		wb.findSheet("LOCATION")
 		  .ifPresent(this::checkLocationSheet);
@@ -182,6 +190,22 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 		}
 	}
 
+	private void checkTrialInformationSheet(Sheet s)
+	{
+		try
+		{
+			s.openStream()
+			 .findFirst()
+			 .ifPresent(this::checkTrialInformationHeaders);
+
+			checkTrialInformationLabels(s);
+		}
+		catch (IOException e)
+		{
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+		}
+	}
+
 	private void checkMetadataSheet(Sheet s)
 	{
 		try
@@ -240,7 +264,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					 addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, r.getRowNum(), "Location Name");
 				 if (!StringUtils.isEmpty(shortName) && shortName.length() > 22)
 					 addImportResult(ImportStatus.GENERIC_VALUE_TOO_LONG, r.getRowNum(), "Location Short Name: " + shortName + " is longer than 22 characters.");
-				 if (!StringUtils.isEmpty(country) && !countryCode2ToId.containsKey(country))
+				 if (StringUtils.isEmpty(country) || !countryCode2ToId.containsKey(country))
 					 addImportResult(ImportStatus.GENERIC_INVALID_COUNTRY_CODE, r.getRowNum(), country);
 				 if (!StringUtils.isEmpty(elevation))
 				 {
@@ -287,6 +311,18 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 		return null;
 	}
 
+	private void checkTrialInformationHeaders(Row r)
+	{
+		if (!Objects.equals(getCellValue(r, 0), "LABEL"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "LABEL");
+		if (!Objects.equals(getCellValue(r, 1), "DEFINITION"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "DEFINITION");
+		if (!Objects.equals(getCellValue(r, 2), "EXAMPLE"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "EXAMPLE");
+		if (!Objects.equals(getCellValue(r, 3), "VALUE"))
+			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "VALUE");
+	}
+
 	private void checkMetadataHeaders(Row r)
 	{
 		if (!Objects.equals(getCellValue(r, 0), "LABEL"))
@@ -295,6 +331,57 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "DEFINITION");
 		if (!Objects.equals(getCellValue(r, 2), "VALUE"))
 			addImportResult(ImportStatus.GENERIC_MISSING_COLUMN, 0, "VALUE");
+	}
+
+	protected void checkTrialInformationLabels(Sheet s)
+	{
+		try
+		{
+			List<Row> rows = s.read();
+			readTrialInformationLabels(rows);
+
+			Arrays.stream(TRIAL_INFORMATION_LABELS)
+				  .forEachOrdered(c -> {
+					  if (!trialInfoLabelToRowIndex.containsKey(c))
+						  addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, -1, c);
+				  });
+
+			Integer index = trialInfoLabelToRowIndex.get("Trial start date");
+			if (index != null)
+			{
+				String startDate = getCellValue(rows.get(index), 3);
+				if (StringUtils.isEmpty(startDate))
+					addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, index, "Trial start date");
+				else {
+					Date d = getCellValueDate(rows.get(index), 3);
+
+					if (d == null) {
+						addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, index, "'Trial start date' is not a valid date");
+					}
+				}
+			}
+			else
+			{
+				addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, -1, "Missing 'Trial start date' on 'TRIAL_INFORMATION' sheet.");
+			}
+
+			index = trialInfoLabelToRowIndex.get("Trial end date");
+			if (index != null)
+			{
+				String endDate = getCellValue(rows.get(index), 3);
+				if (!StringUtils.isEmpty(endDate)) {
+					Date d = getCellValueDate(rows.get(index), 3);
+
+					if (d == null) {
+						addImportResult(ImportStatus.GENERIC_INVALID_DATATYPE, index, "'Trial end date' is not a valid date");
+					}
+				}
+			}
+		}
+		catch (IOException e)
+		{
+			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+		}
 	}
 
 	protected void checkMetadataLabels(Sheet s)
@@ -313,7 +400,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 			Integer index = metadataLabelToRowIndex.get("Title");
 			if (index != null)
 			{
-				String name = getCellValue(rows.get(index), 0);
+				String name = getCellValue(rows.get(index), 2);
 				if (StringUtils.isEmpty(name))
 					addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, index, "Title");
 			}
@@ -325,7 +412,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 			index = metadataLabelToRowIndex.get("Description");
 			if (index != null)
 			{
-				String description = getCellValue(rows.get(index), 0);
+				String description = getCellValue(rows.get(index), 2);
 				if (StringUtils.isEmpty(description))
 					addImportResult(ImportStatus.GENERIC_MISSING_REQUIRED_VALUE, index, "Description");
 			}
@@ -337,6 +424,22 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 		catch (IOException e)
 		{
 			addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+		}
+	}
+
+	private void readTrialInformationLabels(List<Row> rows)
+	{
+		trialInfoLabelToRowIndex = new HashMap<>();
+
+		for (int i = 1; i < rows.size(); i++)
+		{
+			Row r = rows.get(i);
+
+			if (allCellsEmpty(r))
+				break;
+
+			String label = getCellValue(r, 0);
+			trialInfoLabelToRowIndex.put(label, i);
 		}
 	}
 
@@ -376,6 +479,18 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				  {
 					  List<Row> rows = s.read();
 					  readMetadataLabels(rows);
+				  }
+				  catch (IOException e)
+				  {
+					  addImportResult(ImportStatus.GENERIC_IO_ERROR, -1, e.getMessage());
+				  }
+			  });
+			wb.findSheet("TRIAL_INFORMATION")
+			  .ifPresent(s -> {
+				  try
+				  {
+					  List<Row> rows = s.read();
+					  readTrialInformationLabels(rows);
 				  }
 				  catch (IOException e)
 				  {
@@ -484,6 +599,7 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 					   {
 					   }
 					   String value = getCellValue(r, 2);
+					   Date dateValue = getCellValueDate(r, 2);
 
 					   if (dt == null || StringUtils.isEmpty(attribute) || StringUtils.isEmpty(value))
 						   return;
@@ -508,7 +624,10 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 
 					   AttributedataRecord ad = context.newRecord(ATTRIBUTEDATA);
 					   ad.setAttributeId(attributeId);
-					   ad.setValue(value);
+					   if (dt == AttributesDatatype.date && dateValue != null)
+						   ad.setValue(SDF_FULL_DASH.format(dateValue));
+					   else
+						   ad.setValue(value);
 					   ad.setForeignId(dataset.getId());
 					   ad.setCreatedOn(new Timestamp(System.currentTimeMillis()));
 					   ad.store();
@@ -721,16 +840,6 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 									   .fetchAny();
 				  }
 
-//				  if (dataset == null)
-//				  {
-//					  // If it doesn't, then check if the dataset exists (assuming name+description are unique)
-//					  dataset = context.selectFrom(DATASETS)
-//									   .where(DATASETS.NAME.isNotDistinctFrom(name))
-//									   .and(DATASETS.DESCRIPTION.isNotDistinctFrom(description))
-//									   .and(DATASETS.DATASETTYPE_ID.eq(datasetType))
-//									   .fetchAny();
-//				  }
-
 				  if (dataset == null)
 				  {
 					  // If it doesn't, check if the experiment exists
@@ -787,6 +896,71 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 							  dslr.store();
 						  }
 					  }
+				  }
+			  }
+			  catch (IOException e)
+			  {
+				  throw new RuntimeException(e);
+			  }
+		  });
+
+		// Now check if trial information exists. Add it if required.
+		wb.findSheet("TRIAL_INFORMATION")
+		  .ifPresent(s -> {
+			  try
+			  {
+				  // Fill the object with any info that may be available
+				  StudyDetailsCore core = new StudyDetailsCore();
+				  List<Row> rows = s.read();
+				  Integer index = trialInfoLabelToRowIndex.get("Trial start date");
+				  if (index != null)
+				  {
+					  Date date = getCellValueDate(rows.get(index), 3);
+					  core.setStudyStartDate(date);
+					  dataset.setDateStart(new java.sql.Date(date.getTime()));
+				  }
+				  index = trialInfoLabelToRowIndex.get("Trial end date");
+				  if (index != null)
+				  {
+					  Date date = getCellValueDate(rows.get(index), 3);
+					  core.setStudyEndDate(date);
+					  dataset.setDateEnd(new java.sql.Date(date.getTime()));
+				  }
+				  index = trialInfoLabelToRowIndex.get("Description of the experimental design");
+				  if (index != null)
+					  core.setExperimentDesignDescription(getCellValue(rows.get(index), 3));
+				  index = trialInfoLabelToRowIndex.get("Type of experimental design");
+				  if (index != null)
+					  core.setExperimentDesignType(getCellValue(rows.get(index), 3));
+				  index = trialInfoLabelToRowIndex.get("Map of experimental design");
+				  if (index != null)
+					  core.setExperimentDesignMap(getCellValue(rows.get(index), 3));
+				  index = trialInfoLabelToRowIndex.get("Observation unit description");
+				  if (index != null)
+					  core.setObservationUnitDescription(getCellValue(rows.get(index), 3));
+				  index = trialInfoLabelToRowIndex.get("Description of growth facility");
+				  if (index != null)
+					  core.setGrowthFacilityDescription(getCellValue(rows.get(index), 3));
+				  index = trialInfoLabelToRowIndex.get("Type of growth facility");
+				  if (index != null)
+					  core.setGrowthFacilityType(getCellValue(rows.get(index), 3));
+				  index = trialInfoLabelToRowIndex.get("Cultural practices");
+				  if (index != null)
+					  core.setCulturalPractice(getCellValue(rows.get(index), 3));
+
+				  // Check if any value has been specified
+				  if (Util.hasAnyFieldSet(core))
+				  {
+					  // Make sure an entry exists
+					  StudydetailsRecord record = context.selectFrom(STUDYDETAILS).where(STUDYDETAILS.ID.eq(dataset.getStudydetailsId())).fetchAny();
+					  if (record == null)
+						  record = context.newRecord(STUDYDETAILS);
+					  record.setCore(core);
+					  record.store();
+
+					  // Update the id if required
+					  dataset.setStudydetailsId(record.getId());
+					  dataset.store(DATASETS.STUDYDETAILS_ID, DATASETS.DATE_START, DATASETS.DATE_END);
 				  }
 			  }
 			  catch (IOException e)
