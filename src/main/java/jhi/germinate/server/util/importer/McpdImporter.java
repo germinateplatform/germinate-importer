@@ -3,7 +3,7 @@ package jhi.germinate.server.util.importer;
 import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.enums.*;
 import jhi.germinate.server.database.codegen.tables.records.*;
-import jhi.germinate.server.database.pojo.*;
+import jhi.germinate.server.database.pojo.ImportStatus;
 import jhi.germinate.server.util.*;
 import org.dhatim.fastexcel.reader.*;
 import org.dhatim.fastexcel.reader.Row;
@@ -28,6 +28,8 @@ import static jhi.germinate.server.database.codegen.tables.Experiments.EXPERIMEN
 import static jhi.germinate.server.database.codegen.tables.Germinatebase.GERMINATEBASE;
 import static jhi.germinate.server.database.codegen.tables.Germplasminstitutions.GERMPLASMINSTITUTIONS;
 import static jhi.germinate.server.database.codegen.tables.Institutions.INSTITUTIONS;
+import static jhi.germinate.server.database.codegen.tables.Links.LINKS;
+import static jhi.germinate.server.database.codegen.tables.Linktypes.LINKTYPES;
 import static jhi.germinate.server.database.codegen.tables.Locations.LOCATIONS;
 import static jhi.germinate.server.database.codegen.tables.Mcpd.MCPD;
 import static jhi.germinate.server.database.codegen.tables.Mlsstatus.MLSSTATUS;
@@ -655,7 +657,20 @@ public class McpdImporter extends AbstractExcelImporter
 	{
 		if (allCellsEmpty(r)) return;
 
-		Germplasm insert = parseMcpd(r);
+		LinktypesRecord doiLinkType = context.selectFrom(LINKTYPES)
+											 .where(LINKTYPES.TARGET_TABLE.eq("germinatebase"))
+											 .and(LINKTYPES.DESCRIPTION.eq("DOI"))
+											 .fetchAny();
+
+		if (doiLinkType == null)
+		{
+			doiLinkType = context.newRecord(LINKTYPES);
+			doiLinkType.setTargetTable("germinatebase");
+			doiLinkType.setDescription("DOI");
+			doiLinkType.store();
+		}
+
+		Germplasm insert = parseMcpd(r, doiLinkType.getId());
 
 		if (!StringUtils.isEmpty(insert.taxonomy.getGenus()))
 		{
@@ -740,9 +755,7 @@ public class McpdImporter extends AbstractExcelImporter
 		}
 
 		if (!StringUtils.isEmpty(insert.remarks))
-		{
 			getOrCreateRemarks(context, insert);
-		}
 
 		if (insert.maintInst != null)
 		{
@@ -764,6 +777,8 @@ public class McpdImporter extends AbstractExcelImporter
 			insert.donoInst = getOrCreateInstitution(context, insert.donoInst);
 			getOrCreateGermplasmInstitution(context, insert.germinatebase, insert.donoInst, GermplasminstitutionsType.donor);
 		}
+		if (insert.link != null && !StringUtils.isEmpty(insert.link.getHyperlink()))
+			getOrCreateLinks(context, insert);
 		if (!CollectionUtils.isEmpty(insert.dupliInst))
 		{
 			for (int i = 0; i < insert.dupliInst.size(); i++)
@@ -809,6 +824,24 @@ public class McpdImporter extends AbstractExcelImporter
 		existing.update(toUpdate);
 
 		return existing;
+	}
+
+	private void getOrCreateLinks(DSLContext context, Germplasm germplasm)
+	{
+		LinksRecord link = context.selectFrom(LINKS)
+								  .where(LINKS.LINKTYPE_ID.eq(germplasm.link.getLinktypeId()))
+								  .and(LINKS.HYPERLINK.eq(germplasm.link.getHyperlink()))
+								  .and(LINKS.FOREIGN_ID.eq(germplasm.germinatebase.getId()))
+								  .fetchAny();
+
+		if (link == null) {
+			link = context.newRecord(LINKS);
+			link.setForeignId(germplasm.germinatebase.getId());
+			link.setLinktypeId(germplasm.link.getLinktypeId());
+			link.setHyperlink(germplasm.link.getHyperlink());
+			link.setDescription("DOI");
+			link.store();
+		}
 	}
 
 	private void getOrCreateRemarks(DSLContext context, Germplasm germplasm)
@@ -1038,7 +1071,7 @@ public class McpdImporter extends AbstractExcelImporter
 		return context.selectFrom(COUNTRIES).where(COUNTRIES.COUNTRY_CODE3.isNotDistinctFrom(country.getCountryCode3())).fetchAnyInto(CountriesRecord.class);
 	}
 
-	private Germplasm parseMcpd(Row r)
+	private Germplasm parseMcpd(Row r, int linkTypeId)
 	{
 		Germplasm germplasm = new Germplasm();
 
@@ -1113,7 +1146,25 @@ public class McpdImporter extends AbstractExcelImporter
 		germplasm.country.setCountryCode3(getCellValue(r, columnNameToIndex, McpdField.ORIGCTY.name()));
 		germplasm.mcpd.setOrigcty(getCellValue(r, columnNameToIndex, McpdField.ORIGCTY.name()));
 		germplasm.mcpd.setOthernumb(getCellValue(r, columnNameToIndex, McpdField.OTHERNUMB.name()));
-		germplasm.mcpd.setPuid(getCellValue(r, columnNameToIndex, McpdField.PUID.name()));
+
+		String puid = getCellValue(r, columnNameToIndex, McpdField.PUID.name());
+		if (!StringUtils.isEmpty(puid))
+		{
+			try
+			{
+				DOI doi = DOI.create(puid);
+				puid = doi.toURI().toString();
+
+				germplasm.link.setLinktypeId(linkTypeId);
+				germplasm.link.setHyperlink(puid);
+			}
+			catch (DOI.MalformedDOIException e)
+			{
+				// Do nothing here, but catch it.
+			}
+		}
+
+		germplasm.mcpd.setPuid(puid);
 		germplasm.mcpd.setSampstat(getCellValueInteger(r, columnNameToIndex, McpdField.SAMPSTAT.name()));
 		germplasm.taxonomy.setSpeciesAuthor(getCellValue(r, columnNameToIndex, McpdField.SPAUTHOR.name()));
 		germplasm.mcpd.setSpauthor(getCellValue(r, columnNameToIndex, McpdField.SPAUTHOR.name()));
@@ -1203,6 +1254,7 @@ public class McpdImporter extends AbstractExcelImporter
 		private TaxonomiesRecord          taxonomy      = new TaxonomiesRecord();
 		private PedigreedefinitionsRecord pedigree      = new PedigreedefinitionsRecord();
 		private String                    remarks;
+		private LinksRecord               link          = new LinksRecord();
 
 		public Germplasm()
 		{
