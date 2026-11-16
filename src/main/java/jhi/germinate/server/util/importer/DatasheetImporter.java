@@ -4,7 +4,7 @@ import jhi.germinate.server.Database;
 import jhi.germinate.server.database.codegen.enums.AttributesDatatype;
 import jhi.germinate.server.database.codegen.tables.records.*;
 import jhi.germinate.server.database.pojo.*;
-import jhi.germinate.server.util.StringUtils;
+import jhi.germinate.server.util.*;
 import jhi.germinate.server.util.importer.util.Util;
 import org.dhatim.fastexcel.reader.*;
 import org.jooq.DSLContext;
@@ -831,6 +831,26 @@ public abstract class DatasheetImporter extends AbstractExcelImporter
 				  index = metadataLabelToRowIndex.get("Subject");
 				  if (index != null)
 					  dublinCore.setSubject(new String[]{getCellValue(rows.get(index), 2)});
+
+				  // Now remove all [null] entries
+				  if (CollectionUtils.isEmptyOrNull(dublinCore.getTitle()))
+					  dublinCore.setTitle(null);
+				  if (CollectionUtils.isEmptyOrNull(dublinCore.getRights()))
+					  dublinCore.setRights(null);
+				  if (CollectionUtils.isEmptyOrNull(dublinCore.getDate()))
+					  dublinCore.setDate(null);
+				  if (CollectionUtils.isEmptyOrNull(dublinCore.getPublisher()))
+					  dublinCore.setPublisher(null);
+				  if (CollectionUtils.isEmptyOrNull(dublinCore.getFormat()))
+					  dublinCore.setFormat(null);
+				  if (CollectionUtils.isEmptyOrNull(dublinCore.getLanguage()))
+					  dublinCore.setLanguage(null);
+				  if (CollectionUtils.isEmptyOrNull(dublinCore.getSource()))
+					  dublinCore.setSource(null);
+				  if (CollectionUtils.isEmptyOrNull(dublinCore.getType()))
+					  dublinCore.setType(null);
+				  if (CollectionUtils.isEmptyOrNull(dublinCore.getSubject()))
+					  dublinCore.setSubject(null);
 
 				  if (datasetId != null)
 				  {

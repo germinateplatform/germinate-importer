@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- CHG: Improved handling of old and new trait data templates.">
+    <list default="true" id="f2ba9ad8-314a-49cf-af88-d8503bc989cf" name="Default Changelist" comment="- ADD: Added conversion of PUIDs to links IF they are DOIs.&#10;-">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/germinate-core-5.0.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/lib/germinate-core-5.0.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/McpdImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,61 +95,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="4.81421284739851E-73" />
-      <entry key="MS500" value="4.606243372170354E-15" />
-      <entry key="S2" value="4.7899098430897037E-4" />
-      <entry key="S5" value="0.10123335066380217" />
-      <entry key="S10" value="0.8054034877045299" />
-      <entry key="S30" value="6.436322918047269" />
-      <entry key="S60" value="15.085043249159181" />
-      <entry key="M2" value="28.857999608345096" />
-      <entry key="M5" value="55.36441987347887" />
-      <entry key="M10" value="75.5171418183413" />
-      <entry key="M15" value="84.93944238664909" />
-      <entry key="M30" value="96.27514351077687" />
-      <entry key="H1" value="102.80448404379594" />
-      <entry key="H2" value="106.31419248714882" />
-      <entry key="H4" value="108.13445424687039" />
-      <entry key="D1" value="109.6858759635062" />
-      <entry key="W1" value="109.95504604814761" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.000000000000002" />
+      <entry key="S2" value="1.0002473897749085" />
+      <entry key="S5" value="1.0604026745704282" />
+      <entry key="S10" value="1.502992327142699" />
+      <entry key="S30" value="4.242760625228678" />
+      <entry key="S60" value="7.742512031513719" />
+      <entry key="M2" value="13.573841286941112" />
+      <entry key="M5" value="31.372635750224163" />
+      <entry key="M10" value="62.08413009894652" />
+      <entry key="M15" value="84.61682429052695" />
+      <entry key="M30" value="120.31396017672728" />
+      <entry key="H1" value="145.65087610578206" />
+      <entry key="H2" value="160.83007772481153" />
+      <entry key="H4" value="169.1494954504281" />
+      <entry key="D1" value="176.48652129356952" />
+      <entry key="W1" value="177.78282806106517" />
     </decayedCancelled>
     <decayedSelected>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0000465741574187" />
-      <entry key="S5" value="1.0195136367106254" />
-      <entry key="S10" value="1.2013278001581633" />
-      <entry key="S30" value="3.319900441897828" />
-      <entry key="S60" value="6.749318279702404" />
-      <entry key="M2" value="11.764475355343565" />
-      <entry key="M5" value="20.14819360516075" />
-      <entry key="M10" value="25.877546222672304" />
-      <entry key="M15" value="28.439342257661544" />
-      <entry key="M30" value="31.44710251281407" />
-      <entry key="H1" value="33.148302886884906" />
-      <entry key="H2" value="34.05436065721273" />
-      <entry key="H4" value="34.52210411775407" />
-      <entry key="D1" value="34.919634448149544" />
-      <entry key="W1" value="34.98850151811592" />
+      <entry key="MS100" value="2.1104938401978763E-284" />
+      <entry key="MS500" value="1.959820659977021E-57" />
+      <entry key="S2" value="1.0163678230588313E-14" />
+      <entry key="S5" value="4.640206833076824E-6" />
+      <entry key="S10" value="0.004062382282166524" />
+      <entry key="S30" value="0.40723164212851876" />
+      <entry key="S60" value="1.5117348246118902" />
+      <entry key="M2" value="3.6859596018508887" />
+      <entry key="M5" value="9.961063839446801" />
+      <entry key="M10" value="19.732006167707855" />
+      <entry key="M15" value="26.60363654465771" />
+      <entry key="M30" value="37.23203258450061" />
+      <entry key="H1" value="44.64657911052257" />
+      <entry key="H2" value="49.04953322691263" />
+      <entry key="H4" value="51.45193605149636" />
+      <entry key="D1" value="53.5648104932165" />
+      <entry key="W1" value="53.9375672837336" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="9.5367431640625E-7" />
-      <entry key="MS500" value="0.06250000000000179" />
-      <entry key="S2" value="0.5004157797751323" />
-      <entry key="S5" value="0.8672530347092685" />
-      <entry key="S10" value="1.8227358188923615" />
-      <entry key="S30" value="9.48914994676881" />
-      <entry key="S60" value="21.5015289746437" />
-      <entry key="M2" value="40.292647218168675" />
-      <entry key="M5" value="75.26042625964307" />
-      <entry key="M10" value="101.2238075139918" />
-      <entry key="M15" value="113.25095882724027" />
-      <entry key="M30" value="127.64997823108666" />
-      <entry key="H1" value="135.91424813158216" />
-      <entry key="H2" value="140.34863749861614" />
-      <entry key="H4" value="142.64643296790157" />
-      <entry key="D1" value="144.6037990421003" />
-      <entry key="W1" value="144.9433024949237" />
+      <entry key="MS100" value="1.4059726879988669E-6" />
+      <entry key="MS500" value="0.06754533762745965" />
+      <entry key="S2" value="0.5099311090557237" />
+      <entry key="S5" value="0.8105195653649877" />
+      <entry key="S10" value="1.3193312274396443" />
+      <entry key="S30" value="4.44843670744113" />
+      <entry key="S60" value="9.059495475985573" />
+      <entry key="M2" value="17.094512852801454" />
+      <entry key="M5" value="41.19678619790834" />
+      <entry key="M10" value="81.68841680946021" />
+      <entry key="M15" value="111.10602874418596" />
+      <entry key="M30" value="157.46535480904146" />
+      <entry key="H1" value="190.2487596206379" />
+      <entry key="H2" value="209.8527435868954" />
+      <entry key="H4" value="220.587305894435" />
+      <entry key="D1" value="230.0488756819633" />
+      <entry key="W1" value="231.72004190052294" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -168,6 +169,7 @@
     &quot;Gradle.germinate-importer [:McpdImporter.main()].executor&quot;: &quot;Debug&quot;,
     &quot;Gradle.germinate-importer [:TraitDataImporter.main()].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.germinate-importer [:jhi.germinate.server.util.importer.AbstractExcelImporter.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.germinate-importer [:jhi.germinate.server.util.importer.McpdImporter.main()].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.germinate-importer [:jhi.germinate.server.util.importer.ShapefileImporter.main()].executor&quot;: &quot;Debug&quot;,
     &quot;Gradle.germinate-importer [:jhi.germinate.server.util.importer.TraitDataImporter.main()].executor&quot;: &quot;Debug&quot;,
     &quot;Gradle.germinate-importer [build].executor&quot;: &quot;Run&quot;,
@@ -205,9 +207,9 @@
       <recent name="jhi.germinate.server.util.importer.task" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.germinate-importer [build]">
-    <configuration name="ShapefileImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.ShapefileImporter" />
+  <component name="RunManager" selected="Application.McpdImporter">
+    <configuration name="McpdImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.McpdImporter" />
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
@@ -219,8 +221,8 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TraitDataImporter (4)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.TraitDataImporter" />
+    <configuration name="ShapefileImporter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jhi.germinate.server.util.importer.ShapefileImporter" />
       <module name="germinate-importer.main" />
       <extension name="coverage">
         <pattern>
@@ -296,27 +298,27 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Application.McpdImporter" />
       <item itemvalue="Application.ShapefileImporter" />
-      <item itemvalue="Application.TraitDataImporter (4)" />
       <item itemvalue="Application.TraitDataImporter (5)" />
       <item itemvalue="Gradle.germinate-importer [build]" />
       <item itemvalue="Gradle.germinate-importer [clean]" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.McpdImporter" />
         <item itemvalue="Gradle.germinate-importer [build]" />
         <item itemvalue="Gradle.germinate-importer [clean]" />
         <item itemvalue="Application.ShapefileImporter" />
         <item itemvalue="Application.TraitDataImporter (5)" />
-        <item itemvalue="Application.TraitDataImporter (4)" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-2df11533d9fe-intellij.indexing.shared.core-IU-262.11879.100" />
-        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.11879.100" />
+        <option value="bundled-jdk-30f59d01ecdd-a9fadf26ba24-intellij.indexing.shared.core-IU-262.12573.28" />
+        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.12573.28" />
       </set>
     </attachedChunks>
   </component>
@@ -915,7 +917,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687766661697</updated>
     </task>
-    <option name="localTasksCounter" value="90" />
+    <option name="localTasksCounter" value="91" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -946,7 +948,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- CHG: Version bump for bugfix release.&#10;- FIX: Fixed issues with trait data import trait match check." />
     <MESSAGE value="- CHG: Added germplasm display name based on new database field." />
     <MESSAGE value="- FIX: Fixed taxonomy creation issues during MCPD import.&#10;-" />
     <MESSAGE value="- CHG: Adjust trait min max limits if required." />
@@ -971,7 +972,8 @@
     <MESSAGE value="- CHG: Updated trials data importer for ontology templates.&#10;-" />
     <MESSAGE value="- ADD: Added ontology reference links during import." />
     <MESSAGE value="- ADD: Added study details codegen stuff." />
-    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added study details codegen stuff." />
+    <MESSAGE value="- ADD: Added conversion of PUIDs to links IF they are DOIs.&#10;-" />
+    <option name="LAST_COMMIT_MESSAGE" value="- ADD: Added conversion of PUIDs to links IF they are DOIs.&#10;-" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1188,28 +1190,48 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>1246</line>
-          <option name="timeStamp" value="150" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>1249</line>
-          <option name="timeStamp" value="151" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
-          <line>1460</line>
+          <line>1456</line>
           <option name="timeStamp" value="153" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java</url>
-          <line>907</line>
-          <option name="timeStamp" value="155" />
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>1124</line>
+          <option name="timeStamp" value="161" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/DatasheetImporter.java</url>
-          <line>912</line>
-          <option name="timeStamp" value="156" />
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>1438</line>
+          <option name="timeStamp" value="162" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>1091</line>
+          <option name="timeStamp" value="163" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>788</line>
+          <option name="timeStamp" value="165" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>1177</line>
+          <option name="timeStamp" value="167" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>1104</line>
+          <option name="timeStamp" value="168" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>1182</line>
+          <option name="timeStamp" value="169" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jhi/germinate/server/util/importer/TraitDataImporter.java</url>
+          <line>844</line>
+          <option name="timeStamp" value="170" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

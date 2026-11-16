@@ -46,7 +46,6 @@ public class TraitDataImporter extends DatasheetImporter
 	private static final String[] COLUMN_HEADERS_VARIABLES = {"Variable cropontology id", "Variable name", "Variable description", "Trait cropontology id", "Trait name", "Trait description", "Trait abbreviation", "Trait class", "Trait category", "Method cropontology id", "Method name", "Method description", "Method class", "Method set size", "Method is timeseries", "Scale cropontology id", "Scale name", "Scale description", "Scale unit", "Scale data type", "Scale minimum", "Scale maximum", "Scale valid values"};
 	private static final String[] COLUMN_HEADERS_DATA      = {"Line/Phenotype", "Rep", "Block", "Row", "Column", "Treatment", "Location", "Latitude", "Longitude", "Elevation"};
 
-	private final Map<String, Integer>         traitNameToId       = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private final Map<String, Integer>         treatmentToId       = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private       Map<String, Integer>         traitColumnNameToIndex;
 	private       Map<String, Integer>         dataColumnNameToIndex;
@@ -95,9 +94,6 @@ public class TraitDataImporter extends DatasheetImporter
 		try (Connection conn = Database.getConnection())
 		{
 			DSLContext context = Database.getContext(conn);
-			context.selectFrom(VARIABLES)
-				   .forEach(p -> traitNameToId.put(p.getName(), p.getId()));
-
 			context.selectFrom(VIEW_TABLE_TRAITS)
 				   .fetchInto(ViewTableTraits.class)
 				   .forEach(p -> variableDefinitions.put(p.getVariableName(), p));
@@ -1073,12 +1069,12 @@ public class TraitDataImporter extends DatasheetImporter
 				  {
 					  // Map headers to their index
 					  s.openStream()
-					   .skip(2)
+					   .skip(1)
 					   .findFirst()
 					   .ifPresent(this::getVariableHeaderMapping);
 					  // Check the sheet
 					  s.openStream()
-					   .skip(3)
+					   .skip(2)
 					   .forEachOrdered(this::checkVariable);
 				  }
 				  catch (IOException e)
@@ -1098,7 +1094,7 @@ public class TraitDataImporter extends DatasheetImporter
 							 .ifPresent(this::getTraitHeaderMapping);
 							// Check the sheet to get the trait mapping
 							s.openStream()
-							 .skip(2)
+							 .skip(1)
 							 .forEachOrdered(this::checkTrait);
 						}
 						catch (IOException e)
@@ -1351,7 +1347,7 @@ public class TraitDataImporter extends DatasheetImporter
 				 container.setTraitId(trait.getId());
 				 container.setMethodId(method.getId());
 				 container.setScaleId(scale.getId());
-				 traitNameToId.put(variable.getName(), variable.getId());
+				 variableDefinitions.put(variable.getName(), container);
 			 });
 		}
 		catch (IOException e)
